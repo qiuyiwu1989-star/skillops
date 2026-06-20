@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "SkillOps · 你的 AI 技能库",
+  "version": "0.1.0",
+  "description": "在 ChatGPT / Claude 输入框里一键调起你的 SkillOps 技能库；选中文本顺手存进库。",
+  "permissions": ["storage", "contextMenus"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://skillops.tech/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "SkillOps 技能库" },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

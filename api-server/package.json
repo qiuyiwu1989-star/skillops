@@ -1,0 +1,16 @@
+{
+  "name": "skill-hub-try-api",
+  "version": "0.1.0",
+  "description": "In-browser skill try API for skill.qiuyiwu.com",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "license": "Personal use · 邱懿武"
+}

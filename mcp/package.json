@@ -1,0 +1,12 @@
+{
+  "name": "skillops-mcp",
+  "version": "0.1.0",
+  "description": "SkillOps MCP —— 把你的私人 AI 技能库接进 Claude Desktop / Claude Code / Cursor / 任何 MCP 客户端。检索型：拉你自己的技能、跑在你自己的 AI 里（不替你执行、不锁定）。",
+  "type": "module",
+  "bin": { "skillops-mcp": "server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  }
+}

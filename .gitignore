@@ -1,0 +1,41 @@
+# ── 依赖（绝不进库）──
+node_modules/
+**/node_modules/
+
+# ── 机密（绝不进库）──
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+id_ed25519*
+id_rsa*
+*.secret
+
+# ── 运行时数据 / 本地镜像（服务器侧权威，不版本化）──
+data/
+*.jsonl
+evaluations.jsonl
+*.sqlite
+*.db
+
+# ── 构建 / 缓存 / 日志 ──
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+
+# ── OS / 编辑器杂物 ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# ── 打包产物（插件 zip 等，按需保留可删此行）──
+*.zip

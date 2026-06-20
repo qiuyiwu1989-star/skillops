@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillOps — 你的 AI 技能库，任何 AI 随手调起</title>
+  <link rel="canonical" href="https://skillops.tech/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://skillops.tech/">
+  <link rel="alternate" hreflang="en" href="https://skillops.tech/en/">
+  <link rel="alternate" hreflang="x-default" href="https://skillops.tech/">
+<meta name="description" content="SkillOps · 你的私人 AI 技能库 —— 把好用的提示词收成一个库，在任何 AI 里随手调起，版本化管理、越用越好，跟着你走不被锁定. 不用登录就能用.">
+<meta property="og:title" content="SkillOps · AI Skill 管理平台">
+<meta property="og:description" content="你的 AI 技能库，跟着你走 · 任何 AI 随手调起 · 版本化管理、越用越好. 不登录就能用.">
+<meta property="og:url" content="https://skillops.tech/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://skillops.tech/favicon.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebSite","name":"SkillOps","alternateName":"AI 技能的 1Password","url":"https://skillops.tech/","inLanguage":"zh-CN","description":"你的私人 AI 技能库——把好用的提示词收成一个库，在任何 AI 里随手调起，版本化管理、越用越好，跟着你走不被锁定。"},
+{"@type":"SoftwareApplication","name":"SkillOps","applicationCategory":"DeveloperApplication","operatingSystem":"Web · any AI agent","url":"https://skillops.tech/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"邱懿武","url":"https://qiuyiwu.com"},"publisher":{"@type":"Organization","name":"造物云"},"description":"个人 AI 技能/提示词的管理与调用平台：SMS 技能评级、版本化迭代、跨 AI 随手调起。"}
+]}
+</script>
+<script defer src="/analytics.js"></script>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 22px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 880px) { .xn-nav ul { display: none; } }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+
+  /* ═══ HERO ═══ */
+  .hero { padding: clamp(40px,5vw,72px) 0 clamp(40px,5vw,64px); border-bottom: 1px solid var(--line); }
+  .hero .eyebrow { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .hero .eyebrow .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
+  .hero .brand-line { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .hero .brand-cn { font-family: var(--f-display); font-weight: 500; font-size: clamp(40px,5.5vw,72px); letter-spacing: -0.03em; line-height: 1; }
+  .hero .brand-cn .u { color: var(--accent); }
+  .hero .brand-en { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.18em; }
+  .hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,38px); letter-spacing: -0.02em; line-height: 1.2; max-width: 24ch; margin-bottom: 14px; }
+  .hero h1 .u { color: var(--accent); }
+  .hero .cat-line { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 18px; }
+  .hero .cat-line strong { color: var(--accent); font-weight: 600; }
+  .hero .lede { font-size: 15.5px; color: var(--muted); max-width: 56ch; line-height: 1.6; margin-bottom: 28px; }
+  .hero .lede strong { color: var(--text); font-weight: 500; }
+
+  /* live evaluate widget */
+  .widget { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: clamp(20px,2.5vw,28px); }
+  .widget .wlabel { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .widget textarea { width: 100%; box-sizing: border-box; min-height: 130px; resize: vertical; font-family: var(--f-mono); font-size: 13px; line-height: 1.6; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; color: var(--text); }
+  .widget textarea:focus { outline: none; border-color: var(--accent); }
+  .widget .wbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .widget .wbtn { font-family: var(--f-mono); font-size: 14px; padding: 13px 28px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: var(--bg); cursor: pointer; transition: all .15s; }
+  .widget .wbtn:hover:not(:disabled) { background: transparent; color: var(--accent); }
+  .widget .wbtn:disabled { opacity: .5; cursor: not-allowed; }
+  .widget .wsample { font-family: var(--f-mono); font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 1px dashed var(--muted); padding: 0 0 2px; }
+  .widget .wsample:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .widget .whint { font-family: var(--f-mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+  .widget .werr { font-family: var(--f-mono); font-size: 12px; color: #d4674a; margin-top: 10px; display: none; }
+
+  /* widget result */
+  .wresult { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .wresult.show { display: block; animation: wfade .35s ease; }
+  @keyframes wfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .wres-top { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+  .wres-score { font-family: var(--f-display); font-weight: 500; font-size: 44px; letter-spacing: -0.03em; line-height: 1; }
+  .wres-score .mx { font-family: var(--f-mono); font-size: 14px; color: var(--faint); }
+  .wres-tier { font-family: var(--f-mono); font-weight: 600; font-size: 22px; padding: 4px 16px; border: 2px solid currentColor; border-radius: 8px; }
+  .tier-S { color: var(--accent); } .tier-A { color: #4a9b8a; } .tier-B { color: #a8b56c; } .tier-C { color: var(--muted); } .tier-D { color: #b08968; }
+  .wres-summary { font-size: 13.5px; color: var(--muted); line-height: 1.6; flex: 1; min-width: 240px; }
+  .wdims { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .wdims { grid-template-columns: 1fr; } }
+  .wdim { display: grid; grid-template-columns: 80px 1fr 28px; gap: 10px; align-items: center; font-size: 11px; }
+  .wdim .dn { font-family: var(--f-mono); color: var(--muted); }
+  .wdim .db { height: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .wdim .db .f { height: 100%; background: var(--accent); border-radius: 999px; width: 0; transition: width .6s ease; }
+  .wdim .ds { font-family: var(--f-mono); color: var(--text); text-align: right; }
+  .whook { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+  .whook .ht { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .whook a { font-family: var(--f-mono); font-size: 12px; padding: 9px 18px; border-radius: 999px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); transition: all .15s; }
+  .whook a:hover { background: var(--accent); color: var(--bg); }
+  .whook a.ghost { border-color: var(--line); color: var(--muted); }
+  .whook a.ghost:hover { color: var(--text); border-color: var(--text); }
+
+  /* social proof bar */
+  .proof { padding: 18px 0; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 24px; flex-wrap: wrap; }
+  .proof b { color: var(--accent); }
+
+  /* 3-step */
+  .steps3 { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .steps3 h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; margin-bottom: 32px; }
+  .steps3 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 760px) { .steps3 .grid { grid-template-columns: 1fr; } }
+  .steps3 .cell { background: var(--bg); padding: 32px 28px; }
+  .steps3 .n { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.14em; margin-bottom: 14px; }
+  .steps3 .ic { font-size: 28px; margin-bottom: 12px; }
+  .steps3 h3 { font-family: var(--f-display); font-weight: 500; font-size: 21px; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .steps3 p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+  .steps3 p a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+  /* registry preview */
+  .regprev { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .regprev .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .regprev h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; }
+  .regprev .more { font-family: var(--f-mono); font-size: 13px; color: var(--accent); text-decoration: none; }
+  .regprev .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 760px) { .regprev .grid { grid-template-columns: 1fr; } }
+  .regprev .card { background: var(--bg); padding: 22px 22px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 8px; transition: background .12s; }
+  .regprev .card:hover { background: var(--bg-soft); }
+  .regprev .card .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .regprev .card .nm { font-family: var(--f-display); font-weight: 500; font-size: 16px; letter-spacing: -0.01em; }
+  .regprev .card .bd { font-family: var(--f-mono); font-size: 12px; padding: 3px 9px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
+  .regprev .card .ds { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* developer */
+  .dev { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .dev .wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: center; }
+  @media (max-width: 760px) { .dev .wrap { grid-template-columns: 1fr; } }
+  .dev h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,34px); letter-spacing: -0.02em; margin-bottom: 14px; }
+  .dev p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+  .dev p a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .dev .code { background: #161616; border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; font-family: var(--f-mono); font-size: 12.5px; color: #ebe6db; line-height: 1.8; overflow-x: auto; }
+  .dev .code .c { color: #6b7280; } .dev .code .a { color: var(--accent); }
+
+  /* 本地 vs 云端 tiers */
+  .tiers { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .tiers h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; margin-bottom: 12px; }
+  .tiers .tiers-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 64ch; margin-bottom: 28px; }
+  .tiers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 680px) { .tiers-grid { grid-template-columns: 1fr; } }
+  .tier-col { background: var(--bg); padding: 28px 28px; }
+  .tier-col.feat { background: var(--bg-soft); }
+  .tc-head { margin-bottom: 16px; }
+  .tc-tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; }
+  .tc-tag.accent { color: var(--accent); border-color: var(--accent); }
+  .tier-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
+  .tier-col li { font-size: 13.5px; color: var(--text); line-height: 1.45; }
+  .tier-col li b { color: var(--accent); font-weight: 500; }
+  .tier-col li.off { color: var(--faint); }
+
+  /* CTA */
+  .cta { text-align: center; padding: clamp(56px,8vw,104px) clamp(20px,4vw,48px); background: var(--bg-soft); border-bottom: 1px solid var(--line); }
+  .cta h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(28px,4.5vw,56px); letter-spacing: -0.025em; line-height: 1.06; max-width: 20ch; margin: 0 auto 18px; }
+  .cta h2 .u { color: var(--accent); }
+  .cta p { font-size: 15px; color: var(--muted); max-width: 46ch; margin: 0 auto 28px; line-height: 1.6; }
+  .cta .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .cta .btn { font-family: var(--f-mono); font-size: 14px; padding: 14px 28px; border-radius: 999px; text-decoration: none; border: 1px solid var(--text); color: var(--text); transition: all .15s; }
+  .cta .btn:hover { background: var(--text); color: var(--bg); }
+  .cta .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .cta .btn.primary:hover { background: transparent; color: var(--accent); }
+
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1080px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active=""></nav>
+
+<main>
+  <!-- ═══ HERO with live widget ═══ -->
+  <section class="hero"><div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>SKILLOPS · 你的 AI 技能库 · 不用登录就能用</div>
+    <div class="brand-line"><span class="brand-cn">SkillOps<span class="u">_</span></span><span class="brand-en"></span></div>
+    <h1>你的 AI 技能库，跟着你走<span class="u">_</span></h1>
+    <p class="cat-line">DevOps 管代码 · MLOps 管模型 · <strong>SkillOps 管技能</strong></p>
+    <p class="lede">把好用的提示词收成你自己的技能库——在 <strong>ChatGPT、Claude、任何 AI</strong> 里随手调起，版本化管理，<strong>越用越好</strong>。不被任何一家锁住。背后是 <strong>小能 / Ace</strong>。<br>AI 技能的 1Password。</p>
+
+    <div class="widget">
+      <div class="wlabel"><span>▶ 先试试 · 给你的提示词打个分（30 秒 · 免登录）</span></div>
+      <textarea id="w-input" aria-label="把你的提示词 / SKILL.md 粘进来评分" placeholder="把你的 SKILL.md / prompt / 完整描述粘进来…&#10;包含越多越准：用途、触发词、步骤、输出格式、示例。"></textarea>
+      <div class="wbar">
+        <button class="wbtn" id="w-go">评估</button>
+        <button class="wsample" id="w-sample">载入示例</button>
+        <span class="whint" id="w-hint"></span>
+      </div>
+      <div class="werr" id="w-err"></div>
+      <div class="wresult" id="w-result">
+        <div class="wres-top">
+          <div class="wres-score"><span id="w-total">0</span><span class="mx"> / 100</span></div>
+          <div class="wres-tier" id="w-tier">—</div>
+          <div class="wres-summary" id="w-summary"></div>
+        </div>
+        <div class="wdims" id="w-dims"></div>
+        <div class="whook">
+          <span class="ht">想把它收进你的技能库、在任何 AI 里随手调起？</span>
+          <a href="/dashboard/" id="w-save">建你的技能库 →</a>
+          <a class="ghost" href="/evaluate/">批量评估 GitHub 仓库</a>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ social proof ═══ -->
+  <div class="wrap"><div class="proof" id="proof">
+    <span>本地优先 · 跨任何 AI · 不被锁定</span>
+    <span id="proof-stat">官方已评 25 个技能 · 均分 70.4/100</span>
+    <span>技能评级（SMS · 10 维） · 实时</span>
+  </div></div>
+
+  <!-- ═══ 3-step ═══ -->
+  <section class="steps3"><div class="wrap">
+    <h2>它怎么帮你<span style="color:var(--accent)">_</span></h2>
+    <div class="grid">
+      <div class="cell">
+        <div class="n">01 · 调用</div><div class="ic" aria-hidden="true">📋</div>
+        <h3>在任何 AI 里随手调起</h3>
+        <p>三种方式：<strong>复制</strong>即用、装<strong>浏览器插件</strong>（ChatGPT / Claude 网页一键调起）、接 <strong>MCP</strong>（Claude Desktop / Cursor）。它<strong>跟着你走</strong>，不被一家锁住。</p>
+      </div>
+      <div class="cell">
+        <div class="n">02 · 管理</div><div class="ic" aria-hidden="true">🗂️</div>
+        <h3>像管资产一样管理</h3>
+        <p>版本迭代、回滚、看分数随版本变好、看哪些真在被用。本地优先——<a href="/dashboard/">控制台</a>不登录就能用，需要云端再创建账号。</p>
+      </div>
+      <div class="cell">
+        <div class="n">03 · 评分</div><div class="ic" aria-hidden="true">📊</div>
+        <h3>知道它值几分</h3>
+        <p>技能评级（SMS · 10 维）给总分、段位和可执行的改进建议——哪条值得留、哪条该提分，不再凭感觉。</p>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ registry preview ═══ -->
+  <section class="regprev"><div class="wrap">
+    <div class="head">
+      <h2>不想从零写？市场里拿现成的</h2>
+      <a class="more" href="/registry/">浏览全部 →</a>
+    </div>
+    <div class="grid" id="regprev-grid"></div>
+  </div></section>
+
+  <!-- ═══ developer ═══ -->
+  <section class="dev"><div class="wrap">
+    <div>
+      <h2>你是开发者？（可选）<span style="color:var(--accent)">_</span></h2>
+      <p>普通使用不需要这步。但如果你写 agent——小能也能当你 agent 的技能后端：一个 API key，agent 一行 <code>curl</code> 拉取你管理的技能。</p>
+      <p>公开的技能无需 key 即可拉取。<a href="/docs/">读文档 →</a></p>
+    </div>
+    <div class="code"><span class="c"># 列出我的全部技能</span>
+curl https://skillops.tech/api/<span class="a">v1/me/skills</span> \
+  -H <span class="a">"Authorization: Bearer xn_你的key"</span>
+
+<span class="c"># 拉取单个公开技能（免 key）</span>
+curl https://skillops.tech/api/<span class="a">v1/skills/&lt;handle&gt;/&lt;slug&gt;</span></div>
+  </div></section>
+
+  <!-- ═══ 本地 vs 云端 价值对比 ═══ -->
+  <section class="tiers"><div class="wrap">
+    <h2>免费用 · 需要时再要账号<span style="color:var(--accent)">_</span></h2>
+    <p class="tiers-sub">不用登录、不用 GitHub 就能用。下面这些是「创建账号（免费 · 一个账号 key 搞定）」后解锁的——先把价值讲清楚，你再决定要不要。</p>
+    <div class="tiers-grid">
+      <div class="tier-col">
+        <div class="tc-head"><span class="tc-tag">本地 · 无需登录</span></div>
+        <ul>
+          <li>✓ 收藏 / 编辑 / 评分任何提示词</li>
+          <li>✓ 一键复制到任何 AI 调用</li>
+          <li>✓ 数据存在你的浏览器</li>
+          <li class="off">— 换设备 / 清缓存即丢失</li>
+          <li class="off">— 不跨设备同步、不能发布</li>
+        </ul>
+      </div>
+      <div class="tier-col feat">
+        <div class="tc-head"><span class="tc-tag accent">创建账号解锁 · 免费</span></div>
+        <ul>
+          <li>✓ 本地全部能力</li>
+          <li>✓ <b>跨设备 / 跨 AI 同步</b> —— 你的库真正跟着你走</li>
+          <li>✓ <b>云端永久保存</b> + 版本分数趋势</li>
+          <li>✓ <b>独立公开页</b>，可分享、可被发现</li>
+          <li>✓ <b>API Key</b>（开发者向）：agent 一行拉取你的私有技能</li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="cta">
+    <h2>把你的提示词，收成一个库<span class="u">_</span></h2>
+    <p>不用登录、不用 GitHub。打开控制台就能收第一个 —— 数据先存在你的浏览器，需要跨设备 / 跨 AI 同步时再创建账号。</p>
+    <div class="btns">
+      <a class="btn primary" href="/dashboard/">打开控制台 →</a>
+      <a class="btn" href="/registry/">逛技能市场</a>
+    </div>
+  </section>
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="/evaluate/">评估</a>
+    <a href="/registry/">技能市场</a>
+    <a href="/dashboard/">控制台</a>
+    <a href="/docs/">文档</a>
+    
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · 小能/Ace · v1.0 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATZH = { strategy:'战略·创新', writing:'写作', design:'设计', presentation:'演示', meta:'元能力', 'knowledge-system':'知识系统' };
+
+const SAMPLE = `# JTBD 用户访谈分析器
+## 用途
+把用户访谈逐字稿按 Jobs-to-be-Done 框架拆解成结构化洞察。
+## 触发词
+- 分析这份访谈
+- 用 JTBD 拆解
+- 提炼用户任务
+## 步骤
+1. 标记所有"情境句"
+2. 抽取三要素：情境 / 动机 / 期望结果，写成 JTBD 句式
+3. 跨访谈聚类相似 Job，统计频次
+4. 标注功能性 / 情感性 / 社会性任务
+5. 识别未被满足的 Job
+6. 输出洞察报告 + 产品机会假设
+## 输出格式
+Markdown 四部分：核心 Jobs（按频次）/ 未满足 Jobs / 情感社会维度 / 机会假设（3 条，带"如果…那么…"）
+## 质量标准
+- 每个 Job 可追溯到访谈原句
+- 三要素齐全
+- 机会假设可证伪`;
+
+$('w-sample').onclick = () => { $('w-input').value = SAMPLE; $('w-input').focus(); };
+
+async function evaluate() {
+  const content = $('w-input').value.trim();
+  $('w-err').style.display = 'none';
+  if (content.length < 40) { $('w-err').textContent = '内容太短，至少 40 字。'; $('w-err').style.display = 'block'; return; }
+  const btn = $('w-go'); btn.disabled = true; btn.textContent = '评估中…';
+  $('w-result').classList.remove('show');
+  try {
+    const r = await fetch(`${API}/evaluate`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ content }) });
+    const j = await r.json();
+    if (!r.ok || j.error) { $('w-err').textContent = j.message || `评估失败（${r.status}）`; $('w-err').style.display='block'; return; }
+    renderResult(j);
+  } catch(e) { $('w-err').textContent = '网络错误，请重试。'; $('w-err').style.display='block'; }
+  finally { btn.disabled = false; btn.textContent = '评估'; }
+}
+
+function renderResult(j) {
+  $('w-tier').textContent = j.tier; $('w-tier').className = 'wres-tier tier-' + j.tier;
+  $('w-summary').textContent = j.summary || '';
+  $('w-dims').innerHTML = (j.dimensions||[]).map(d => `
+    <div class="wdim"><span class="dn">${esc(d.zh)}</span><span class="db"><span class="f" data-s="${d.score}"></span></span><span class="ds">${d.score}</span></div>`).join('');
+  $('w-result').classList.add('show');
+  // count up + bars
+  let cur=0; const t0=performance.now();
+  (function tick(t){ const p=Math.min(1,(t-t0)/800); $('w-total').textContent=Math.round(p*j.total); if(p<1) requestAnimationFrame(tick); else $('w-total').textContent=j.total; })(performance.now());
+  setTimeout(()=>document.querySelectorAll('#w-dims .f').forEach(f=>{ const s=+f.dataset.s; f.style.width=(s/10*100)+'%'; if(s<=4) f.style.background='#b08968'; }), 100);
+  $('w-result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+$('w-go').onclick = evaluate;
+$('w-input').addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey)&&e.key==='Enter') evaluate(); });
+
+// social proof
+(async()=>{ try{ const s=await (await fetch(`${API}/evaluations/hub`)).json(); const it=s.items||[]; if(it.length){ const avg=Math.round(it.reduce((a,x)=>a+x.total,0)/it.length*10)/10; $('proof-stat').innerHTML=`官方已评 <b>${it.length}</b> 个技能 · 均分 <b>${avg}</b>/100`; } }catch{} })();
+
+// registry preview (top 6 official)
+(async()=>{ try{ const s=await (await fetch(`${API}/evaluations/hub`)).json(); const top=(s.items||[]).sort((a,b)=>b.total-a.total).slice(0,6);
+  $('regprev-grid').innerHTML = top.map(x=>`<a class="card" href="/s/${esc(x.slug)}/">
+    <div class="top"><span class="nm">${esc(x.name||x.slug)}</span><span class="bd tier-${x.tier}">${x.total}/100 ${x.tier}</span></div>
+    <span class="ds">${esc((x.summary||'').slice(0,72))}…</span></a>`).join('');
+}catch{} })();
+
+// theme + lang
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=$('theme-toggle'); if(t)t.onclick=function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});};
+  var l=$('lang-toggle'); if(l){ var _en=location.pathname.indexOf('/en')===0; l.textContent=_en?'中':'EN'; l.onclick=function(){ location.href=_en?'/':'/en/'; }; }
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

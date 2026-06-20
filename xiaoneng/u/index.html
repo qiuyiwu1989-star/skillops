@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill · SkillOps</title>
+<meta name="description" content="一个发布在 SkillOps 上的 AI Skill —— 含 SMS 技能评级、逐维评分、agent 拉取方式与完整定义。">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px,4vw,48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+
+  .u-wrap { max-width: 920px; margin: 0 auto; padding: clamp(28px,3.5vw,52px) clamp(20px,4vw,48px) clamp(64px,8vw,96px); }
+  .u-back { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; }
+  .u-back:hover { color: var(--accent); }
+
+  /* hero */
+  .u-hero { margin: 18px 0 8px; }
+  .u-eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .u-eyebrow .pub { color: #4a9b8a; }
+  .u-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(30px,4.4vw,52px); letter-spacing: -0.025em; line-height: 1.05; margin: 12px 0 10px; }
+  .u-desc { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 64ch; }
+  .u-by { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); margin-top: 14px; }
+  .u-by b { color: var(--accent); }
+
+  .u-badge { display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--f-mono); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; margin-top: 18px; }
+  .u-badge .sc { font-size: 22px; font-weight: 600; }
+  .u-badge .mx { font-size: 12px; color: var(--faint); }
+  .u-badge .tg { font-size: 12px; letter-spacing: 0.08em; }
+  .u-badge.S { color: var(--accent); border-color: var(--accent); } .u-badge.A { color: #4a9b8a; border-color:#4a9b8a; }
+  .u-badge.B { color: #a8b56c; border-color:#a8b56c; } .u-badge.C,.u-badge.D { color: var(--muted); }
+
+  .u-sec { margin-top: clamp(40px,5vw,64px); }
+  .u-sec h2 { font-family: var(--f-display); font-weight: 500; font-size: 22px; letter-spacing: -0.015em; padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+  .u-sec .hint { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin: 10px 0 22px; line-height: 1.6; }
+
+  /* SMS scorecard */
+  .u-score-top { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
+  .u-score-top .big { font-family: var(--f-display); font-weight: 500; font-size: 46px; letter-spacing: -0.02em; line-height: 1; }
+  .u-score-top .big .max { font-family: var(--f-mono); font-size: 16px; color: var(--faint); }
+  .u-score-top .tg { font-family: var(--f-mono); font-size: 13px; padding: 5px 14px; border-radius: 999px; border: 1px solid currentColor; }
+  .u-score-top.S .tg, .u-score-top.S .big { color: var(--accent); } .u-score-top.A .tg, .u-score-top.A .big { color:#4a9b8a; }
+  .u-score-top.B .tg { color:#a8b56c; } .u-score-top.C .tg, .u-score-top.D .tg { color: var(--muted); }
+
+  .u-pillar { margin-bottom: 22px; }
+  .u-pillar .pn { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; display:flex; gap:8px; align-items:baseline; }
+  .u-pillar .pn .ps { color: var(--text); }
+  .u-dim { display: grid; grid-template-columns: 120px 1fr 38px; gap: 12px; align-items: center; padding: 7px 0; }
+  @media (max-width:600px){ .u-dim { grid-template-columns: 96px 1fr 34px; } }
+  .u-dim .dn { font-size: 13px; color: var(--text); }
+  .u-dim .dn .dr { display:block; font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); margin-top:2px; line-height:1.3; }
+  .u-dim .bar { height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+  .u-dim .bar .f { height: 100%; background: var(--accent); border-radius:999px; }
+  .u-dim .bar .f.lo { background:#b08968; }
+  .u-dim .dv { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-align: right; }
+
+  .u-summary { font-size: 14.5px; color: var(--text); line-height: 1.8; background: var(--bg-soft); border:1px solid var(--line); border-radius: 8px; padding: 16px 20px; margin-bottom:18px; }
+  .u-list { list-style: none; padding: 0; margin: 0 0 8px; }
+  .u-list li { font-size: 13.5px; color: var(--muted); line-height: 1.7; padding-left: 18px; position: relative; }
+  .u-list li::before { content: '·'; color: var(--accent); position: absolute; left: 4px; }
+
+  .u-snippet { background: #161616; border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; font-family: var(--f-mono); font-size: 12.5px; color: #ebe6db; line-height: 1.8; overflow-x: auto; }
+  .u-snippet .c { color: #6b7280; } .u-snippet .a { color: var(--accent); }
+  .u-copy { font-family: var(--f-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; background: transparent; cursor: pointer; margin-left: 10px; }
+  .u-copy:hover { background: var(--accent); color: var(--bg); }
+
+  .u-content pre { margin: 0; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; max-height: 620px; overflow: auto; color: var(--text); }
+
+  .u-state { font-family: var(--f-mono); font-size: 14px; color: var(--muted); text-align: center; padding: 80px 20px; line-height: 1.8; }
+  .u-state a { color: var(--accent); text-decoration: none; }
+
+  .xn-footer { border-top: 1px solid var(--line); background: var(--bg); padding: 36px clamp(20px,4vw,48px) 52px; }
+  .xn-footer .fin { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .xn-footer .foot-co { font-family: var(--f-display); font-size: 14px; color: var(--text); }
+  .xn-footer .foot-fine { font-family: var(--f-mono); font-size: 11px; color: var(--faint); }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active=""></nav>
+
+<div class="u-wrap" id="u-wrap">
+  <div class="u-state" id="u-state">加载中…</div>
+</div>
+
+<footer class="xn-footer">
+  <div class="fin">
+    <div class="foot-co">造物云出品</div>
+    <div class="foot-fine">© 2026 邱懿武 · SkillOps · skillops.tech</div>
+  </div>
+</footer>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CAT = { strategy:'战略·创新', writing:'写作', design:'设计', presentation:'演示', meta:'元能力', 'knowledge-system':'知识系统' };
+const PILLARS = [
+  { key:'comprehension', zh:'可理解' }, { key:'execution', zh:'可执行' },
+  { key:'engineering', zh:'可工程' }, { key:'trust', zh:'可信赖与价值' },
+];
+const TIER_NAME = { S:'核心资产·旗舰', A:'稳定可用', B:'公开门槛', C:'概念', D:'待重写' };
+
+function qid(){ const u = new URLSearchParams(location.search); return u.get('id') || ''; }
+
+function dimsByPillar(dims){
+  const out = {}; PILLARS.forEach(p=>out[p.key]=[]);
+  (dims||[]).forEach(d=>{ (out[d.pillar]=out[d.pillar]||[]).push(d); });
+  return out;
+}
+
+function renderSms(sms, login, slug){
+  if (!sms || sms.total==null) return '<div class="u-sec"><h2>技能评级</h2><p class="hint">这个 skill 还没有 SMS 评级。</p></div>';
+  const t = sms.tier||'D', max = sms.max||100;
+  const groups = dimsByPillar(sms.dimensions);
+  const pillarHtml = PILLARS.map(p=>{
+    const ds = groups[p.key]||[]; if(!ds.length) return '';
+    const sub = ds.reduce((a,d)=>a+(d.score||0),0), submax = ds.length*10;
+    return `<div class="u-pillar"><div class="pn">支柱 · ${esc(p.zh)} <span class="ps">${sub}/${submax}</span></div>`+
+      ds.map(d=>{ const sc=d.score||0, w=Math.round(sc/10*100), lo=sc<=4?'lo':'';
+        return `<div class="u-dim"><div class="dn">${esc(d.zh||d.key)}${d.reason?`<span class="dr">${esc(d.reason)}</span>`:''}</div>`+
+          `<div class="bar"><div class="f ${lo}" style="width:${w}%"></div></div><div class="dv">${sc}/10</div></div>`;
+      }).join('')+`</div>`;
+  }).join('');
+  const sug = (sms.suggestions||[]).slice(0,5).map(s=>`<li>${esc(s)}</li>`).join('');
+  const str = (sms.strengths||[]).slice(0,4).map(s=>`<li>${esc(s)}</li>`).join('');
+  return `<div class="u-sec"><h2>技能评级 · SMS</h2>
+    <p class="hint">按 <a href="/sms/" style="color:var(--accent)">SMS 标准</a>（4 支柱 / 10 维，每维 0–10，总分 100）由引擎评分。段位是可决策的信号。</p>
+    <div class="u-score-top ${t}"><div class="big">${sms.total}<span class="max">/${max}</span></div><div class="tg">${t} 段 · ${esc(TIER_NAME[t]||'')}</div></div>
+    ${pillarHtml}
+    ${sms.summary?`<div class="u-summary">${esc(sms.summary)}</div>`:''}
+    ${str?`<p class="hint" style="margin-bottom:4px">亮点</p><ul class="u-list">${str}</ul>`:''}
+    ${sug?`<p class="hint" style="margin:14px 0 4px">可执行的改进建议</p><ul class="u-list">${sug}</ul>`:''}
+  </div>`;
+}
+
+function render(d){
+  const t = d.tier||'D', score = d.score, login = (d.owner&&d.owner.login)||'', slug = d.slug||'';
+  const pullUrl = login&&slug ? `${location.origin}/api/v1/skills/${login}/${slug}` : '';
+  document.title = `${d.name} · SkillOps`;
+  $wrap().innerHTML = `
+    <a class="u-back" href="/registry/">← 技能市场</a>
+    <div class="u-hero">
+      <div class="u-eyebrow"><span>${esc(CAT[d.category]||d.category||'skill')}</span>·<span class="pub">● 公开</span>${d.source==='github'?'·<span>GitHub</span>':''}</div>
+      <h1>${esc(d.name)}</h1>
+      ${d.description?`<p class="u-desc">${esc(d.description)}</p>`:''}
+      <div class="u-by">由 <b>@${esc(login)}</b> 维护${d.version?` · v${d.version}`:''}${d.repo?` · ${esc(d.repo)}`:''}</div>
+      ${score!=null?`<div class="u-badge ${t}"><span class="sc">${score}</span><span class="mx">/100</span><span class="tg">${t} 段</span></div>`:''}
+    </div>
+    ${renderSms(d.sms, login, slug)}
+    ${pullUrl?`<div class="u-sec"><h2>给你的 agent 调用</h2>
+      <p class="hint">公开 skill 免 key，一行 <code>curl</code> 即可拉取最新版定义。</p>
+      <div class="u-snippet"><span class="c"># 拉取这个 skill 的最新定义</span><br>curl <span class="a">${esc(pullUrl)}</span><button class="u-copy" id="u-copy">复制</button></div></div>`:''}
+    ${(d.sections&&(d.sections.examples||d.sections.references))?`<div class="u-sec u-content"><h2>示例 / 引用 · 边界</h2>${d.sections.examples?`<p class="hint" style="margin-bottom:6px">示例</p><pre>${esc(d.sections.examples)}</pre>`:''}${d.sections.references?`<p class="hint" style="margin:14px 0 6px">引用 / 边界（gotchas）</p><pre>${esc(d.sections.references)}</pre>`:''}</div>`:''}
+    ${d.content?`<div class="u-sec u-content"><h2>完整定义 · SKILL.md</h2><pre>${esc(d.content)}</pre></div>`:''}
+  `;
+  const cp = document.getElementById('u-copy');
+  if (cp) cp.onclick = ()=>{ navigator.clipboard.writeText(`curl ${pullUrl}`).then(()=>{ cp.textContent='已复制'; setTimeout(()=>cp.textContent='复制',1500); }); };
+}
+
+function $wrap(){ return document.getElementById('u-wrap'); }
+
+async function boot(){
+  const id = qid();
+  if (!id){ $wrap().innerHTML = '<div class="u-state">缺少 skill id。<br><a href="/registry/">去技能市场逛逛 →</a></div>'; return; }
+  try {
+    const r = await fetch(`${API}/public/skills/${encodeURIComponent(id)}`);
+    if (r.status===404){ $wrap().innerHTML = '<div class="u-state">这个 skill 不存在，或还没有公开。<br><a href="/registry/">去技能市场逛逛 →</a></div>'; return; }
+    if (!r.ok) throw new Error('load failed');
+    render(await r.json());
+  } catch(e){ $wrap().innerHTML = '<div class="u-state">加载失败，稍后再试。<br><a href="/registry/">返回技能市场 →</a></div>'; }
+}
+boot();
+</script>
+<script defer src="/nav.js"></script>
+</body>
+</html>

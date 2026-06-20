@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线评估技能 · SkillOps</title>
+<meta name="description" content="把你的 SKILL.md 粘进来，小能用 技能评级（SMS · 10 维）度引擎实时给它打分 — 总分、tier、逐维理由、改进建议. 真实 LLM 评估，不是 mockup.">
+<link rel="canonical" href="https://skillops.tech/evaluate/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+
+  /* ════ Nav (shared) ════ */
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  /* ════ Layout ════ */
+  .ev-stage { max-width: 1080px; margin: 0 auto; padding: clamp(36px,4vw,64px) clamp(20px,4vw,48px) clamp(56px,7vw,96px); }
+
+  /* ════ Hero ════ */
+  .ev-hero { padding-bottom: clamp(28px,3.5vw,44px); border-bottom: 1px solid var(--line); margin-bottom: clamp(32px,4vw,48px); }
+  .ev-hero .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .ev-hero .crumbs a { color: var(--accent); text-decoration: none; }
+  .ev-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4.4vw,60px); letter-spacing: -0.025em; line-height: 1.04; margin-bottom: 16px; }
+  .ev-hero h1 .u { color: var(--accent); }
+  .ev-hero p { font-size: 15.5px; color: var(--muted); max-width: 60ch; line-height: 1.65; }
+  .ev-hero p strong { color: var(--text); font-weight: 500; }
+
+  /* ════ Composer ════ */
+  .ev-composer { display: flex; flex-direction: column; gap: 14px; }
+  .ev-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .ev-input-name {
+    flex: 1; min-width: 220px;
+    font-family: var(--f-mono); font-size: 13.5px;
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px;
+    padding: 12px 16px; color: var(--text);
+  }
+  .ev-input-name::placeholder { color: var(--faint); }
+  .ev-textarea {
+    width: 100%; min-height: 240px; resize: vertical;
+    font-family: var(--f-mono); font-size: 13px; line-height: 1.6;
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px;
+    padding: 16px 18px; color: var(--text);
+    box-sizing: border-box;
+  }
+  .ev-textarea::placeholder { color: var(--faint); }
+  .ev-textarea:focus, .ev-input-name:focus { outline: none; border-color: var(--accent); }
+  .ev-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .ev-btn {
+    font-family: var(--f-mono); font-size: 14px; letter-spacing: 0.04em;
+    padding: 14px 28px; border-radius: 999px; text-decoration: none; cursor: pointer;
+    transition: all .15s; border: 1px solid var(--accent); background: var(--accent); color: var(--bg);
+  }
+  .ev-btn:hover:not(:disabled) { background: transparent; color: var(--accent); }
+  .ev-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .ev-quota { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+  .ev-quota b { color: var(--accent); }
+  .ev-sample { font-family: var(--f-mono); font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 1px dashed var(--muted); padding: 0 0 2px; }
+  .ev-sample:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .ev-err { font-family: var(--f-mono); font-size: 12.5px; color: #d4674a; padding: 10px 0; display: none; }
+
+  /* ════ Result ════ */
+  .ev-result { display: none; margin-top: clamp(40px,5vw,64px); }
+  .ev-result.show { display: block; animation: ev-fade .4s ease; }
+  @keyframes ev-fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .ev-scoreboard { display: grid; grid-template-columns: 280px 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 1px; }
+  @media (max-width: 720px) { .ev-scoreboard { grid-template-columns: 1fr; } }
+  .ev-total { background: var(--bg); padding: 36px 32px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .ev-total .lbl { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; }
+  .ev-total .big { font-family: var(--f-display); font-weight: 500; font-size: clamp(56px,8vw,88px); line-height: .95; letter-spacing: -0.035em; color: var(--text); }
+  .ev-total .big .max { font-family: var(--f-mono); font-size: .28em; color: var(--faint); letter-spacing: 0.04em; }
+  .ev-total .tier-row { display: flex; align-items: baseline; gap: 12px; margin-top: 6px; }
+  .ev-total .tier-badge { font-family: var(--f-mono); font-weight: 600; font-size: 28px; letter-spacing: 0.04em; padding: 4px 18px; border: 2px solid currentColor; border-radius: 8px; }
+  .ev-total .tier-name { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+  .tier-S { color: var(--accent); } .tier-A { color: #4a9b8a; } .tier-B { color: #a8b56c; } .tier-C { color: var(--muted); } .tier-D { color: #b08968; }
+
+  .ev-summary { background: var(--bg); padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+  .ev-summary .skill-name { font-family: var(--f-display); font-weight: 500; font-size: 22px; letter-spacing: -0.015em; }
+  .ev-summary .summary-text { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .ev-summary .summary-text strong { color: var(--text); }
+
+  /* dimensions */
+  .ev-dims { border: 1px solid var(--line); border-top: 0; margin-bottom: 1px; }
+  .ev-dim { display: grid; grid-template-columns: 160px 1fr 44px; gap: 16px; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--hairline); }
+  .ev-dim:last-child { border-bottom: 0; }
+  @media (max-width: 640px) { .ev-dim { grid-template-columns: 110px 1fr 36px; gap: 10px; padding: 12px 16px; } }
+  .ev-dim .d-name { font-family: var(--f-display); font-weight: 500; font-size: 14.5px; }
+  .ev-dim .d-name .en { display: block; font-family: var(--f-mono); font-size: 9px; color: var(--faint); letter-spacing: 0.1em; margin-top: 2px; }
+  .ev-dim .d-bar-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .ev-dim .d-bar { height: 8px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .ev-dim .d-bar .fill { height: 100%; background: var(--accent); width: 0; border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .ev-dim .d-reason { font-family: var(--f-mono); font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .ev-dim .d-score { font-family: var(--f-mono); font-size: 16px; color: var(--text); text-align: right; font-weight: 500; }
+  .ev-dim .d-score .s5 { color: var(--faint); font-size: 11px; }
+
+  /* strengths + suggestions */
+  .ev-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 720px) { .ev-lists { grid-template-columns: 1fr; } }
+  .ev-list { background: var(--bg); padding: 28px 26px; }
+  .ev-list h4 { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 16px; }
+  .ev-list.strengths h4 { color: #4a9b8a; }
+  .ev-list.suggestions h4 { color: var(--accent); }
+  .ev-list ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  .ev-list li { font-size: 13.5px; color: var(--text); line-height: 1.55; display: grid; grid-template-columns: 18px 1fr; gap: 8px; }
+  .ev-list.strengths li::before { content: '✓'; color: #4a9b8a; font-family: var(--f-mono); }
+  .ev-list.suggestions li::before { content: '→'; color: var(--accent); font-family: var(--f-mono); }
+
+  /* publish CTA */
+  .ev-publish { margin-top: 1px; background: var(--bg); border: 1px solid var(--line); border-top: 0; padding: 28px 32px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .ev-publish .pub-copy { flex: 1; min-width: 260px; }
+  .ev-publish .pub-copy h4 { font-family: var(--f-display); font-weight: 500; font-size: 18px; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .ev-publish .pub-copy p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .ev-publish .pub-btn { font-family: var(--f-mono); font-size: 13px; padding: 12px 22px; border-radius: 999px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); transition: all .15s; white-space: nowrap; }
+  .ev-publish .pub-btn:hover { background: var(--accent); color: var(--bg); }
+  .ev-publish.locked .pub-btn { border-color: var(--line); color: var(--faint); pointer-events: none; }
+
+  .ev-model-note { font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); margin-top: 14px; letter-spacing: 0.04em; text-align: right; }
+
+  /* loading */
+  .ev-loading { display: none; margin-top: clamp(40px,5vw,64px); text-align: center; padding: 60px 20px; }
+  .ev-loading.show { display: block; }
+  .ev-loading .spinner { width: 40px; height: 40px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 20px; animation: ev-spin 0.8s linear infinite; }
+  @keyframes ev-spin { to { transform: rotate(360deg); } }
+  .ev-loading .lt { font-family: var(--f-mono); font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+  .ev-loading .lt .step { color: var(--accent); }
+
+  /* ════ Mode toggle ════ */
+  .ev-modes { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px; padding: 4px; width: fit-content; }
+  .ev-mode { font-family: var(--f-mono); font-size: 12.5px; padding: 9px 20px; border-radius: 999px; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all .15s; letter-spacing: 0.02em; }
+  .ev-mode.active { background: var(--accent); color: var(--bg); }
+  .ev-public-opt { display: flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 12px; cursor: pointer; }
+  .ev-public-opt input { accent-color: var(--accent); }
+  .ev-batch-hint { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); line-height: 1.6; margin: 12px 0; }
+  .ev-batch-hint code { background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; color: var(--accent); }
+  .ev-batch-hint b { color: var(--text); }
+
+  /* ════ Batch result ════ */
+  .ev-batch-result { display: none; margin-top: clamp(40px,5vw,64px); }
+  .ev-batch-result.show { display: block; animation: ev-fade .4s ease; }
+  .ev-batch-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; padding: 28px 32px; background: var(--bg-soft); border: 1px solid var(--line); }
+  .ev-batch-head .bh-repo { font-family: var(--f-display); font-weight: 500; font-size: 22px; letter-spacing: -0.015em; }
+  .ev-batch-head .bh-meta { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0.04em; }
+  .ev-batch-head .bh-avg { font-family: var(--f-display); font-weight: 500; font-size: 40px; letter-spacing: -0.025em; color: var(--accent); }
+  .ev-batch-head .bh-avg .bh-avg-max { font-family: var(--f-mono); font-size: 13px; color: var(--faint); letter-spacing: 0.04em; }
+  .ev-batch-rows { border: 1px solid var(--line); border-top: 0; }
+  .ev-batch-row { display: grid; grid-template-columns: 1fr 130px 90px 50px; gap: 16px; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--hairline); }
+  .ev-batch-row:last-child { border-bottom: 0; }
+  @media (max-width: 640px) { .ev-batch-row { grid-template-columns: 1fr 60px 44px; } .ev-batch-row .br-bar { display: none; } }
+  .ev-batch-row .br-name { font-family: var(--f-display); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
+  .ev-batch-row .br-name .path { display: block; font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); margin-top: 3px; }
+  .ev-batch-row .br-bar { height: 8px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .ev-batch-row .br-bar .fill { height: 100%; background: var(--accent); border-radius: 999px; }
+  .ev-batch-row .br-score { font-family: var(--f-mono); font-size: 15px; color: var(--text); text-align: right; }
+  .ev-batch-row .br-score .m { color: var(--faint); font-size: 11px; }
+  .ev-batch-row .br-tier { font-family: var(--f-mono); font-weight: 600; font-size: 14px; text-align: center; }
+  .ev-batch-row.failed .br-name { color: var(--faint); }
+  .ev-batch-row.failed .br-score, .ev-batch-row.failed .br-tier { color: #d4674a; font-size: 11px; font-weight: 400; }
+
+  /* ════ Footer ════ */
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1080px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;
+  d.setAttribute('data-theme', s.theme||'rams');
+  d.setAttribute('data-accent', s.accent||'orange');
+  d.setAttribute('data-lang', s.lang||'zh');
+})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="evaluate"></nav>
+
+<main class="ev-stage">
+
+  <section class="ev-hero">
+    <div class="crumbs"><a href="/">SkillOps</a> / 在线评估技能</div>
+    <h1>把你的 skill 粘进来<span class="u">_</span></h1>
+    <p>小能用 <strong>技能评级（SMS · 10 维）度引擎</strong>实时给它打分 —— 总分、tier、逐维理由、可执行的改进建议. 这是<strong>真实 LLM 评估</strong>，不是 mockup. 粘贴你的 <code>SKILL.md</code>、prompt 或完整描述即可.</p>
+  </section>
+
+  <!-- ════ COMPOSER ════ -->
+  <div class="ev-composer">
+    <!-- mode toggle -->
+    <div class="ev-modes">
+      <button class="ev-mode active" data-mode="single" id="mode-single">单个 skill</button>
+      <button class="ev-mode" data-mode="batch" id="mode-batch">GitHub 仓库（批量）</button>
+    </div>
+
+    <!-- SINGLE mode -->
+    <div id="pane-single">
+      <div class="ev-row">
+        <input class="ev-input-name" id="ev-name" type="text" placeholder="skill 名称（可选，例：weekly-standup-summarizer）" maxlength="120">
+      </div>
+      <textarea class="ev-textarea" id="ev-content" placeholder="把你的 SKILL.md / prompt / 完整描述粘贴到这里…&#10;&#10;包含越多越准：用途、触发词、步骤、输出格式、示例。"></textarea>
+      <label class="ev-public-opt"><input type="checkbox" id="ev-public"> 把结果展示到公开榜单（只显示名称 + 评分，不存内容）</label>
+      <div class="ev-controls">
+        <button class="ev-btn" id="ev-submit">▶ 开始评估</button>
+        <button class="ev-sample" id="ev-load-sample">载入一个示例 skill</button>
+        <span class="ev-quota" id="ev-quota">今日免费评估 <b id="ev-rem">5</b>/5 次</span>
+      </div>
+    </div>
+
+    <!-- BATCH mode -->
+    <div id="pane-batch" style="display:none;">
+      <div class="ev-row">
+        <input class="ev-input-name" id="ev-repo" type="text" placeholder="GitHub 仓库：owner/repo 或完整链接（公开仓库）" style="flex:1;">
+      </div>
+      <p class="ev-batch-hint">小能会扫描该仓库里所有 <code>SKILL.md</code>，逐个用 技能评级（最多 <b id="ev-batch-cap">5</b> 个）。仅支持公开仓库。</p>
+      <div class="ev-controls">
+        <button class="ev-btn" id="ev-batch-submit">▶ 扫描并批量评估</button>
+        <button class="ev-sample" id="ev-batch-sample">用 openclaw-skill-ops 试试</button>
+        <span class="ev-quota" id="ev-batch-quota">今日批量额度 <b id="ev-batch-rem">2</b>/2 次</span>
+      </div>
+    </div>
+
+    <div class="ev-err" id="ev-err"></div>
+  </div>
+
+  <!-- ════ LOADING ════ -->
+  <div class="ev-loading" id="ev-loading">
+    <div class="spinner"></div>
+    <div class="lt">小能正在用 技能评级（SMS · 10 维）度评估你的 skill… <span class="step" id="ev-loading-step">解析内容中</span></div>
+  </div>
+
+  <!-- ════ RESULT ════ -->
+  <div class="ev-result" id="ev-result">
+    <div class="ev-scoreboard">
+      <div class="ev-total">
+        <div class="lbl">SMS TOTAL</div>
+        <div class="big"><span id="ev-total-num">0</span><span class="max"> / 100</span></div>
+        <div class="tier-row">
+          <span class="tier-badge" id="ev-tier-badge">—</span>
+          <span class="tier-name" id="ev-tier-name"></span>
+        </div>
+      </div>
+      <div class="ev-summary">
+        <div class="skill-name" id="ev-result-name"></div>
+        <div class="summary-text" id="ev-summary"></div>
+      </div>
+    </div>
+
+    <div class="ev-dims" id="ev-dims"></div>
+
+    <div class="ev-lists">
+      <div class="ev-list strengths">
+        <h4>✓ 亮点</h4>
+        <ul id="ev-strengths"></ul>
+      </div>
+      <div class="ev-list suggestions">
+        <h4>→ 改进建议</h4>
+        <ul id="ev-suggestions"></ul>
+      </div>
+    </div>
+
+    <div class="ev-publish" id="ev-publish">
+      <div class="pub-copy">
+        <h4 id="ev-pub-title">想上架到 Skill Hub？</h4>
+        <p id="ev-pub-desc">B 级（32+）以上的 skill 可以申请收录到 skill.qiuyiwu.com 的公开目录.</p>
+      </div>
+      <a class="pub-btn" id="ev-pub-btn" href="#">申请上架 →</a>
+    </div>
+
+    <div class="ev-model-note" id="ev-model-note"></div>
+  </div>
+
+  <!-- ════ BATCH RESULT ════ -->
+  <div class="ev-batch-result" id="ev-batch-result">
+    <div class="ev-batch-head">
+      <div>
+        <div class="bh-repo" id="bh-repo"></div>
+        <div class="bh-meta" id="bh-meta"></div>
+      </div>
+      <div class="bh-avg"><span id="bh-avg">0</span><span class="bh-avg-max"> avg/100</span></div>
+    </div>
+    <div class="ev-batch-rows" id="ev-batch-rows"></div>
+  </div>
+
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="https://qiuyiwu.com" target="_blank">qiuyiwu.com</a>
+    <a href="https://skill.qiuyiwu.com" target="_blank">skill hub</a>
+    <a href="/docs/">docs</a>
+    <a href="/registry/">registry</a>
+    <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">github</a>
+    <span class="sig">SkillOps · evaluate · v0.7 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'https://skillops.tech/api'   // local dev → hit prod API
+  : '/api';
+
+const TIER_NAMES = { S:'核心资产 · 旗舰级', A:'稳定可用', B:'实验 · 可公开', C:'概念 · 建议私有', D:'无效 · 候选退役/重写' };
+
+const SAMPLE = {
+  name: 'jtbd-interview-analyzer',
+  content: `# JTBD 用户访谈分析器
+
+## 用途
+把一份用户访谈逐字稿，按 Jobs-to-be-Done 框架拆解成结构化洞察：用户雇佣这个产品/方案是为了完成什么"任务"，在什么情境下，期望的结果是什么。
+
+## 触发词
+- 分析这份访谈
+- 用 JTBD 拆解
+- 这个用户到底想要什么
+- 提炼用户任务
+
+## 输入
+一份或多份用户访谈逐字稿（纯文本）。可选：产品背景说明。
+
+## 步骤
+1. 通读全文，标记所有"情境句"（用户描述何时/为什么用某方案）
+2. 对每个情境，抽取三要素：触发情境（Situation）、动机（Motivation）、期望结果（Expected Outcome），写成标准 JTBD 句式："当我___，我想要___，以便___"
+3. 跨访谈聚类相似 Job，统计出现频次
+4. 对每个 Job 标注：功能性任务 / 情感性任务 / 社会性任务
+5. 识别"未被满足的 Job"（用户抱怨现有方案但没有好替代）
+6. 输出洞察报告 + 一句话产品机会假设
+
+## 输出格式
+Markdown，四个部分：
+- **核心 Jobs（按频次排序）**：每个一行 JTBD 句式 + 频次 + 类型标签
+- **未满足的 Jobs**：用户的 workaround 和痛点
+- **情感/社会维度**：容易被忽略的非功能性任务
+- **产品机会假设**：3 条，每条带"如果…那么…我们预期…"结构
+
+## 质量标准
+- 每个 Job 必须能追溯到访谈原句（标注出处）
+- JTBD 句式三要素齐全，不能只写功能需求
+- 机会假设必须可证伪
+
+## 示例
+输入片段："我每次开会前都要翻半天之前的纪要，找上次定的 action…"
+输出 Job："当我准备一场跟进会议时，我想要快速找到上次的决议和待办，以便会议直接从进展开始而不是重新对齐。"（功能性 · 频次 4）`
+};
+
+const $ = (id) => document.getElementById(id);
+const nameEl = $('ev-name'), contentEl = $('ev-content'), submitBtn = $('ev-submit');
+const errEl = $('ev-err'), loadingEl = $('ev-loading'), resultEl = $('ev-result');
+
+function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
+function clearErr() { errEl.style.display = 'none'; }
+
+// quota
+async function refreshQuota() {
+  try {
+    const r = await fetch(`${API}/evaluate/remaining`);
+    if (!r.ok) return;
+    const j = await r.json();
+    $('ev-rem').textContent = j.remaining;
+    if (j.remaining <= 0) { submitBtn.disabled = true; $('ev-quota').innerHTML = '今日免费评估已用完 · UTC 0 点重置'; }
+    if (typeof j.batchRemaining === 'number') {
+      $('ev-batch-rem').textContent = j.batchRemaining;
+      $('ev-batch-cap').textContent = '5';
+      if (j.batchRemaining <= 0) { $('ev-batch-submit').disabled = true; $('ev-batch-quota').innerHTML = '今日批量额度已用完 · UTC 0 点重置'; }
+    }
+  } catch {}
+}
+refreshQuota();
+
+// ── mode toggle ──
+document.querySelectorAll('.ev-mode').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ev-mode').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const m = btn.dataset.mode;
+    $('pane-single').style.display = m === 'single' ? '' : 'none';
+    $('pane-batch').style.display  = m === 'batch'  ? '' : 'none';
+    clearErr();
+    resultEl.classList.remove('show');
+    $('ev-batch-result').classList.remove('show');
+  });
+});
+
+$('ev-load-sample').addEventListener('click', () => {
+  nameEl.value = SAMPLE.name;
+  contentEl.value = SAMPLE.content;
+  clearErr();
+  contentEl.focus();
+});
+$('ev-batch-sample').addEventListener('click', () => {
+  $('ev-repo').value = 'qiuyiwu1989-star/openclaw-skill-ops';
+  clearErr();
+});
+
+const LOADING_STEPS = ['解析内容中', '评估 10 个维度', '生成改进建议', '汇总评分'];
+let stepTimer = null;
+function animateLoadingSteps() {
+  let i = 0;
+  $('ev-loading-step').textContent = LOADING_STEPS[0];
+  stepTimer = setInterval(() => { i = (i + 1) % LOADING_STEPS.length; $('ev-loading-step').textContent = LOADING_STEPS[i]; }, 2500);
+}
+function stopLoadingSteps() { if (stepTimer) clearInterval(stepTimer); }
+
+async function evaluate() {
+  const content = contentEl.value.trim();
+  const name = nameEl.value.trim();
+  clearErr();
+  if (content.length < 40) { showErr('内容太短，至少 40 字。粘贴完整的 SKILL.md 或描述。'); return; }
+
+  submitBtn.disabled = true;
+  resultEl.classList.remove('show');
+  loadingEl.classList.add('show');
+  animateLoadingSteps();
+
+  try {
+    const r = await fetch(`${API}/evaluate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, content, public: $('ev-public').checked }),
+    });
+    const j = await r.json();
+    stopLoadingSteps();
+    loadingEl.classList.remove('show');
+
+    if (!r.ok || j.error) {
+      showErr(j.message || `评估失败（${r.status}）。请稍后重试。`);
+      submitBtn.disabled = false;
+      return;
+    }
+    renderResult(j);
+    if (typeof j.remaining === 'number') {
+      $('ev-rem').textContent = j.remaining;
+      if (j.remaining <= 0) $('ev-quota').innerHTML = '今日免费评估已用完 · UTC 0 点重置';
+    }
+  } catch (e) {
+    stopLoadingSteps();
+    loadingEl.classList.remove('show');
+    showErr('网络错误，请重试。' + (e.message ? ` (${e.message})` : ''));
+  } finally {
+    if (parseInt($('ev-rem').textContent, 10) > 0) submitBtn.disabled = false;
+  }
+}
+
+function renderResult(j) {
+  $('ev-result-name').textContent = j.name || '(未命名 skill)';
+  $('ev-summary').innerHTML = escapeHtml(j.summary || '');
+
+  // tier badge
+  const badge = $('ev-tier-badge');
+  badge.textContent = j.tier;
+  badge.className = 'tier-badge tier-' + j.tier;
+  $('ev-tier-name').textContent = TIER_NAMES[j.tier] || '';
+
+  // dimensions
+  $('ev-dims').innerHTML = (j.dimensions || []).map(d => `
+    <div class="ev-dim">
+      <div class="d-name">${escapeHtml(d.zh)}<span class="en">${escapeHtml(d.en)}</span></div>
+      <div class="d-bar-wrap">
+        <div class="d-bar"><div class="fill" data-score="${d.score}"></div></div>
+        <div class="d-reason">${escapeHtml(d.reason || '')}</div>
+      </div>
+      <div class="d-score">${d.score}<span class="s5">/5</span></div>
+    </div>
+  `).join('');
+
+  // strengths / suggestions
+  $('ev-strengths').innerHTML = (j.strengths || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li style="color:var(--faint)">（无）</li>';
+  $('ev-suggestions').innerHTML = (j.suggestions || []).map(s => `<li>${escapeHtml(s)}</li>`).join('') || '<li style="color:var(--faint)">（无）</li>';
+
+  // publish CTA
+  const pub = $('ev-publish');
+  if (['S','A','B'].includes(j.tier)) {
+    pub.classList.remove('locked');
+    $('ev-pub-title').textContent = `${j.tier} 级 — 可以申请上架！`;
+    $('ev-pub-desc').textContent = '达到公开发布门槛。申请收录到 skill.qiuyiwu.com 公开目录，由小能持续审计。';
+    const subject = encodeURIComponent(`小能 · 申请上架 skill：${j.name}`);
+    const bodyTxt = encodeURIComponent(`想申请上架以下 skill 到 Skill Hub：\n\nskill 名称：${j.name}\n技能评级：${j.total}/100（${j.tier} 级）\n\n（请附上 SKILL.md 或仓库链接）`);
+    $('ev-pub-btn').href = `mailto:hi@qiuyiwu.com?subject=${subject}&body=${bodyTxt}`;
+    $('ev-pub-btn').textContent = '申请上架 →';
+  } else {
+    pub.classList.add('locked');
+    $('ev-pub-title').textContent = `${j.tier} 级 — 暂不建议上架`;
+    $('ev-pub-desc').textContent = '低于 B 级（32 分）。先按右上方的改进建议打磨，重新评估到 B 级以上再申请收录。';
+    $('ev-pub-btn').textContent = '未达门槛';
+  }
+
+  $('ev-model-note').textContent = `评分引擎：openclaw SMS v1.0 · ${j.model || 'LLM'} · 实时生成`;
+
+  // count up total + animate bars
+  resultEl.classList.add('show');
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  animateTotal(j.total);
+  setTimeout(() => {
+    document.querySelectorAll('#ev-dims .fill').forEach(f => {
+      const sc = parseInt(f.dataset.score, 10);
+      f.style.width = (sc / 10 * 100) + '%';
+      if (sc <= 1) f.style.background = '#b08968';
+      else if (sc === 2) f.style.background = '#c19a6b';
+    });
+  }, 120);
+}
+
+function animateTotal(target) {
+  const el = $('ev-total-num');
+  let cur = 0;
+  const dur = 900, t0 = performance.now();
+  function tick(t) {
+    const p = Math.min(1, (t - t0) / dur);
+    el.textContent = Math.round(p * target);
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(tick);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+submitBtn.addEventListener('click', evaluate);
+contentEl.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') evaluate(); });
+
+// ── BATCH evaluate ──
+const batchBtn = $('ev-batch-submit'), repoEl = $('ev-repo');
+const TIER_COLOR = { S:'var(--accent)', A:'#4a9b8a', B:'#a8b56c', C:'var(--muted)', D:'#b08968' };
+
+async function evaluateBatch() {
+  const repo = repoEl.value.trim();
+  clearErr();
+  if (!repo) { showErr('请输入 GitHub 仓库（owner/repo 或链接）。'); return; }
+
+  batchBtn.disabled = true;
+  $('ev-batch-result').classList.remove('show');
+  resultEl.classList.remove('show');
+  loadingEl.classList.add('show');
+  $('ev-loading-step').textContent = '扫描仓库 + 逐个评分（可能要 1 分钟）';
+
+  try {
+    const r = await fetch(`${API}/evaluate-batch`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo }),
+    });
+    const j = await r.json();
+    loadingEl.classList.remove('show');
+    if (!r.ok || j.error) { showErr(j.message || `批量评估失败（${r.status}）。`); batchBtn.disabled = false; return; }
+    renderBatch(j);
+    if (typeof j.remaining === 'number') {
+      $('ev-batch-rem').textContent = j.remaining;
+      if (j.remaining <= 0) $('ev-batch-quota').innerHTML = '今日批量额度已用完 · UTC 0 点重置';
+    }
+  } catch (e) {
+    loadingEl.classList.remove('show');
+    showErr('网络错误，请重试。' + (e.message ? ` (${e.message})` : ''));
+  } finally {
+    if (parseInt($('ev-batch-rem').textContent, 10) > 0) batchBtn.disabled = false;
+  }
+}
+
+function renderBatch(j) {
+  $('bh-repo').textContent = j.repo;
+  $('bh-meta').textContent = `分支 ${j.branch} · 发现 ${j.found} 个 SKILL.md · 评分 ${j.scored} 个` + (j.found >= j.cap ? `（上限 ${j.cap}）` : '');
+  $('bh-avg').textContent = j.avg || 0;
+  const rows = (j.results || []).map(r => {
+    if (!r || !r.ok) {
+      return `<div class="ev-batch-row failed">
+        <div class="br-name">${escapeHtml(r?.name || '?')}<span class="path">${escapeHtml(r?.path || '')}</span></div>
+        <div class="br-bar"></div><div class="br-score">评分失败</div><div class="br-tier">—</div></div>`;
+    }
+    return `<div class="ev-batch-row">
+      <div class="br-name">${escapeHtml(r.name)}<span class="path">${escapeHtml(r.path)}</span></div>
+      <div class="br-bar"><div class="fill" style="width:${(r.total/100*100).toFixed(0)}%; background:${TIER_COLOR[r.tier]||'var(--accent)'}"></div></div>
+      <div class="br-score">${r.total}<span class="m">/100</span></div>
+      <div class="br-tier" style="color:${TIER_COLOR[r.tier]||'var(--text)'}">${r.tier}</div>
+    </div>`;
+  }).join('');
+  $('ev-batch-rows').innerHTML = rows;
+  $('ev-batch-result').classList.add('show');
+  $('ev-batch-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+batchBtn.addEventListener('click', evaluateBatch);
+repoEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') evaluateBatch(); });
+
+// theme + lang
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=document.getElementById('theme-toggle');
+  if(t)t.addEventListener('click',function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});});
+  var l=document.getElementById('lang-toggle');
+  if(l){l.textContent=d.getAttribute('data-lang')||'zh';l.addEventListener('click',function(){var c=d.getAttribute('data-lang')||'zh';var n=LANGS[(LANGS.indexOf(c)+1)%LANGS.length];setS({lang:n});l.textContent=n;});}
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

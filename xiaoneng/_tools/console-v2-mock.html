@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>控制台 v2 · IA mockup · SkillOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fbfaf6; --bg-soft:#f3f1ea; --text:#161616; --muted:#6b6b63; --faint:#a8a69c;
+    --line:#e4e1d8; --hairline:#eeece5; --accent:#e2522a;
+    --f-display:'Space Grotesk',system-ui,sans-serif; --f-sans:'Noto Sans SC',system-ui,sans-serif; --f-mono:'JetBrains Mono',monospace;
+    --green:#4a9b8a; --amber:#a8b56c; --red:#d4674a;
+  }
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f-sans);line-height:1.6;}
+  .wrap{max-width:1160px;margin:0 auto;padding:40px clamp(20px,4vw,48px) 120px;}
+  .mono{font-family:var(--f-mono);}
+  /* annotation chips */
+  .anno{font-family:var(--f-mono);font-size:10.5px;letter-spacing:0.08em;color:var(--muted);background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:3px 10px;display:inline-flex;align-items:center;gap:6px;}
+  .anno b{color:var(--accent);font-weight:600;}
+  .st{font-family:var(--f-mono);font-size:9.5px;letter-spacing:0.1em;padding:2px 7px;border-radius:999px;border:1px solid currentColor;text-transform:uppercase;}
+  .st.live{color:var(--accent);} .st.spec{color:var(--amber);} .st.soon{color:var(--faint);}
+
+  h1{font-family:var(--f-display);font-weight:500;font-size:clamp(30px,4vw,48px);letter-spacing:-0.025em;margin:0 0 6px;}
+  h1 .u{color:var(--accent);}
+  .lede{color:var(--muted);font-size:15px;max-width:64ch;margin:0 0 8px;}
+  .mocknote{font-family:var(--f-mono);font-size:11px;color:var(--faint);margin-bottom:36px;}
+  .sec{margin:48px 0;}
+  .sec-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:22px;}
+  .sec-h .n{font-family:var(--f-mono);font-size:12px;color:var(--accent);}
+  .sec-h h2{font-family:var(--f-display);font-weight:500;font-size:26px;letter-spacing:-0.02em;margin:0;}
+  .sec-h .sub{color:var(--muted);font-size:13px;margin-left:auto;}
+
+  /* ── lifecycle pipeline ── */
+  .pipe{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  @media(max-width:900px){.pipe{grid-template-columns:repeat(4,1fr);}}
+  @media(max-width:520px){.pipe{grid-template-columns:repeat(2,1fr);}}
+  .stage{background:var(--bg);padding:14px 12px;display:flex;flex-direction:column;gap:6px;min-height:104px;position:relative;}
+  .stage .m{font-family:var(--f-mono);font-size:10px;color:var(--accent);letter-spacing:0.08em;}
+  .stage .nm{font-family:var(--f-display);font-weight:600;font-size:15px;}
+  .stage .sk{font-family:var(--f-mono);font-size:10px;color:var(--muted);line-height:1.4;margin-top:auto;}
+  .stage .badge{position:absolute;top:10px;right:10px;}
+  .pipe-loop{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-top:12px;padding:10px 16px;background:var(--bg-soft);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;}
+  .pipe-loop b{color:var(--text);}
+
+  /* ── view tag ── */
+  .viewtag{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:0.1em;color:var(--bg);background:var(--text);padding:4px 12px;border-radius:999px;margin-bottom:14px;}
+
+  /* ── portfolio metrics ── */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  @media(max-width:680px){.metrics{grid-template-columns:repeat(2,1fr);}}
+  .metric{background:var(--bg);padding:20px 22px;}
+  .metric .v{font-family:var(--f-display);font-weight:500;font-size:36px;line-height:1;letter-spacing:-0.03em;}
+  .metric .l{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;}
+  .metric .sub{font-family:var(--f-mono);font-size:11px;color:var(--faint);margin-top:6px;}
+
+  /* ── skill table ── */
+  .tbl{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:18px;}
+  .trow{display:grid;grid-template-columns:1.6fr 1fr 78px 60px 1fr 96px;gap:0;border-bottom:1px solid var(--hairline);align-items:center;}
+  .trow:last-child{border-bottom:0;}
+  .trow.head{background:var(--bg-soft);}
+  .trow.head>div{font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:11px 16px;}
+  .trow>div{padding:14px 16px;font-size:13.5px;}
+  .trow .nm{font-family:var(--f-display);font-weight:500;}
+  .src{font-family:var(--f-mono);font-size:11px;color:var(--muted);}
+  .src .ic{color:var(--accent);}
+  .tier{font-family:var(--f-mono);font-weight:600;font-size:13px;}
+  .tier.S{color:var(--accent);} .tier.A{color:var(--green);} .tier.B{color:var(--amber);} .tier.C{color:var(--muted);} .tier.D{color:var(--red);}
+  .ver{font-family:var(--f-mono);font-size:12px;color:var(--muted);}
+  .state{font-family:var(--f-mono);font-size:11px;display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:7px;height:7px;border-radius:999px;display:inline-block;}
+  .state.pub .dot{background:var(--green);} .state.mon .dot{background:var(--amber);} .state.dev .dot{background:var(--accent);}
+  .state.warn .dot{background:var(--red);} .state.draft .dot{background:var(--faint);}
+  .next{font-family:var(--f-mono);font-size:11.5px;}
+  .next a{color:var(--accent);text-decoration:none;border:1px solid var(--accent);border-radius:999px;padding:5px 11px;}
+  .next .none{color:var(--faint);}
+
+  /* ── callouts ── */
+  .callrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+  @media(max-width:680px){.callrow{grid-template-columns:1fr;}}
+  .call{border:1px solid var(--line);border-radius:8px;padding:18px 20px;background:var(--bg);}
+  .call .ch{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:500;font-size:16px;margin-bottom:8px;}
+  .call p{font-size:13px;color:var(--muted);margin:0 0 10px;}
+  .call .item{font-family:var(--f-mono);font-size:12px;padding:8px 0;border-top:1px solid var(--hairline);}
+  .call .item b{color:var(--text);}
+
+  /* ── dev workspace ── */
+  .ws{border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .ws-head{background:var(--bg-soft);padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .ws-head .nm{font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:-0.015em;}
+  .ws-head .meta{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .ws-actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
+  .ws-actions .a{font-family:var(--f-mono);font-size:12px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:default;}
+  .ws-actions .a.on{border-color:var(--accent);color:var(--accent);background:rgba(226,82,42,.06);}
+  .ws-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);}
+  @media(max-width:760px){.ws-body{grid-template-columns:1fr;}}
+  .panel{background:var(--bg);padding:22px 24px;}
+  .panel h4{font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  /* dims bars */
+  .dim{display:grid;grid-template-columns:90px 1fr 28px;gap:10px;align-items:center;margin-bottom:9px;font-family:var(--f-mono);font-size:11.5px;}
+  .dim .bar{height:7px;background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;overflow:hidden;}
+  .dim .fill{height:100%;background:var(--accent);}
+  .dim .n{color:var(--muted);} .dim .s{text-align:right;color:var(--text);}
+  .dim.low .fill{background:var(--red);} .dim.low .s{color:var(--red);}
+  .tot{font-family:var(--f-display);font-weight:500;font-size:30px;letter-spacing:-0.02em;margin-top:6px;}
+  .tot .mx{font-family:var(--f-mono);font-size:13px;color:var(--faint);}
+  .tot .tg{font-family:var(--f-mono);font-weight:600;font-size:16px;color:var(--muted);margin-left:8px;}
+  /* coach */
+  .coach-item{font-family:var(--f-mono);font-size:12px;padding:10px 0;border-top:1px solid var(--hairline);line-height:1.6;}
+  .coach-item .d{color:var(--red);} .coach-item .fix{color:var(--text);}
+  .coach-cta{margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .coach-cta .btn{font-family:var(--f-mono);font-size:12.5px;background:var(--accent);color:var(--bg);border:none;border-radius:999px;padding:11px 20px;cursor:default;}
+  .coach-cta .est{font-family:var(--f-mono);font-size:12px;color:var(--green);}
+
+  /* ── recruit modal ── */
+  .modal{border:1px solid var(--line);border-radius:10px;max-width:680px;background:var(--bg);overflow:hidden;}
+  .modal .mh{padding:18px 24px;border-bottom:1px solid var(--line);font-family:var(--f-display);font-weight:500;font-size:18px;}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);}
+  .tabs .t{flex:1;text-align:center;font-family:var(--f-mono);font-size:12px;padding:13px 8px;color:var(--muted);border-right:1px solid var(--hairline);cursor:default;}
+  .tabs .t:last-child{border-right:0;}
+  .tabs .t.on{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent);}
+  .drop{margin:22px 24px;border:1.5px dashed var(--line);border-radius:8px;padding:36px;text-align:center;color:var(--muted);font-family:var(--f-mono);font-size:13px;}
+  .drop .big{font-size:28px;margin-bottom:10px;}
+  .drop .fmt{font-size:11px;color:var(--faint);margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>控制台 v2<span class="u">_</span></h1>
+  <p class="lede">把每个 skill 当员工管：8 个 HR 模块的生命周期驾驶舱，每个动作由 小能/Ace 的子技能执行。</p>
+  <p class="mocknote">⚠ 这是 IA mockup（静态样例数据，沿用现有 Rams 配色）—— 用来对齐结构，不是上线版本。</p>
+
+  <!-- 生命周期 -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">00</span><h2>生命周期 · 8 模块 × 9 子技能</h2><span class="sub">一个 skill 在这些阶段间流转</span></div>
+    <div class="pipe">
+      <div class="stage"><span class="badge"><span class="st spec">spec</span></span><span class="m">M·01</span><span class="nm">招聘</span><span class="sk">skill-card-gen<br>skill-forge</span></div>
+      <div class="stage"><span class="badge"><span class="st live">live</span></span><span class="m">M·02</span><span class="nm">评估</span><span class="sk">skill-audit</span></div>
+      <div class="stage"><span class="badge"><span class="st spec">部分</span></span><span class="m">M·03</span><span class="nm">管理</span><span class="sk">registry-scan<br>skill-graph</span></div>
+      <div class="stage"><span class="badge"><span class="st live">live</span></span><span class="m">M·04</span><span class="nm">分发</span><span class="sk">平台原生<br>registry+API</span></div>
+      <div class="stage"><span class="badge"><span class="st spec">spec</span></span><span class="m">M·05</span><span class="nm">培训</span><span class="sk">skill-coach</span></div>
+      <div class="stage"><span class="badge"><span class="st spec">spec</span></span><span class="m">M·06</span><span class="nm">绩效</span><span class="sk">skill-metrics</span></div>
+      <div class="stage"><span class="badge"><span class="st soon">soon</span></span><span class="m">M·07</span><span class="nm">项目评估</span><span class="sk">capability-map</span></div>
+      <div class="stage"><span class="badge"><span class="st spec">spec</span></span><span class="m">M·08</span><span class="nm">退役</span><span class="sk">skill-retire</span></div>
+    </div>
+    <p class="pipe-loop"><b>开发闭环</b> 评估↔培训：评估出弱维度 → skill-coach 重写提分 → 重评 → 存新版本　·　<b>管理闭环</b> 绩效→培训/退役：metrics 发现退化 → 高价值 coach 提分 / 低价值 retire 下线</p>
+  </div>
+
+  <!-- 管理态 -->
+  <div class="sec">
+    <span class="viewtag">视图 A · 管理态（组合驾驶舱）</span>
+    <div class="sec-h"><span class="n">01</span><h2>我的技能组合</h2><span class="anno">M·07 项目评估 · <b>agent-capability-map</b></span></div>
+    <div class="metrics">
+      <div class="metric"><div class="v">12</div><div class="l">全部 skill</div><div class="sub">上传4 · 粘贴3 · GitHub3 · fork2</div></div>
+      <div class="metric"><div class="v">5</div><div class="l">已发布</div><div class="sub">registry 可见 + API 可调</div></div>
+      <div class="metric"><div class="v">3</div><div class="l">监控中</div><div class="sub mono" style="color:var(--red)">2 个退化预警</div></div>
+      <div class="metric"><div class="v">S2·A4·B3·C2·D1</div><div class="l">段位分布</div><div class="sub">均分 34.6 / 50</div></div>
+    </div>
+
+    <div class="tbl">
+      <div class="trow head"><div>skill</div><div>来源</div><div>段位</div><div>版本</div><div>状态</div><div>下一步</div></div>
+      <div class="trow"><div class="nm">jtbd-analyzer</div><div class="src"><span class="ic">⌨</span> 粘贴</div><div class="tier B">B 35</div><div class="ver">v2</div><div><span class="state pub"><span class="dot"></span>已发布</span></div><div class="next"><span class="none">—</span></div></div>
+      <div class="trow"><div class="nm">innolab-fork</div><div class="src"><span class="ic">⑂</span> fork·innolab</div><div class="tier A">A 41</div><div class="ver">v3</div><div><span class="state dev"><span class="dot"></span>迭代中</span></div><div class="next"><a>评估</a></div></div>
+      <div class="trow"><div class="nm">my-ppt-skill</div><div class="src"><span class="ic">⬆</span> 上传</div><div class="tier C">C 28</div><div class="ver">v1</div><div><span class="state draft"><span class="dot"></span>待提分</span></div><div class="next"><a>培训</a></div></div>
+      <div class="trow"><div class="nm">old-ppt-maker</div><div class="src"><span class="ic">⤓</span> GitHub</div><div class="tier D">D 19</div><div class="ver">v1</div><div><span class="state warn"><span class="dot"></span>退化预警</span></div><div class="next"><a>退役?</a></div></div>
+    </div>
+
+    <div class="callrow">
+      <div class="call"><div class="ch">📈 绩效预警 <span class="anno">M·06 · <b>skill-metrics</b> · spec</span></div>
+        <p>持续监控调用量 / 分数趋势 / 稳定性，谁在退化一眼看到。</p>
+        <div class="item">🔴 <b>old-ppt-maker</b> v1→ 段位 C→D，输出稳定性从 v1 起下滑 → 建议 <span style="color:var(--accent)">skill-coach 介入</span></div>
+        <div class="item">🟡 <b>jtbd-analyzer</b> 30 天未更新 · 调用 ↓40%</div>
+      </div>
+      <div class="call"><div class="ch">🪦 退役建议 <span class="anno">M·08 · <b>skill-retire</b> · spec</span></div>
+        <p>低分 + 低用 + 被更优技能覆盖 → 可逆归档（永不硬删）。</p>
+        <div class="item">候选 <b>old-ppt-maker</b>：D 段 · 近 60 天零调用 · 与 my-ppt-skill 重叠 82% → <span style="color:var(--accent)">建议归档 / 合并</span></div>
+        <div class="item mono" style="color:var(--faint)">退役前自动查依赖：无 skill 调用它 ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 开发态 -->
+  <div class="sec">
+    <span class="viewtag">视图 B · 开发态（单 skill 工作台）</span>
+    <div class="sec-h"><span class="n">02</span><h2>打开 my-ppt-skill</h2><span class="anno">评估↔培训 开发闭环</span></div>
+    <div class="ws">
+      <div class="ws-head">
+        <span class="nm">my-ppt-skill</span>
+        <span class="meta"><span>⬆ 来源:上传</span><span>·</span><span class="tier C">C 28/50</span><span>·</span><span>v1</span><span>·</span><span class="state draft"><span class="dot"></span>待提分</span></span>
+        <span class="ws-actions"><span class="a">＋招聘</span><span class="a on">评估</span><span class="a on">培训</span><span class="a">版本</span><span class="a">发布</span></span>
+      </div>
+      <div class="ws-body">
+        <div class="panel">
+          <h4>📊 评估 · SMS 10 维 <span class="anno">M·02 · <b>skill-audit</b> · live</span></h4>
+          <div class="dim"><span class="n">清晰度</span><div class="bar"><div class="fill" style="width:80%"></div></div><span class="s">4</span></div>
+          <div class="dim low"><span class="n">可调用性</span><div class="bar"><div class="fill" style="width:40%"></div></div><span class="s">2</span></div>
+          <div class="dim"><span class="n">可执行性</span><div class="bar"><div class="fill" style="width:60%"></div></div><span class="s">3</span></div>
+          <div class="dim low"><span class="n">输出稳定性</span><div class="bar"><div class="fill" style="width:40%"></div></div><span class="s">2</span></div>
+          <div class="dim"><span class="n">结果质量</span><div class="bar"><div class="fill" style="width:60%"></div></div><span class="s">3</span></div>
+          <div class="dim low"><span class="n">可评估性</span><div class="bar"><div class="fill" style="width:40%"></div></div><span class="s">2</span></div>
+          <div class="dim"><span class="n">…其余4维</span><div class="bar"><div class="fill" style="width:60%"></div></div><span class="s">12</span></div>
+          <div class="tot">28<span class="mx"> / 50</span><span class="tg">C 段</span></div>
+        </div>
+        <div class="panel">
+          <h4>🎯 培训 · skill-coach <span class="anno">M·05 · <b>skill-coach</b> · spec</span></h4>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 6px;">定位 3 个最高杠杆弱维度，给对症改写：</p>
+          <div class="coach-item"><span class="d">可调用性 2 →</span> <span class="fix">补全触发词表 + 反例边界，让 agent 准确召唤</span></div>
+          <div class="coach-item"><span class="d">输出稳定性 2 →</span> <span class="fix">显式定义输出 schema / 模板，产出可预测</span></div>
+          <div class="coach-item"><span class="d">可评估性 2 →</span> <span class="fix">加入验收标准 + 好/坏对照示例</span></div>
+          <div class="coach-cta"><button class="btn">一键重写并重评 →</button><span class="est">预计 C 28 → B 35（+7）</span></div>
+          <p class="mono" style="font-size:10.5px;color:var(--faint);margin-top:14px;">重写稿可 diff 预览，确认后存为 v2（不删 v1，可回滚）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 招聘入口 -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">03</span><h2>＋ 添加 skill（招聘）· 四种来源</h2><span class="anno">M·01 · <b>skill-card-gen · skill-forge</b></span></div>
+    <div class="modal">
+      <div class="mh">＋ 添加 skill</div>
+      <div class="tabs"><span class="t on">⬆ 上传文件</span><span class="t">⌨ 粘贴文本</span><span class="t">⤓ GitHub 导入</span><span class="t">⑂ 技能市场 fork</span></div>
+      <div class="drop"><div class="big">⬆</div>拖拽文件到此，或点击选择<div class="fmt">支持 SKILL.md · .md · .tar.gz · .zip　|　上传后自动 SMS 评级、存为 v1</div></div>
+    </div>
+    <p class="mono" style="font-size:11.5px;color:var(--muted);margin-top:16px;line-height:1.7;">
+      · <b style="color:var(--text)">上传 / 粘贴</b> → 解析 → 自动评级 → v1（来源徽标）<br>
+      · <b style="color:var(--text)">GitHub 导入</b> → 输入 repo → <span style="color:var(--accent)">列出 SKILL.md 让你勾选</span> → 导入+评级 → 标 owner/repo@分支 → 可"重新拉取"成新版本<br>
+      · <b style="color:var(--text)">技能市场 fork</b> → registry/详情页「复制到我的」→ 私有副本 + "fork 自 X" 血缘 → 随便二改
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

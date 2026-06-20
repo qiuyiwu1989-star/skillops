@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Registry · 发现 + 安装 · SkillOps</title>
+<meta name="description" content="SkillOps Registry — 浏览公开 skill，按 技能评级排序，一键安装或被你的 agent 调用. 官方精选 + 社区发布.">
+<link rel="canonical" href="https://skillops.tech/registry/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  .reg { max-width: 1100px; margin: 0 auto; padding: clamp(32px,4vw,56px) clamp(20px,4vw,48px) clamp(64px,8vw,96px); }
+  .reg-hero { padding-bottom: clamp(24px,3vw,40px); border-bottom: 1px solid var(--line); margin-bottom: clamp(28px,3.5vw,44px); }
+  .reg-hero .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 14px; }
+  .reg-hero .crumbs a { color: var(--accent); text-decoration: none; }
+  .reg-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4.4vw,60px); letter-spacing: -0.025em; line-height: 1.04; margin-bottom: 14px; }
+  .reg-hero h1 .u { color: var(--accent); }
+  .reg-hero p { font-size: 15.5px; color: var(--muted); max-width: 62ch; line-height: 1.65; }
+  .reg-hero p a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+  .reg-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .reg-search { flex: 1; min-width: 220px; font-family: var(--f-mono); font-size: 13px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px; padding: 11px 18px; color: var(--text); }
+  .reg-search:focus { outline: none; border-color: var(--accent); }
+  .reg-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .reg-filter { font-family: var(--f-mono); font-size: 11.5px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; transition: all .12s; }
+  .reg-filter.active, .reg-filter:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sec-label { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; margin: 8px 0 16px; display: flex; align-items: center; gap: 10px; }
+  .sec-label .ct { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 40px; }
+  .card { background: var(--bg); padding: 24px 24px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 10px; min-height: 150px; transition: background .12s; }
+  .card:hover { background: var(--bg-soft); }
+  .card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .card .nm { font-family: var(--f-display); font-weight: 500; font-size: 18px; letter-spacing: -0.01em; line-height: 1.2; }
+  .card .badge { font-family: var(--f-mono); font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; flex-shrink: 0; }
+  .card .badge.S { color: var(--accent); border-color: var(--accent); }
+  .card .badge.A { color: #4a9b8a; } .card .badge.B { color: #a8b56c; } .card .badge.C,.card .badge.D { color: var(--muted); }
+  .card .desc { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
+  .card .foot { font-family: var(--f-mono); font-size: 11px; color: var(--faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .card .foot .cat { color: var(--muted); }
+  .card .foot .by { color: var(--accent); }
+
+  .empty { font-family: var(--f-mono); font-size: 13px; color: var(--muted); padding: 36px; text-align: center; border: 1px dashed var(--line); line-height: 1.7; grid-column: 1/-1; }
+
+  .recent-feed { border: 1px solid var(--line); margin-bottom: 40px; }
+  .recent-row { display: grid; grid-template-columns: 1fr 80px 44px; gap: 14px; align-items: center; padding: 13px 22px; border-bottom: 1px solid var(--hairline); }
+  .recent-row:last-child { border-bottom: 0; }
+  .recent-row .rn { font-family: var(--f-display); font-weight: 500; font-size: 14.5px; }
+  .recent-row .rn .src { font-family: var(--f-mono); font-size: 10px; color: var(--faint); margin-left: 8px; }
+  .recent-row .rs { font-family: var(--f-mono); font-size: 13px; color: var(--text); text-align: right; }
+  .recent-row .rt { font-family: var(--f-mono); font-weight: 600; font-size: 13px; text-align: center; }
+  .recent-row .rt.S { color: var(--accent); } .recent-row .rt.A { color: #4a9b8a; } .recent-row .rt.B { color: #a8b56c; } .recent-row .rt.C,.recent-row .rt.D { color: var(--muted); }
+
+  /* detail modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; max-width: 760px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 32px; }
+  .modal .mhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .modal h3 { font-family: var(--f-display); font-weight: 500; font-size: 26px; letter-spacing: -0.02em; }
+  .modal .mby { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .modal .mby b { color: var(--accent); }
+  .modal .mscore { font-family: var(--f-display); font-weight: 500; font-size: 32px; letter-spacing: -0.02em; white-space: nowrap; }
+  .modal .mscore .mx { font-family: var(--f-mono); font-size: 13px; color: var(--faint); }
+  .modal .install { background: #161616; border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; font-family: var(--f-mono); font-size: 12.5px; color: #ebe6db; line-height: 1.7; overflow-x: auto; margin: 8px 0 20px; white-space: pre-wrap; word-break: break-all; }
+  .modal .install .a { color: var(--accent); }
+  .modal .install .c { color: #6b7280; }
+  .modal .mlabel { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; margin: 18px 0 8px; }
+  .modal .mcontent { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; font-family: var(--f-mono); font-size: 12px; color: var(--text); line-height: 1.65; white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
+  .modal .mclose { font-family: var(--f-mono); font-size: 13px; padding: 10px 20px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; margin-top: 20px; }
+  .modal .mclose:hover { color: var(--text); border-color: var(--text); }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="registry"></nav>
+
+<main class="reg">
+  <section class="reg-hero">
+    <div class="crumbs"><a href="/">SkillOps</a> / registry</div>
+    <h1>Skill Registry<span class="u">_</span></h1>
+    <p>发现公开 skill —— 按 技能评级排序，看内容、一键安装、或让你的 agent 直接拉取。想发布自己的？去 <a href="/dashboard/">控制台</a> 建一个，标记公开即可。</p>
+  </section>
+
+  <div class="reg-tools">
+    <input class="reg-search" id="search" type="text" placeholder="搜索 skill 名称 / 领域…">
+    <div class="reg-filters" id="filters">
+      <button class="reg-filter active" data-cat="">全部</button>
+      <button class="reg-filter" data-cat="strategy">战略</button>
+      <button class="reg-filter" data-cat="writing">写作</button>
+      <button class="reg-filter" data-cat="design">设计</button>
+      <button class="reg-filter" data-cat="presentation">演示</button>
+      <button class="reg-filter" data-cat="meta">元能力</button>
+    </div>
+  </div>
+
+  <div class="sec-label">官方精选 · Skill Hub <span class="ct" id="official-ct"></span></div>
+  <div class="grid" id="official"></div>
+
+  <div class="sec-label">发现 · 来自 GitHub 开源生态 <span class="ct" id="discovered-ct"></span></div>
+  <p style="font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:-8px 0 16px;line-height:1.6;">小能持续从 GitHub 开源仓库挖掘 skill，用 SMS 评级后收录 · 点开跳到源仓库</p>
+  <div class="grid" id="discovered"></div>
+
+  <div class="sec-label">社区发布 · Community <span class="ct" id="community-ct"></span></div>
+  <div class="grid" id="community"></div>
+
+  <div class="sec-label">最近评估动态 · Recent <span class="ct" id="recent-ct"></span></div>
+  <div class="recent-feed" id="recent"></div>
+</main>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATZH = { strategy:'战略·创新', writing:'写作', design:'设计', presentation:'演示', meta:'元能力', 'knowledge-system':'知识系统' };
+let OFFICIAL = [], COMMUNITY = [], DISCOVERED = [], FILTER = '', Q = '';
+
+async function load() {
+  // official = real-scored Skill Hub skills (hub dataset)
+  try { const r = await fetch(`${API}/evaluations/hub`); OFFICIAL = (await r.json()).items || []; } catch {}
+  // discovered = open-source skills crawled from GitHub, SMS-scored
+  try { const r = await fetch(`${API}/evaluations/discovered`); DISCOVERED = (await r.json()).items || []; } catch {}
+  // community = user-published public skills
+  try { const r = await fetch(`${API}/registry`); COMMUNITY = (await r.json()).items || []; } catch {}
+  render();
+  loadRecent();
+}
+
+// P1: recent evaluation activity — keeps the registry feeling alive
+async function loadRecent() {
+  let items = [];
+  try { items = (await (await fetch(`${API}/evaluations/recent?limit=12`)).json()).items || []; } catch {}
+  $('recent-ct').textContent = items.length;
+  if (!items.length) { $('recent').innerHTML = '<div class="empty" style="border:0">还没有评估动态。<a href="/evaluate/" style="color:var(--accent)">去评估一个 skill</a> 试试。</div>'; return; }
+  $('recent').innerHTML = items.map(r => `
+    <div class="recent-row">
+      <div class="rn">${esc(r.name||'(未命名)')}<span class="src">${r.source==='hub'?'官方':'社区评估'}</span></div>
+      <div class="rs">${r.total}/100</div>
+      <div class="rt ${r.tier}">${r.tier}</div>
+    </div>`).join('');
+}
+
+function match(item, name, cat) {
+  if (FILTER && cat !== FILTER) return false;
+  if (Q && !(name.toLowerCase().includes(Q) || (CATZH[cat]||'').includes(Q))) return false;
+  return true;
+}
+
+function render() {
+  // official
+  const off = OFFICIAL.filter(s => match(s, s.name||s.slug, s.category));
+  $('official-ct').textContent = off.length;
+  $('official').innerHTML = off.length ? off.sort((a,b)=>b.total-a.total).map(s => cardOfficial(s)).join('')
+    : '<div class="empty">没有匹配的官方 skill。</div>';
+  // discovered (GitHub) — filter by search query only (no category on these yet)
+  const dis = DISCOVERED.filter(s => !Q || (s.name||'').toLowerCase().includes(Q) || (s.repo||'').toLowerCase().includes(Q));
+  $('discovered-ct').textContent = dis.length;
+  $('discovered').innerHTML = dis.length ? dis.sort((a,b)=>b.total-a.total).map(s => cardDiscovered(s)).join('')
+    : '<div class="empty">还没有从 GitHub 收录的 skill。</div>';
+  // community
+  const com = COMMUNITY.filter(s => match(s, s.name, s.category));
+  $('community-ct').textContent = com.length;
+  $('community').innerHTML = com.length ? com.map(s => cardCommunity(s)).join('')
+    : '<div class="empty">还没有社区发布的公开 skill。<br>你可以是第一个 —— 去 <a href="/dashboard/" style="color:var(--accent)">控制台</a> 建一个，标记公开。</div>';
+  bind();
+}
+
+function cardOfficial(s) {
+  return `<a class="card" href="/s/${esc(s.slug)}/">
+    <div class="top"><div class="nm">${esc(s.name||s.slug)}</div><div class="badge ${s.tier}">${s.total}/100 ${s.tier}</div></div>
+    <div class="desc">${esc((s.summary||'').slice(0,90))}${(s.summary||'').length>90?'…':''}</div>
+    <div class="foot"><span class="cat">${esc(CATZH[s.category]||s.category||'')}</span><span class="by">官方</span></div>
+  </a>`;
+}
+function cardDiscovered(s) {
+  return `<a class="card" href="/d/?id=${esc(s.id)}">
+    <div class="top"><div class="nm">${esc(s.name||s.repo)}</div><div class="badge ${s.tier}">${s.total}/100 ${s.tier}</div></div>
+    <div class="desc">${esc((s.summary||'').slice(0,90))}${(s.summary||'').length>90?'…':''}</div>
+    <div class="foot"><span class="cat">${esc(s.repo||'')}</span><span class="by">★ ${s.stars||0} · 评分卡 →</span></div>
+  </a>`;
+}
+function cardCommunity(s) {
+  const tier = s.tier||'none', score = s.score!=null?(s.score+'/100 '+(s.tier||'')):'未评分';
+  return `<div class="card" data-login="${esc(s.owner?s.owner.login:'')}" data-slug="${esc(s.slug)}">
+    <div class="top"><div class="nm">${esc(s.name)}</div><div class="badge ${tier}">${score}</div></div>
+    <div class="desc">${esc((s.description||'').slice(0,90))}</div>
+    <div class="foot"><span class="cat">${esc(CATZH[s.category]||s.category||'')}</span><span class="by">@${esc(s.owner?s.owner.login:'?')}</span><span>v${s.version||1}</span></div>
+  </div>`;
+}
+
+function bind() {
+  document.querySelectorAll('#community .card').forEach(c => {
+    c.onclick = () => openDetail(c.dataset.login, c.dataset.slug);
+  });
+}
+
+async function openDetail(login, slug) {
+  $('modal').innerHTML = '<div style="font-family:var(--f-mono);color:var(--muted)">加载中…</div>';
+  $('modal-bg').classList.add('show');
+  let d = {};
+  try { const r = await fetch(`${API}/registry/${login}/${slug}`); d = await r.json(); } catch {}
+  if (d.error) { $('modal').innerHTML = '<div style="font-family:var(--f-mono);color:#d4674a">加载失败</div>'; return; }
+  const score = d.score!=null ? `${d.score}<span class="mx">/100 ${d.tier}</span>` : '<span class="mx">未评分</span>';
+  $('modal').innerHTML = `
+    <div class="mhead">
+      <div><h3>${esc(d.name)}</h3><div class="mby">by <b>@${esc(login)}</b> · ${esc(CATZH[d.category]||d.category||'')} · v${d.version||1}</div></div>
+      <div class="mscore">${score}</div>
+    </div>
+    ${d.description?`<p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:8px">${esc(d.description)}</p>`:''}
+    <div class="mlabel">▸ 让你的 agent 拉取</div>
+    <div class="install"><span class="c"># 公开 skill，无需 key</span>\ncurl https://skillops.tech/api/<span class="a">v1/skills/${esc(login)}/${esc(slug)}</span></div>
+    <div class="mlabel">内容</div>
+    <div class="mcontent">${esc(d.content||'（无内容）')}</div>
+    <button class="mclose" id="mclose">关闭</button>`;
+  $('mclose').onclick = () => $('modal-bg').classList.remove('show');
+}
+$('modal-bg').onclick = e => { if(e.target===$('modal-bg')) $('modal-bg').classList.remove('show'); };
+
+$('search').addEventListener('input', e => { Q = e.target.value.trim().toLowerCase(); render(); });
+document.querySelectorAll('.reg-filter').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.reg-filter').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); FILTER = b.dataset.cat; render();
+});
+
+load();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

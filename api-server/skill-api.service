@@ -1,0 +1,25 @@
+[Unit]
+Description=Skill Hub Try API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/skill-api
+EnvironmentFile=/etc/skill-api/.env
+ExecStart=/usr/bin/node /opt/skill-api/server.js
+Restart=on-failure
+RestartSec=3
+
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/log/skill-api
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

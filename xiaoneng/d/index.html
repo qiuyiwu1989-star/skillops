@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发现的 Skill · SkillOps</title>
+<meta name="description" content="SkillOps 从 GitHub 开源生态发现的 skill —— 经 SMS 标准评级后的独立介绍页，含逐维评分卡与来源。">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px,4vw,48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+
+  .d-wrap { max-width: 860px; margin: 0 auto; padding: clamp(28px,4vw,52px) clamp(20px,4vw,48px) clamp(64px,8vw,96px); }
+  .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .crumbs a { color: var(--accent); text-decoration: none; }
+
+  .d-head { display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  .d-head .nm { font-family: var(--f-display); font-weight: 500; font-size: clamp(28px,4vw,44px); letter-spacing: -0.025em; line-height: 1.06; min-width: 0; }
+  .d-head .sp { flex: 1; }
+  .d-head .score { text-align: right; white-space: nowrap; }
+  .d-head .score .big { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4vw,44px); line-height: 1; letter-spacing: -0.02em; }
+  .d-head .score .big .mx { font-family: var(--f-mono); font-size: 13px; color: var(--faint); }
+  .d-head .score .tg { font-family: var(--f-mono); font-size: 12px; padding: 3px 12px; border-radius: 999px; border: 1px solid currentColor; display: inline-block; margin-top: 8px; }
+  .sc-S .big,.sc-S .tg{color:var(--accent);} .sc-A .big,.sc-A .tg{color:var(--green,#2f7d6b);} .sc-B .tg{color:var(--amber,#6b7536);} .sc-C .tg,.sc-D .tg{color:var(--muted);}
+
+  .provenance { font-family: var(--f-mono); font-size: 12px; color: var(--muted); line-height: 1.7; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 24px; }
+  .provenance b { color: var(--text); }
+  .provenance .badge { display: inline-block; font-size: 10px; padding: 1px 9px; border-radius: 999px; border: 1px solid var(--muted); color: var(--muted); margin-right: 6px; vertical-align: 1px; }
+
+  .sum { font-size: 14.5px; color: var(--text); line-height: 1.75; margin-bottom: 28px; }
+
+  .sec-label { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 14px; }
+  .sc-pillar { margin-bottom: 18px; }
+  .sc-pillar .pn { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .sc-pillar .pn .ps { color: var(--text); margin-left: 6px; }
+  .sc-dim { display: grid; grid-template-columns: 130px 1fr 40px; gap: 12px; align-items: center; padding: 6px 0; }
+  .sc-dim .dn { font-size: 13px; color: var(--text); } .sc-dim .dn .dr { display: block; font-family: var(--f-mono); font-size: 10px; color: var(--faint); margin-top: 2px; line-height: 1.35; }
+  .sc-dim .bar { height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; } .sc-dim .bar .f { height: 100%; background: var(--accent); border-radius: 999px; } .sc-dim .bar .f.lo { background: #b08968; }
+  .sc-dim .dv { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); text-align: right; }
+  @media(max-width:560px){ .sc-dim{ grid-template-columns: 96px 1fr 36px; } }
+
+  .source-card { border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; margin-top: 34px; }
+  .source-card .sh { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .source-card .meta { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); line-height: 2; }
+  .source-card .meta b { color: var(--text); }
+  .source-card .acts { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .source-card .acts a { font-family: var(--f-mono); font-size: 13px; padding: 10px 20px; border-radius: 999px; text-decoration: none; }
+  .source-card .acts a.ghost { border: 1px solid var(--line); color: var(--muted); } .source-card .acts a.ghost:hover { border-color: var(--text); color: var(--text); }
+  .source-card .acts a.primary { background: var(--accent); color: var(--bg); border: 1px solid var(--accent); } .source-card .acts a.primary:hover { background: transparent; color: var(--accent); }
+
+  .ip-note { font-family: var(--f-mono); font-size: 11px; color: var(--faint); line-height: 1.7; margin-top: 18px; }
+  .d-loading, .d-error { font-family: var(--f-mono); font-size: 13px; color: var(--muted); padding: 60px 0; text-align: center; line-height: 1.8; }
+  .d-error a { color: var(--accent); }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="registry"></nav>
+
+<main class="d-wrap" id="root">
+  <div class="d-loading">加载评分卡…</div>
+</main>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PILLARS = [{key:'comprehension',zh:'可理解'},{key:'execution',zh:'可执行'},{key:'engineering',zh:'可工程'},{key:'trust',zh:'可信赖与价值'}];
+// dim → pillar fallback (older rows may lack pillar on each dim)
+const DIM_PILLAR = { clarity:'comprehension', invocability:'comprehension', executability:'execution', stability:'execution', quality:'execution', reusability:'engineering', composability:'engineering', evaluability:'engineering', safety:'trust', business:'trust' };
+
+function qp(k){ return new URLSearchParams(location.search).get(k); }
+
+async function load(){
+  const id = qp('id'), repo = qp('repo'), name = qp('name');
+  let list = [];
+  try { list = (await (await fetch(`${API}/evaluations/discovered`)).json()).items || []; } catch {}
+  let s = null;
+  if (id) s = list.find(x => x.id === id);
+  if (!s && repo) s = list.find(x => x.repo === repo && (!name || x.name === name));
+  if (!s && name) s = list.find(x => x.name === name);
+  if (!s) { $('root').innerHTML = `<div class="d-error">没找到这个 skill（它可能已被重新收录、id 变了）。<br><a href="/registry/">← 回到 Registry 浏览全部发现</a></div>`; return; }
+  render(s);
+}
+
+function render(s){
+  const tier = s.tier || 'D', total = s.total, max = s.max || 100;
+  document.title = `${s.name} · 发现的 Skill · SkillOps`;
+  // group dims by pillar
+  const groups = {}; PILLARS.forEach(p => groups[p.key] = []);
+  (s.dimensions || []).forEach(d => { const pk = d.pillar || DIM_PILLAR[d.key] || 'comprehension'; (groups[pk] = groups[pk] || []).push(d); });
+  const pillarsHtml = PILLARS.map(p => {
+    const ds = groups[p.key] || []; if (!ds.length) return '';
+    const sub = ds.reduce((a,d) => a + (d.score||0), 0);
+    return `<div class="sc-pillar"><div class="pn">支柱 · ${p.zh}<span class="ps">${sub}/${ds.length*10}</span></div>` +
+      ds.map(d => { const x = d.score||0, w = Math.round(x/10*100), lo = x<=4?'lo':'';
+        return `<div class="sc-dim"><div class="dn">${esc(d.zh||d.key)}${d.reason?`<span class="dr">${esc(d.reason)}</span>`:''}</div><div class="bar"><div class="f ${lo}" style="width:${w}%"></div></div><div class="dv">${x}/10</div></div>`; }).join('') +
+      `</div>`;
+  }).join('');
+  const ghUrl = s.url || (s.repo ? `https://github.com/${s.repo}` : '#');
+
+  $('root').innerHTML = `
+    <div class="crumbs"><a href="/">SkillOps</a> / <a href="/registry/">registry</a> / <a href="/registry/">发现</a> / ${esc(s.name)}</div>
+    <div class="d-head sc-${tier}">
+      <div class="nm">${esc(s.name)}</div>
+      <span class="sp"></span>
+      <div class="score"><div class="big">${total}<span class="mx">/${max}</span></div><div class="tg">${tier} 段</div></div>
+    </div>
+    <div class="provenance">
+      <span class="badge">GitHub 发现</span>由小能从 GitHub 开源生态发现，经 <b>SMS 标准</b>${s.smsVersion?` (${esc(s.smsVersion)})`:''}评级收录。
+      <b>SkillOps 不托管 / 不转载</b>它的内容，只做索引 + 评分 + 回链原仓 —— 内容版权归原作者。
+    </div>
+    ${s.summary?`<div class="sum">${esc(s.summary)}</div>`:''}
+    <div class="sec-label">SMS 评分卡 · 4 支柱 / 10 维</div>
+    ${pillarsHtml || '<div class="d-error" style="padding:20px 0">这个 skill 暂无逐维明细。</div>'}
+    <div class="source-card">
+      <div class="sh">来源</div>
+      <div class="meta">
+        仓库：<b>${esc(s.repo||'—')}</b>${s.stars?` · ★ ${s.stars}`:''}<br>
+        ${s.path?`路径：<b>${esc(s.path)}</b><br>`:''}
+        ${s.license?`许可：<b>${esc(s.license)}</b><br>`:''}
+      </div>
+      <div class="acts">
+        <a class="ghost" href="${esc(ghUrl)}" target="_blank" rel="noopener">查看原仓库 ↗</a>
+        <a class="primary" href="/dashboard/?fork=github&repo=${encodeURIComponent(s.repo||'')}&path=${encodeURIComponent(s.path||'')}">复制到我的库 →</a>
+      </div>
+      <div class="ip-note">「复制到我的库」会把它 fork 成你的私有副本（可二改 · 评分 · 调用），并自动重新评分。首次需要一个免费账号（无需邮箱密码）。SkillOps 中立、不锁定 —— 技能跟着你走。</div>
+    </div>`;
+}
+load();
+</script>
+<script defer src="/nav.js"></script>
+</body>
+</html>

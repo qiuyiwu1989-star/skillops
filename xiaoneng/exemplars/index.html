@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精选案例 · 原创标杆 skill · SkillOps</title>
+<meta name="description" content="SkillOps 官方精选案例 —— 邱懿武 / 造物云原创的高质量标杆技能（战略 · 写作 · 产品），示范什么是好技能，可一键复制到任何 AI 或收进你的库。">
+<link rel="canonical" href="https://skillops.tech/exemplars/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px,4vw,48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+
+  .ex-wrap { max-width: 880px; margin: 0 auto; padding: clamp(28px,4vw,52px) clamp(20px,4vw,48px) clamp(64px,8vw,96px); }
+  .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .crumbs a { color: var(--accent); text-decoration: none; }
+  .ex-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(30px,4.4vw,52px); letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 14px; }
+  .ex-hero h1 .u { color: var(--accent); }
+  .ex-hero p { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 62ch; }
+  .ex-hero p b { color: var(--text); font-weight: 500; }
+  .ex-hero { padding-bottom: 26px; border-bottom: 1px solid var(--line); margin-bottom: 36px; }
+
+  .ex-card { border: 1px solid var(--line); border-radius: 12px; padding: 24px clamp(20px,3vw,28px); margin-bottom: 24px; }
+  .ex-card .top { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .ex-card .nm { font-family: var(--f-display); font-weight: 500; font-size: clamp(20px,2.4vw,26px); letter-spacing: -0.02em; line-height: 1.15; min-width: 0; }
+  .ex-card .dm { font-family: var(--f-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 11px; white-space: nowrap; flex-shrink: 0; }
+  .ex-card .sum { font-size: 14px; color: var(--muted); line-height: 1.65; margin: 12px 0 16px; }
+  .ex-card .acts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .ex-card .acts button, .ex-card .acts a { font-family: var(--f-mono); font-size: 12.5px; padding: 9px 18px; border-radius: 999px; cursor: pointer; text-decoration: none; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+  .ex-card .acts .primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .ex-card .acts .primary:hover { background: transparent; color: var(--accent); }
+  .ex-card .acts .ghost:hover { border-color: var(--text); color: var(--text); }
+  .ex-card .acts .toggle { margin-left: auto; }
+  .ex-body { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--hairline); }
+  .ex-body.show { display: block; }
+  .ex-body h4 { font-family: var(--f-display); font-weight: 500; font-size: 16px; letter-spacing: -0.01em; margin: 18px 0 8px; }
+  .ex-body h4:first-child { margin-top: 0; }
+  .ex-body p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0 0 10px; }
+  .ex-body li { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0 0 6px; }
+  .ex-body ul, .ex-body ol { margin: 0 0 12px; padding-left: 22px; }
+  .ex-body b { color: var(--text); font-weight: 600; }
+  .ex-body code { font-family: var(--f-mono); font-size: 12px; background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; color: var(--accent); }
+
+  .ex-foot { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--line); font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); line-height: 1.8; }
+  .ex-foot a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .d-loading { font-family: var(--f-mono); font-size: 13px; color: var(--muted); padding: 60px 0; text-align: center; }
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-family: var(--f-mono); font-size: 12.5px; padding: 10px 20px; border-radius: 999px; z-index: 300; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="registry"></nav>
+
+<main class="ex-wrap">
+  <div class="crumbs"><a href="/">SkillOps</a> / <a href="/registry/">registry</a> / 精选案例</div>
+  <div class="ex-hero">
+    <h1>精选案例<span class="u">_</span></h1>
+    <p><b>邱懿武 / 造物云原创的标杆技能</b> —— 不是模板填空，是带着判断和「坑」（gotchas）的真东西。它们示范<b>什么是一个好 skill</b>，也可以一键复制到任何 AI、或收进你自己的库再二改。</p>
+  </div>
+  <div id="list"><div class="d-loading">加载精选案例…</div></div>
+  <div class="ex-foot">
+    想要更多、且贴你自己工作的技能？到 <a href="/dashboard/">控制台</a> 把你打磨过的提示词收成一个库 —— SMS 自动评级、版本管理、任何 AI 随手调用。
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let EXS = [];
+
+// minimal, safe markdown render (escape first, then a few patterns)
+function md(src){
+  const lines = String(src||'').split('\n');
+  let html='', inList=false, inOL=false;
+  const close=()=>{ if(inList){html+='</ul>';inList=false;} if(inOL){html+='</ol>';inOL=false;} };
+  const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');
+  for(const raw of lines){
+    const l = raw.replace(/\s+$/,'');
+    if(/^#\s+/.test(l)){ continue; }                         // top H1 = card title, skip
+    if(/^##\s+/.test(l)){ close(); html+='<h4>'+inline(l.replace(/^##\s+/,''))+'</h4>'; continue; }
+    if(/^###\s+/.test(l)){ close(); html+='<h4>'+inline(l.replace(/^###\s+/,''))+'</h4>'; continue; }
+    if(/^\s*\d+\.\s+/.test(l)){ if(!inOL){close();html+='<ol>';inOL=true;} html+='<li>'+inline(l.replace(/^\s*\d+\.\s+/,''))+'</li>'; continue; }
+    if(/^\s*[-*]\s+/.test(l)){ if(!inList){close();html+='<ul>';inList=true;} html+='<li>'+inline(l.replace(/^\s*[-*]\s+/,''))+'</li>'; continue; }
+    if(!l.trim()){ close(); continue; }
+    close(); html+='<p>'+inline(l)+'</p>';
+  }
+  close(); return html;
+}
+
+async function load(){
+  try { EXS = (await (await fetch('exemplars.json')).json()).skills || []; } catch {}
+  if(!EXS.length){ $('list').innerHTML='<div class="d-loading">暂时加载不出来，稍后再试。</div>'; return; }
+  $('list').innerHTML = EXS.map((s,i)=>`
+    <div class="ex-card">
+      <div class="top">
+        <div><div class="nm">${esc(s.name)}</div></div>
+        <span class="dm">${esc(s.domain)}</span>
+      </div>
+      <div class="sum">${esc(s.summary)}</div>
+      <div class="acts">
+        <button class="primary" data-copy="${i}">⧉ 复制到任何 AI</button>
+        <a class="ghost" href="/dashboard/?addExemplar=${encodeURIComponent(s.slug)}">收进我的库 →</a>
+        <button class="ghost toggle" data-tog="${i}">看完整定义 ▾</button>
+      </div>
+      <div class="ex-body" id="body-${i}">${md(s.content)}</div>
+    </div>`).join('');
+  document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyEx(+b.dataset.copy));
+  document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{ const el=$('body-'+b.dataset.tog); const open=el.classList.toggle('show'); b.textContent=open?'收起 ▴':'看完整定义 ▾'; });
+}
+
+let TT=null;
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(TT); TT=setTimeout(()=>t.classList.remove('show'),1800); }
+async function copyEx(i){
+  const s=EXS[i]; if(!s) return;
+  try { await navigator.clipboard.writeText(s.content); toast('已复制 · 粘到任何 AI 即用 ✓'); }
+  catch { toast('复制失败，请手动复制'); }
+  if(window.track) window.track('copy_exemplar',{label:s.slug});
+}
+load();
+</script>
+<script defer src="/nav.js"></script>
+</body>
+</html>

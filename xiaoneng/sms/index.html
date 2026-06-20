@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMS · 技能管理标准体系 v1.0 · SkillOps</title>
+<meta name="description" content="SMS（Skill Management Standard · 技能管理标准体系）v1.0 —— 定义一个 AI Skill 应该长什么样、怎么分类管理、怎么评估好坏。三维分类 + Skill Card 模板 + 10 维评级 + S/A/B/C/D 段位。">
+<link rel="canonical" href="https://skillops.tech/sms/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px,4vw,48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  .sms-wrap { max-width: 1080px; margin: 0 auto; padding: clamp(32px,4vw,56px) clamp(20px,4vw,48px) clamp(64px,8vw,96px); }
+  .sms-hero { padding-bottom: clamp(28px,3.5vw,44px); border-bottom: 1px solid var(--line); margin-bottom: clamp(36px,4.5vw,56px); }
+  .sms-hero .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .sms-hero .crumbs a { color: var(--accent); text-decoration: none; }
+  .sms-hero .ver { font-family: var(--f-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; letter-spacing: 0.1em; }
+  .sms-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(34px,4.6vw,58px); letter-spacing: -0.025em; line-height: 1.05; margin: 14px 0 8px; }
+  .sms-hero h1 .u { color: var(--accent); }
+  .sms-hero .sub { font-family: var(--f-mono); font-size: 13px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 18px; }
+  .sms-hero p { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 66ch; }
+  .sms-hero p strong { color: var(--text); font-weight: 500; }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .toc a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; }
+  .toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .sms-sec { margin-bottom: clamp(44px,5.5vw,72px); scroll-margin-top: 110px; }
+  .sms-sec h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,34px); letter-spacing: -0.02em; margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; }
+  .sms-sec h2 .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); }
+  .sms-sec .hint { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 66ch; margin-bottom: 24px; }
+  .sms-sec .hint strong { color: var(--text); }
+  .subh { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; margin: 28px 0 14px; }
+
+  .cap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 720px) { .cap-grid { grid-template-columns: repeat(2,1fr); } }
+  .cap { background: var(--bg); padding: 16px 16px; }
+  .cap .ci { font-family: var(--f-mono); font-size: 10px; color: var(--faint); }
+  .cap .cn { font-family: var(--f-display); font-weight: 500; font-size: 16px; margin-top: 3px; }
+  .cap .ce { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; margin-top: 2px; }
+
+  .mat { border: 1px solid var(--line); }
+  .mrow { display: grid; grid-template-columns: 64px 150px 1fr; border-bottom: 1px solid var(--hairline); }
+  .mrow:last-child { border-bottom: 0; }
+  .mrow > div { padding: 14px 18px; font-size: 14px; }
+  .mrow .ml { font-family: var(--f-display); font-weight: 600; font-size: 18px; color: var(--accent); background: var(--bg-soft); }
+  .mrow .mn { font-family: var(--f-display); font-weight: 500; color: var(--text); }
+  .mrow .md { color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+  .roles { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 720px) { .roles { grid-template-columns: 1fr; } }
+  .role { background: var(--bg); padding: 22px 22px; }
+  .role .rn { font-family: var(--f-display); font-weight: 500; font-size: 18px; margin-bottom: 6px; }
+  .role .re { font-family: var(--f-mono); font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; }
+  .role p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+
+  .card-tpl { background: #161616; border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.9; color: #ebe6db; overflow-x: auto; }
+  .card-tpl .k { color: #7dd3c0; } .card-tpl .req { color: var(--accent); } .card-tpl .c { color: #6b7280; }
+
+  .pillar-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 720px) { .pillar-grid { grid-template-columns: 1fr; } }
+  .pillar { background: var(--bg); padding: 22px 24px; }
+  .pillar .pn { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; }
+  .pillar h3 { font-family: var(--f-display); font-weight: 500; font-size: 20px; margin-bottom: 6px; }
+  .pillar .dims { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pillar .dchip { font-family: var(--f-mono); font-size: 11px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); }
+
+  .tier-tbl { border: 1px solid var(--line); }
+  .trow { display: grid; grid-template-columns: 70px 110px 1fr; border-bottom: 1px solid var(--hairline); }
+  .trow:last-child { border-bottom: 0; }
+  .trow > div { padding: 14px 18px; font-size: 14px; }
+  .trow.h > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .trow .tb { font-family: var(--f-mono); font-weight: 600; font-size: 17px; }
+  .trow .rg { font-family: var(--f-mono); font-size: 13px; color: var(--text); }
+  .trow .mn { color: var(--muted); }
+  .tS .tb { color: var(--accent); } .tA .tb { color: #4a9b8a; } .tB .tb { color: #a8b56c; } .tC .tb { color: var(--muted); } .tD .tb { color: #b08968; }
+
+  .subskills { border: 1px solid var(--line); }
+  .ssrow { display: grid; grid-template-columns: 200px 1fr 160px; border-bottom: 1px solid var(--hairline); }
+  .ssrow:last-child { border-bottom: 0; }
+  .ssrow > div { padding: 14px 18px; font-size: 13.5px; }
+  .ssrow.h > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .ssrow .sn { font-family: var(--f-mono); color: var(--accent); }
+  .ssrow .sd { color: var(--text); }
+  .ssrow .st { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+  .ssrow .sn .tag { font-family: var(--f-mono); font-size: 9px; color: var(--bg); background: var(--accent); padding: 1px 5px; border-radius: 3px; margin-left: 6px; letter-spacing: 0.05em; vertical-align: 1px; }
+  @media (max-width: 720px) { .ssrow { grid-template-columns: 1fr; gap: 2px; } }
+
+  .sub-h { font-family: var(--f-display); font-weight: 500; font-size: clamp(18px,2vw,22px); letter-spacing: -0.01em; margin: 44px 0 8px; }
+  .modmap { border: 1px solid var(--line); }
+  .mmrow { display: grid; grid-template-columns: 160px 1fr 1.1fr; border-bottom: 1px solid var(--hairline); }
+  .mmrow:last-child { border-bottom: 0; }
+  .mmrow > div { padding: 13px 18px; font-size: 13.5px; }
+  .mmrow.h > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .mmrow .mm-mod { font-family: var(--f-mono); color: var(--text); font-weight: 600; font-size: 12.5px; }
+  .mmrow .mm-do { color: var(--muted); }
+  .mmrow .mm-sk { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); }
+  .mmrow .mm-sk.is-plat { color: var(--muted); font-style: italic; }
+  .mmrow .mm-sk .nw { border-bottom: 1.5px solid var(--accent); padding-bottom: 1px; }
+  @media (max-width: 720px) { .mmrow { grid-template-columns: 1fr; gap: 2px; } }
+
+  .baseline { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 600px) { .baseline { grid-template-columns: 1fr; } }
+  .bl { background: var(--bg); padding: 24px; }
+  .bl .n { font-family: var(--f-display); font-weight: 500; font-size: clamp(30px,4vw,44px); line-height: 1; color: var(--text); }
+  .bl .l { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; margin-top: 8px; }
+  .baseline-group { margin-bottom: 28px; }
+  .bg-label { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 10px; }
+  .bg-label .dim { color: var(--muted); }
+
+  .callout { background: rgba(226,82,42,.06); border-left: 3px solid var(--accent); padding: 18px 22px; font-size: 14px; line-height: 1.7; color: var(--text); }
+  .callout strong { color: var(--accent); }
+  .callout a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+  .note { font-family: var(--f-mono); font-size: 11.5px; color: var(--faint); margin-top: 12px; line-height: 1.6; }
+
+  .sms-cta { text-align: center; padding: clamp(48px,6vw,72px) 0 0; border-top: 1px solid var(--line); margin-top: clamp(40px,5vw,64px); }
+  .sms-cta h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(26px,3.5vw,40px); letter-spacing: -0.02em; margin-bottom: 14px; }
+  .sms-cta a { display: inline-block; font-family: var(--f-mono); font-size: 14px; padding: 14px 28px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; }
+
+  .xn-footer { padding: 32px clamp(20px,4vw,48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; max-width: 1080px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="sms"></nav>
+
+<main class="sms-wrap">
+
+  <header class="sms-hero">
+    <div class="crumbs"><a href="/">SkillOps</a> / SMS 标准</div>
+    <span class="ver">SMS v1.0</span>
+    <h1>技能管理标准体系<span class="u">_</span></h1>
+    <div class="sub">SMS · Skill Management Standard · openclaw-skill-ops</div>
+    <p>市面上的 skill / GPT / prompt 库都<strong>没有一套标准</strong>——没人说得清"一个 Skill 应该长什么样、怎么分类、怎么评好坏"。SMS 是第一套 <strong>AI Skill 的管理标准</strong>：它是小能的"操作系统"，定义了 <strong>分类、评估、Skill Card 三件事</strong>，让 skill 从"散落的提示词"变成"可管理、可评级、可规模化的资产"。</p>
+    <div class="toc">
+      <a href="#classify">三维分类</a>
+      <a href="#card">Skill Card</a>
+      <a href="#rating">10 维评级</a>
+      <a href="#tiers">段位</a>
+      <a href="#tools">9 子技能 × 8 模块</a>
+      <a href="#baseline">审计基线</a>
+    </div>
+  </header>
+
+  <section class="sms-sec" id="classify">
+    <h2><span class="n">01</span>三维分类体系</h2>
+    <p class="hint">每个 Skill 用三个维度定位：<strong>它是什么能力</strong>（类型）、<strong>成熟到哪一级</strong>（成熟度）、<strong>在系统里扮演什么角色</strong>（角色层）。</p>
+
+    <div class="subh">维度一 · 12 类能力类型</div>
+    <div class="cap-grid">
+      <div class="cap"><div class="ci">01</div><div class="cn">理解</div><div class="ce">UNDERSTAND</div></div>
+      <div class="cap"><div class="ci">02</div><div class="cn">获取</div><div class="ce">ACQUIRE</div></div>
+      <div class="cap"><div class="ci">03</div><div class="cn">结构化</div><div class="ce">STRUCTURE</div></div>
+      <div class="cap"><div class="ci">04</div><div class="cn">分析</div><div class="ce">ANALYZE</div></div>
+      <div class="cap"><div class="ci">05</div><div class="cn">判断</div><div class="ce">JUDGE</div></div>
+      <div class="cap"><div class="ci">06</div><div class="cn">设计</div><div class="ce">DESIGN</div></div>
+      <div class="cap"><div class="ci">07</div><div class="cn">执行</div><div class="ce">EXECUTE</div></div>
+      <div class="cap"><div class="ci">08</div><div class="cn">生成</div><div class="ce">GENERATE</div></div>
+      <div class="cap"><div class="ci">09</div><div class="cn">交互</div><div class="ce">INTERACT</div></div>
+      <div class="cap"><div class="ci">10</div><div class="cn">协同</div><div class="ce">COLLABORATE</div></div>
+      <div class="cap"><div class="ci">11</div><div class="cn">评估</div><div class="ce">EVALUATE</div></div>
+      <div class="cap"><div class="ci">12</div><div class="cn">进化</div><div class="ce">EVOLVE</div></div>
+    </div>
+
+    <div class="subh">维度二 · 5 级成熟度（L1 → L5）</div>
+    <div class="mat">
+      <div class="mrow"><div class="ml">L5</div><div class="mn">资产级</div><div class="md">标准化、版本化、可商业化的长期资产，能被 agent 系统长期依赖。</div></div>
+      <div class="mrow"><div class="ml">L4</div><div class="mn">系统级</div><div class="md">可与其他 skill 组合、可被 agent 编排、可评估回归。</div></div>
+      <div class="mrow"><div class="ml">L3</div><div class="mn">技能级</div><div class="md">完整 SKILL.md：触发词、步骤、输出格式、质量标准齐全。</div></div>
+      <div class="mrow"><div class="ml">L2</div><div class="mn">模板级</div><div class="md">结构化、可复用的模板，有固定的输入输出。</div></div>
+      <div class="mrow"><div class="ml">L1</div><div class="mn">提示词级</div><div class="md">一段 prompt——能用，但临时、脆弱、难复用。</div></div>
+    </div>
+    <div class="note">注：L1 提示词级与 L5 资产级为标准定义的两端；L2–L4 名称为当前呈现版本，以 SMS v1.0 标准原文为准。</div>
+
+    <div class="subh">维度三 · 3 层系统角色</div>
+    <div class="roles">
+      <div class="role"><div class="re">META</div><div class="rn">元层</div><p>管理其他 skill 的 skill——审计、扫描、编排。如小能的 skill-audit。</p></div>
+      <div class="role"><div class="re">PROFESSIONAL</div><div class="rn">专业层</div><p>领域专家能力——方法论、分析、判断。如 innolab、郑刚工具包。</p></div>
+      <div class="role"><div class="re">DELIVERY</div><div class="rn">交付层</div><p>直接产出交付物——写作、设计、PPT、生成。</p></div>
+    </div>
+  </section>
+
+  <section class="sms-sec" id="card">
+    <h2><span class="n">02</span>Skill Card · 标准模板</h2>
+    <p class="hint">每个 Skill 都有一张标准化的"身份卡"——<strong>15 个字段</strong>，其中 <code>parent_agent</code>（归属 Agent）<strong>必填</strong>，保证每个 skill 都能追溯到它服务的 agent。</p>
+    <div class="card-tpl"><span class="c"># Skill Card · SMS v1.0</span>
+<span class="k">id</span>: jtbd-interview-analyzer
+<span class="k">name</span>: JTBD 用户访谈分析器
+<span class="k">parent_agent</span>: <span class="req">innolab          # ← 必填</span>
+<span class="k">capability_type</span>: 分析            <span class="c"># 12 类之一</span>
+<span class="k">maturity</span>: L3                    <span class="c"># L1–L5</span>
+<span class="k">system_role</span>: 专业层             <span class="c"># 元/专业/交付</span>
+<span class="k">triggers</span>: [分析这份访谈, JTBD 拆解]
+<span class="k">inputs</span> / <span class="k">outputs</span> / <span class="k">dependencies</span>
+<span class="k">sms_score</span>: 33 · <span class="k">tier</span>: B 段
+<span class="c"># … 共 15 字段（完整字段定义见标准原文）</span></div>
+    <div class="note">注：以上为代表性字段；完整 15 字段的逐项定义以 SMS v1.0 标准原文为准。</div>
+  </section>
+
+  <section class="sms-sec" id="rating">
+    <h2><span class="n">03</span>技能评级 · 10 维评估雷达</h2>
+    <p class="hint">SMS 的评估工具是「<strong>技能评级</strong>」——10 维评估雷达，每维 0–10 分，总分 100。引擎按 4 个支柱组织这 10 维（便于理解）：</p>
+    <div class="pillar-grid">
+      <div class="pillar"><div class="pn">支柱 I · 可理解</div><h3>能不能搞懂、知道何时用</h3><div class="dims"><span class="dchip">清晰度</span><span class="dchip">可调用性</span></div></div>
+      <div class="pillar"><div class="pn">支柱 II · 可执行</div><h3>能不能真把活干好、且稳定</h3><div class="dims"><span class="dchip">可执行性</span><span class="dchip">输出稳定性</span><span class="dchip">结果质量</span></div></div>
+      <div class="pillar"><div class="pn">支柱 III · 可工程</div><h3>能不能进更大的 agent 系统</h3><div class="dims"><span class="dchip">复用性</span><span class="dchip">组合性</span><span class="dchip">可评估性</span></div></div>
+      <div class="pillar"><div class="pn">支柱 IV · 可信赖与价值</div><h3>敢不敢用、值不值得</h3><div class="dims"><span class="dchip">安全性</span><span class="dchip">商业价值</span></div></div>
+    </div>
+    <div class="subh">0–10 锚点标尺（每维统一）</div>
+    <p class="hint" style="margin-bottom:0">0 缺失 · 2 雏形 · 4 基础 · 6 合格（公开门槛）· 8 良好 · 10 卓越（标杆）。锚点把"凭感觉打分"变成"对号入座"。</p>
+  </section>
+
+  <section class="sms-sec" id="tiers">
+    <h2><span class="n">04</span>段位 · S / A / B / C / D</h2>
+    <p class="hint">100 分映射到段位。对外更强调<strong>段位</strong>而非具体分数——段位才是可决策的信号。</p>
+    <div class="tier-tbl">
+      <div class="trow h"><div>段位</div><div>分数</div><div>含义</div></div>
+      <div class="trow tS"><div class="tb">S 段</div><div class="rg">86–100</div><div class="mn">核心资产 · 旗舰级，可主推、可商业化</div></div>
+      <div class="trow tA"><div class="tb">A 段</div><div class="rg">76–85</div><div class="mn">稳定可用 · 可对外公开、可放心调用</div></div>
+      <div class="trow tB"><div class="tb">B 段</div><div class="rg">64–75</div><div class="mn">公开门槛 · 达到发布线，仍在打磨</div></div>
+      <div class="trow tC"><div class="tb">C 段</div><div class="rg">50–63</div><div class="mn">概念 · 雏形阶段，建议继续完善</div></div>
+      <div class="trow tD"><div class="tb">D 段</div><div class="rg">&lt; 50</div><div class="mn">待重写 · 信息不足或未成熟</div></div>
+    </div>
+    <div class="note">注：S 段为小能在标准 A/B/C/D 之上为旗舰资产增设的最高档（SMS v1.0 原版为 A/B/C/D 四级）。</div>
+  </section>
+
+  <section class="sms-sec" id="tools">
+    <h2><span class="n">05</span>小能 = 执行这套标准的 9 个子技能</h2>
+    <p class="hint">SMS 是标准，<strong>小能（Ace）是执行它的工具集</strong>——9 个子技能，把 skill 从入库、评级、组合，到培训、绩效、退役的<strong>全生命周期</strong>自动化。</p>
+    <div class="subskills">
+      <div class="ssrow h"><div>子技能</div><div>干什么</div><div>触发词</div></div>
+      <div class="ssrow"><div class="sn">skill-card-gen</div><div class="sd">卡片生成——通过访谈生成标准 Skill Card</div><div class="st">"造一个 XX 技能"</div></div>
+      <div class="ssrow"><div class="sn">skill-forge</div><div class="sd">技能锻造——六阶段造新技能（意图捕获 → 写 SKILL.md → 参考文件 → 质量检查 → 测试 → 迭代）</div><div class="st">"造技能"</div></div>
+      <div class="ssrow"><div class="sn">skill-audit</div><div class="sd">技能审计——10 维评级 + 质量报告</div><div class="st">"审计一下 XX"</div></div>
+      <div class="ssrow"><div class="sn">skill-registry-scan</div><div class="sd">注册扫描——扫描全量 Skill 并分类登记</div><div class="st">"扫描一下技能库"</div></div>
+      <div class="ssrow"><div class="sn">skill-graph</div><div class="sd">技能图谱——维护 Skill 间的依赖 / 组合关系</div><div class="st">"技能关系"</div></div>
+      <div class="ssrow"><div class="sn">agent-capability-map</div><div class="sd">能力地图——按 Agent 分组盘点 Skill 组合</div><div class="st">"团队能力盘点"</div></div>
+      <div class="ssrow"><div class="sn">skill-coach<span class="tag">NEW</span></div><div class="sd">技能培训——读评级、定位最弱维度、重写 SKILL.md 提分到目标段位</div><div class="st">"帮 XX 提分到 A"</div></div>
+      <div class="ssrow"><div class="sn">skill-metrics<span class="tag">NEW</span></div><div class="sd">技能绩效——调用量 / 分数趋势 / 退化预警，红黄绿持续监控</div><div class="st">"哪些技能在退化"</div></div>
+      <div class="ssrow"><div class="sn">skill-retire<span class="tag">NEW</span></div><div class="sd">技能退役——识别该下线的 skill，查依赖、给迁移指引，可逆归档</div><div class="st">"哪些技能该下线"</div></div>
+    </div>
+
+    <h3 class="sub-h">9 子技能 × 8 个 HR 模块</h3>
+    <p class="hint">把每个 <strong>skill 当员工管</strong>：从招聘到退役，一个完整的 HR 生命周期分成 8 个模块，每个模块由对应子技能执行。<strong>分发</strong>是平台原生能力（registry + API），不需要单独的 skill。</p>
+    <div class="modmap">
+      <div class="mmrow h"><div>HR 模块</div><div>做什么</div><div>执行子技能</div></div>
+      <div class="mmrow"><div class="mm-mod">M·01 招聘</div><div class="mm-do">新 skill 入库</div><div class="mm-sk">skill-card-gen · skill-forge</div></div>
+      <div class="mmrow"><div class="mm-mod">M·02 评估</div><div class="mm-do">10 维评级定段位</div><div class="mm-sk">skill-audit</div></div>
+      <div class="mmrow"><div class="mm-mod">M·03 管理</div><div class="mm-do">编目 + 依赖/组合关系</div><div class="mm-sk">skill-registry-scan · skill-graph</div></div>
+      <div class="mmrow"><div class="mm-mod">M·04 分发</div><div class="mm-do">上架 / 公开私有 / 被 agent 调用</div><div class="mm-sk is-plat">平台原生（registry + API）</div></div>
+      <div class="mmrow"><div class="mm-mod">M·05 培训</div><div class="mm-do">把不够分的 skill 带上一档</div><div class="mm-sk"><span class="nw">skill-coach</span></div></div>
+      <div class="mmrow"><div class="mm-mod">M·06 绩效</div><div class="mm-do">持续监控、退化预警</div><div class="mm-sk"><span class="nw">skill-metrics</span></div></div>
+      <div class="mmrow"><div class="mm-mod">M·07 项目评估</div><div class="mm-do">按 agent / 项目盘点能力组合</div><div class="mm-sk">agent-capability-map</div></div>
+      <div class="mmrow"><div class="mm-mod">M·08 退役</div><div class="mm-do">下线、合并、可逆归档</div><div class="mm-sk"><span class="nw">skill-retire</span></div></div>
+    </div>
+    <p class="note">闭环：招聘 → 评估 → 管理 → 分发 → 培训 → 绩效 → 项目评估 → 退役 → 回到招聘。skill-metrics 发现退化 → skill-coach 提分；提分无效且低价值 → skill-retire 下线。这就是"管理"。</p>
+  </section>
+
+  <section class="sms-sec" id="baseline">
+    <h2><span class="n">06</span>审计基线</h2>
+    <p class="hint">小能用 SMS 跑了<strong>两层</strong>审计：一层是 openclaw 全库扫描，一层是已公开上架的精选目录。后者就是 <a href="/demo/" style="color:var(--accent)">/demo</a> 与 <a href="/registry/" style="color:var(--accent)">/registry</a> 实时展示的同一批 skill：</p>
+
+    <div class="baseline-group">
+      <div class="bg-label">全库审计 <span class="dim">· openclaw 全部 skill（含未发布）</span></div>
+      <div class="baseline">
+        <div class="bl"><div class="n">52</div><div class="l">个 Skill 全量扫描</div></div>
+        <div class="bl"><div class="n">56.4</div><div class="l">平均分 / 100</div></div>
+        <div class="bl"><div class="n">B</div><div class="l">平均段位</div></div>
+      </div>
+    </div>
+
+    <div class="baseline-group">
+      <div class="bg-label">已发布目录 <span class="dim">· 公开上架精选 = demo / registry</span></div>
+      <div class="baseline">
+        <div class="bl"><div class="n">25</div><div class="l">个已发布 Skill</div></div>
+        <div class="bl"><div class="n">70.4</div><div class="l">平均分 / 100</div></div>
+        <div class="bl"><div class="n">B</div><div class="l">平均段位</div></div>
+      </div>
+      <p class="note">段位分布 · S 2 · A 12 · B 5 · C 1 · D 5 —— 发布门槛把均分从 56.4 抬到 70.4，这正是"管理"在做的事。</p>
+    </div>
+    <div class="callout" style="margin-top:24px">
+      <strong>诚实声明：</strong>SMS 是一套<strong>标准 + 引擎估算 + 人工校准</strong>，不是绝对真理。评级由 LLM 引擎按上面的 10 维 / 0–10 锚点逐维评估，S 段核心资产额外人工复核；标准版本化迭代（当前 <strong>v1.0</strong>），分类、字段、rubric 公开可质疑。把它当"可决策的参考坐标"，不是"裁决"。完整方法可见 <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">openclaw-skill-ops</a>。
+    </div>
+  </section>
+
+  <div class="sms-cta">
+    <h2>用 SMS 给你的 skill 评个级<span style="color:var(--accent)">_</span></h2>
+    <a href="/evaluate/">▶ 在线评级（免费 · 真实 LLM）</a>
+  </div>
+
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="/">SkillOps</a>
+    <a href="/evaluate/">在线评级</a>
+    <a href="/docs/">文档</a>
+    <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">openclaw-skill-ops</a>
+    <span class="sig">SMS · 技能管理标准体系 v1.0  · SkillOps · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing · SkillOps — Skill Management OS</title>
+<meta name="description" content="SkillOps 定价 — 开源自托管免费 · Pro 托管版 · Enterprise 私有部署. Early access 阶段深度配合.">
+<link rel="canonical" href="https://skillops.tech/pricing/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+
+  /* ════ Nav (shared) ════ */
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  /* ════ Layout ════ */
+  .pr-stage { max-width: 1180px; margin: 0 auto; padding: clamp(40px,5vw,72px) clamp(20px,4vw,48px) clamp(56px,7vw,96px); }
+
+  /* ════ Hero ════ */
+  .pr-hero { text-align: center; padding-bottom: clamp(40px,5vw,64px); margin-bottom: clamp(40px,5vw,64px); }
+  .pr-hero .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 20px; }
+  .pr-hero .crumbs a { color: var(--accent); text-decoration: none; }
+  .pr-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(36px,5vw,68px); letter-spacing: -0.025em; line-height: 1.04; margin-bottom: 20px; }
+  .pr-hero h1 .u { color: var(--accent); }
+  .pr-hero p { font-size: 16px; color: var(--muted); max-width: 52ch; margin: 0 auto; line-height: 1.65; }
+  .pr-hero p strong { color: var(--text); font-weight: 500; }
+  .pr-hero .ea-pill { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 11px; padding: 6px 14px; border-radius: 999px; background: rgba(226,82,42,.12); color: var(--accent); margin-top: 22px; letter-spacing: 0.1em; }
+
+  /* ════ Plans ════ */
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: clamp(48px,6vw,80px); }
+  @media (max-width: 880px) { .plans { grid-template-columns: 1fr; } }
+  .plan { background: var(--bg); padding: 36px 30px; display: flex; flex-direction: column; gap: 18px; position: relative; }
+  .plan.featured { background: var(--bg-soft); }
+  .plan.featured::before { content: 'EARLY ACCESS'; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.16em; background: var(--accent); color: var(--bg); padding: 4px 12px; border-radius: 999px; }
+  .plan .tier-name { font-family: var(--f-mono); font-size: 12px; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; }
+  .plan .price { display: flex; align-items: baseline; gap: 6px; }
+  .plan .price .amt { font-family: var(--f-display); font-weight: 500; font-size: clamp(40px,4.5vw,56px); letter-spacing: -0.03em; line-height: 1; color: var(--text); }
+  .plan .price .per { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+  .plan .tagline { font-size: 14px; color: var(--muted); line-height: 1.6; min-height: 44px; }
+  .plan .feats { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .plan .feats li { font-size: 13.5px; color: var(--text); line-height: 1.5; display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
+  .plan .feats li::before { content: '✓'; color: var(--accent); font-family: var(--f-mono); font-size: 13px; }
+  .plan .feats li.off { color: var(--faint); }
+  .plan .feats li.off::before { content: '—'; color: var(--faint); }
+  .plan .cta { display: block; text-align: center; font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.04em; padding: 14px 20px; border-radius: 999px; text-decoration: none; transition: all .15s; border: 1px solid var(--text); color: var(--text); margin-top: 8px; }
+  .plan .cta:hover { background: var(--text); color: var(--bg); }
+  .plan .cta.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .plan .cta.primary:hover { background: transparent; color: var(--accent); }
+
+  /* ════ Comparison note ════ */
+  .pr-note { text-align: center; font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); line-height: 1.8; max-width: 60ch; margin: 0 auto clamp(48px,6vw,80px); }
+  .pr-note strong { color: var(--text); }
+
+  /* ════ FAQ ════ */
+  .pr-faq { max-width: 720px; margin: 0 auto; }
+  .pr-faq h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,34px); letter-spacing: -0.02em; text-align: center; margin-bottom: 36px; }
+  .faq-item { border-bottom: 1px solid var(--hairline); padding: 20px 0; }
+  .faq-item h4 { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .faq-item p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0; }
+  .faq-item a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+
+  /* ════ Footer ════ */
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1180px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;
+  d.setAttribute('data-theme', s.theme||'rams');
+  d.setAttribute('data-accent', s.accent||'orange');
+  d.setAttribute('data-lang', s.lang||'zh');
+})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active=""></nav>
+
+<main class="pr-stage">
+
+  <section class="pr-hero">
+    <div class="crumbs"><a href="/">SkillOps</a> / pricing</div>
+    <h1>定价<span class="u">_</span></h1>
+    <p>开源自托管<strong>永久免费</strong>. 托管版按 skill 资产规模收费. Enterprise 私有部署议定. 当前 <strong>early access 阶段免费深度配合</strong>.</p>
+    <div class="ea-pill">EARLY ACCESS · v0.7 · 价格未最终定稿</div>
+  </section>
+
+  <!-- ════ PLANS ════ -->
+  <div class="plans">
+    <!-- Free -->
+    <div class="plan">
+      <div class="tier-name">Open Source</div>
+      <div class="price"><span class="amt">免费</span></div>
+      <div class="tagline">自己跑开源的 openclaw-skill-ops，无限制使用.</div>
+      <ul class="feats">
+        <li>SMS 10 维评分脚本</li>
+        <li>Tier 分级 + 改进建议</li>
+        <li>本地 / CI 集成</li>
+        <li>MIT license（个人 / 研究）</li>
+        <li class="off">托管仪表盘</li>
+        <li class="off">自动周期审计</li>
+        <li class="off">趋势追踪 + 绩效归因</li>
+      </ul>
+      <a class="cta" href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">看 GitHub →</a>
+    </div>
+
+    <!-- Pro (featured) -->
+    <div class="plan featured">
+      <div class="tier-name">Pro · 托管版</div>
+      <div class="price"><span class="amt">¥</span><span class="per">/ 月 · 按资产规模</span></div>
+      <div class="tagline">托管仪表盘 + 自动审计，像管团队一样管 skill.</div>
+      <ul class="feats">
+        <li>开源版全部能力</li>
+        <li>托管 Portfolio Dashboard</li>
+        <li>每周自动重跑审计</li>
+        <li>能力热图 + 排行榜 + 趋势</li>
+        <li>GitHub / 本地 / Hub 接入</li>
+        <li>改进建议 + 版本演化追踪</li>
+        <li class="off">私有部署 + 自定义维度</li>
+      </ul>
+      <a class="cta primary" href="mailto:hi@qiuyiwu.com?subject=小能 · Pro 托管版咨询&body=简单介绍下你的 skill 资产：%0A- skill 数量：%0A- 当前管理方式：%0A- 期望接入时间：%0A">申请 Early Access →</a>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="plan">
+      <div class="tier-name">Enterprise</div>
+      <div class="price"><span class="amt">议定</span></div>
+      <div class="tagline">私有部署、自定义评分维度、SLA、深度配合.</div>
+      <ul class="feats">
+        <li>Pro 全部能力</li>
+        <li>私有化部署（你的 VPC）</li>
+        <li>自定义评分维度 / 权重</li>
+        <li>团队协作 + 权限管理</li>
+        <li>API / MCP 接入</li>
+        <li>SLA + 专属支持</li>
+        <li>方法论咨询（邱懿武亲自）</li>
+      </ul>
+      <a class="cta" href="mailto:hi@qiuyiwu.com?subject=小能 · Enterprise 咨询&body=简单介绍下你们的团队和需求：%0A- 团队 / 公司：%0A- skill / agent 规模：%0A- 私有部署需求：%0A- 时间线：%0A">商务咨询 →</a>
+    </div>
+  </div>
+
+  <p class="pr-note">
+    <strong>诚实说明：</strong>小能当前是 v0.7 PREVIEW. Pro / Enterprise 的具体价格<strong>尚未最终定稿</strong> ——
+    early access 阶段我们会和首批 20 个用户一起把定价打磨清楚，期间<strong>免费深度配合</strong>.
+    所以现在申请的人，不只是用户，是<strong>共建者</strong>.
+  </p>
+
+  <!-- ════ FAQ ════ -->
+  <section class="pr-faq">
+    <h2>定价 FAQ</h2>
+    <div class="faq-item">
+      <h4>Early access 真的免费吗？有什么条件？</h4>
+      <p>免费. 条件是愿意深度配合 —— 接入你真实的 skill 资产、给我们反馈、容忍 v0.x 的粗糙. 作为回报，你影响产品方向，并锁定后续优惠.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Pro 版"按资产规模"具体怎么算？</h4>
+      <p>大致按被管理的 skill 数量分档（例如 ≤20 / ≤100 / 更多）. 具体分档和价格在 early access 阶段和用户一起敲定. 不会按调用量收 —— 这是管理工具，不是 API 网关.</p>
+    </div>
+    <div class="faq-item">
+      <h4>我已经在用开源版，需要升级吗？</h4>
+      <p>不需要. 开源版永久免费、功能完整（评分 + tier + 建议）. Pro 解决的是"托管 + 自动化 + 全局视角"，适合 skill 多到手动管不过来的团队.</p>
+    </div>
+    <div class="faq-item">
+      <h4>和 Skill Hub 的 B2B 集成是一回事吗？</h4>
+      <p>不是. <a href="https://skill.qiuyiwu.com/for-teams/" target="_blank">Skill Hub for teams</a> 卖的是方法论内容资产的集成；小能卖的是 skill 管理工具. 两个产品、两条线 —— 当然可以一起用.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="https://qiuyiwu.com" target="_blank">qiuyiwu.com</a>
+    <a href="https://skill.qiuyiwu.com" target="_blank">skill hub</a>
+    <a href="/docs/">docs</a>
+    <a href="/demo/">live demo</a>
+    <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">github</a>
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · pricing · v0.7 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=document.getElementById('theme-toggle');
+  if(t)t.addEventListener('click',function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});});
+  var l=document.getElementById('lang-toggle');
+  if(l){l.textContent=d.getAttribute('data-lang')||'zh';l.addEventListener('click',function(){var c=d.getAttribute('data-lang')||'zh';var n=LANGS[(LANGS.indexOf(c)+1)%LANGS.length];setS({lang:n});l.textContent=n;});}
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

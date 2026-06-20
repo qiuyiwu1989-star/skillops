@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en-US" data-theme="rams" data-accent="orange" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillOps — Your AI skill library, invoke in any AI</title>
+  <link rel="canonical" href="https://skillops.tech/en/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://skillops.tech/">
+  <link rel="alternate" hreflang="en" href="https://skillops.tech/en/">
+  <link rel="alternate" hreflang="x-default" href="https://skillops.tech/">
+<meta name="description" content="SkillOps · your private, portable AI skill library — collect your best prompts, invoke them in any AI (ChatGPT, Claude…), version them, watch them get better. Follows you, locked to no one. No login required.">
+<meta property="og:title" content="SkillOps · The 1Password for AI skills">
+<meta property="og:description" content="Your AI skill library, wherever you go · invoke in any AI · version it, watch it improve. No login needed.">
+<meta property="og:url" content="https://skillops.tech/en/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://skillops.tech/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 22px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 880px) { .xn-nav ul { display: none; } }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+
+  /* ═══ HERO ═══ */
+  .hero { padding: clamp(40px,5vw,72px) 0 clamp(40px,5vw,64px); border-bottom: 1px solid var(--line); }
+  .hero .eyebrow { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .hero .eyebrow .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
+  .hero .brand-line { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .hero .brand-cn { font-family: var(--f-display); font-weight: 500; font-size: clamp(40px,5.5vw,72px); letter-spacing: -0.03em; line-height: 1; }
+  .hero .brand-cn .u { color: var(--accent); }
+  .hero .brand-en { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: 0.18em; }
+  .hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,38px); letter-spacing: -0.02em; line-height: 1.2; max-width: 24ch; margin-bottom: 14px; }
+  .hero h1 .u { color: var(--accent); }
+  .hero .lede { font-size: 15.5px; color: var(--muted); max-width: 56ch; line-height: 1.6; margin-bottom: 28px; }
+  .hero .lede strong { color: var(--text); font-weight: 500; }
+
+  /* live evaluate widget */
+  .widget { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: clamp(20px,2.5vw,28px); }
+  .widget .wlabel { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .widget textarea { width: 100%; box-sizing: border-box; min-height: 130px; resize: vertical; font-family: var(--f-mono); font-size: 13px; line-height: 1.6; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; color: var(--text); }
+  .widget textarea:focus { outline: none; border-color: var(--accent); }
+  .widget .wbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .widget .wbtn { font-family: var(--f-mono); font-size: 14px; padding: 13px 28px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: var(--bg); cursor: pointer; transition: all .15s; }
+  .widget .wbtn:hover:not(:disabled) { background: transparent; color: var(--accent); }
+  .widget .wbtn:disabled { opacity: .5; cursor: not-allowed; }
+  .widget .wsample { font-family: var(--f-mono); font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 1px dashed var(--muted); padding: 0 0 2px; }
+  .widget .wsample:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .widget .whint { font-family: var(--f-mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+  .widget .werr { font-family: var(--f-mono); font-size: 12px; color: #d4674a; margin-top: 10px; display: none; }
+
+  /* widget result */
+  .wresult { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .wresult.show { display: block; animation: wfade .35s ease; }
+  @keyframes wfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .wres-top { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+  .wres-score { font-family: var(--f-display); font-weight: 500; font-size: 44px; letter-spacing: -0.03em; line-height: 1; }
+  .wres-score .mx { font-family: var(--f-mono); font-size: 14px; color: var(--faint); }
+  .wres-tier { font-family: var(--f-mono); font-weight: 600; font-size: 22px; padding: 4px 16px; border: 2px solid currentColor; border-radius: 8px; }
+  .tier-S { color: var(--accent); } .tier-A { color: #4a9b8a; } .tier-B { color: #a8b56c; } .tier-C { color: var(--muted); } .tier-D { color: #b08968; }
+  .wres-summary { font-size: 13.5px; color: var(--muted); line-height: 1.6; flex: 1; min-width: 240px; }
+  .wdims { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .wdims { grid-template-columns: 1fr; } }
+  .wdim { display: grid; grid-template-columns: 80px 1fr 28px; gap: 10px; align-items: center; font-size: 11px; }
+  .wdim .dn { font-family: var(--f-mono); color: var(--muted); }
+  .wdim .db { height: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .wdim .db .f { height: 100%; background: var(--accent); border-radius: 999px; width: 0; transition: width .6s ease; }
+  .wdim .ds { font-family: var(--f-mono); color: var(--text); text-align: right; }
+  .whook { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+  .whook .ht { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .whook a { font-family: var(--f-mono); font-size: 12px; padding: 9px 18px; border-radius: 999px; text-decoration: none; border: 1px solid var(--accent); color: var(--accent); transition: all .15s; }
+  .whook a:hover { background: var(--accent); color: var(--bg); }
+  .whook a.ghost { border-color: var(--line); color: var(--muted); }
+  .whook a.ghost:hover { color: var(--text); border-color: var(--text); }
+
+  /* social proof bar */
+  .proof { padding: 18px 0; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 24px; flex-wrap: wrap; }
+  .proof b { color: var(--accent); }
+
+  /* 3-step */
+  .steps3 { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .steps3 h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; margin-bottom: 32px; }
+  .steps3 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 760px) { .steps3 .grid { grid-template-columns: 1fr; } }
+  .steps3 .cell { background: var(--bg); padding: 32px 28px; }
+  .steps3 .n { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.14em; margin-bottom: 14px; }
+  .steps3 .ic { font-size: 28px; margin-bottom: 12px; }
+  .steps3 h3 { font-family: var(--f-display); font-weight: 500; font-size: 21px; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .steps3 p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+  .steps3 p a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+  /* registry preview */
+  .regprev { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .regprev .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .regprev h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; }
+  .regprev .more { font-family: var(--f-mono); font-size: 13px; color: var(--accent); text-decoration: none; }
+  .regprev .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 760px) { .regprev .grid { grid-template-columns: 1fr; } }
+  .regprev .card { background: var(--bg); padding: 22px 22px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 8px; transition: background .12s; }
+  .regprev .card:hover { background: var(--bg-soft); }
+  .regprev .card .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .regprev .card .nm { font-family: var(--f-display); font-weight: 500; font-size: 16px; letter-spacing: -0.01em; }
+  .regprev .card .bd { font-family: var(--f-mono); font-size: 12px; padding: 3px 9px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
+  .regprev .card .ds { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* developer */
+  .dev { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: center; }
+  @media (max-width: 760px) { .dev { grid-template-columns: 1fr; } }
+  .dev h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,34px); letter-spacing: -0.02em; margin-bottom: 14px; }
+  .dev p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+  .dev p a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .dev .code { background: #161616; border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; font-family: var(--f-mono); font-size: 12.5px; color: #ebe6db; line-height: 1.8; overflow-x: auto; }
+  .dev .code .c { color: #6b7280; } .dev .code .a { color: var(--accent); }
+
+  /* 本地 vs 云端 tiers */
+  .tiers { padding: clamp(48px,6vw,80px) 0; border-bottom: 1px solid var(--line); }
+  .tiers h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; margin-bottom: 12px; }
+  .tiers .tiers-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 64ch; margin-bottom: 28px; }
+  .tiers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 680px) { .tiers-grid { grid-template-columns: 1fr; } }
+  .tier-col { background: var(--bg); padding: 28px 28px; }
+  .tier-col.feat { background: var(--bg-soft); }
+  .tc-head { margin-bottom: 16px; }
+  .tc-tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; }
+  .tc-tag.accent { color: var(--accent); border-color: var(--accent); }
+  .tier-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
+  .tier-col li { font-size: 13.5px; color: var(--text); line-height: 1.45; }
+  .tier-col li b { color: var(--accent); font-weight: 500; }
+  .tier-col li.off { color: var(--faint); }
+
+  /* CTA */
+  .cta { text-align: center; padding: clamp(56px,8vw,104px) clamp(20px,4vw,48px); background: var(--bg-soft); border-bottom: 1px solid var(--line); }
+  .cta h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(28px,4.5vw,56px); letter-spacing: -0.025em; line-height: 1.06; max-width: 20ch; margin: 0 auto 18px; }
+  .cta h2 .u { color: var(--accent); }
+  .cta p { font-size: 15px; color: var(--muted); max-width: 46ch; margin: 0 auto 28px; line-height: 1.6; }
+  .cta .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .cta .btn { font-family: var(--f-mono); font-size: 14px; padding: 14px 28px; border-radius: 999px; text-decoration: none; border: 1px solid var(--text); color: var(--text); transition: all .15s; }
+  .cta .btn:hover { background: var(--text); color: var(--bg); }
+  .cta .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .cta .btn.primary:hover { background: transparent; color: var(--accent); }
+
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1080px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active=""></nav>
+
+<main>
+  <!-- ═══ HERO with live widget ═══ -->
+  <section class="hero"><div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>SKILLOPS · YOUR AI SKILL LIBRARY · NO LOGIN NEEDED</div>
+    <div class="brand-line"><span class="brand-cn">SkillOps<span class="u">_</span></span></div>
+    <h1>Your AI skill library, wherever you go<span class="u">_</span></h1>
+    <p class="cat-line">DevOps runs code · MLOps runs models · <strong>SkillOps runs skills</strong></p>
+    <p class="lede">Collect your best prompts into your own library — <strong>invoke them in ChatGPT, Claude, any AI</strong>, version them, watch them get better. Follows you, locked to no one. <strong>The 1Password for AI skills.</strong></p>
+
+    <div class="widget">
+      <div class="wlabel"><span>▶ Try it first · score one of your prompts (30s · no login)</span></div>
+      <textarea id="w-input" aria-label="Paste your prompt / SKILL.md to score it" placeholder="Paste your SKILL.md / prompt / full description…&#10;The more you include, the better: purpose, triggers, steps, output format, examples."></textarea>
+      <div class="wbar">
+        <button class="wbtn" id="w-go">Evaluate</button>
+        <button class="wsample" id="w-sample">Load example</button>
+        <span class="whint" id="w-hint"></span>
+      </div>
+      <div class="werr" id="w-err"></div>
+      <div class="wresult" id="w-result">
+        <div class="wres-top">
+          <div class="wres-score"><span id="w-total">0</span><span class="mx"> / 100</span></div>
+          <div class="wres-tier" id="w-tier">—</div>
+          <div class="wres-summary" id="w-summary"></div>
+        </div>
+        <div class="wdims" id="w-dims"></div>
+        <div class="whook">
+          <span class="ht">Want to save it, version it, call it from an agent?</span>
+          <a href="/dashboard/" id="w-save">Save to console →</a>
+          <a class="ghost" href="/evaluate/">Batch-evaluate a GitHub repo</a>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ social proof ═══ -->
+  <div class="wrap"><div class="proof" id="proof">
+    <span>SMS 10-dimension scoring engine · real-time</span>
+    <span id="proof-stat">25 official skills scored · avg 70.4/100</span>
+    <span>Local-first · works without login</span>
+  </div></div>
+
+  <!-- ═══ 3-step ═══ -->
+  <section class="steps3"><div class="wrap">
+    <h2>How it helps you<span style="color:var(--accent)">_</span></h2>
+    <div class="grid">
+      <div class="cell">
+        <div class="n">01 · Invoke</div><div class="ic" aria-hidden="true">📋</div>
+        <h3>Use it in any AI</h3>
+        <p>Three ways: <strong>copy</strong> &amp; paste, a <strong>browser extension</strong> (one-click in ChatGPT / Claude web), or <strong>MCP</strong> (Claude Desktop / Cursor). It <strong>travels with you</strong>, never locked to one vendor.</p>
+      </div>
+      <div class="cell">
+        <div class="n">02 · Manage</div><div class="ic" aria-hidden="true">🗂️</div>
+        <h3>Manage skills like assets</h3>
+        <p>Version, roll back, watch the score improve, see what's actually used. Local-first — the <a href="/dashboard/">Console</a> works without login; create an account only when you need the cloud.</p>
+      </div>
+      <div class="cell">
+        <div class="n">03 · Score</div><div class="ic" aria-hidden="true">📊</div>
+        <h3>Know what it's worth</h3>
+        <p>Skill rating (SMS · 10 dimensions) gives a score out of 100, a tier, and actionable fixes — which to keep, which to improve. No more guessing.</p>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ registry preview ═══ -->
+  <section class="regprev"><div class="wrap">
+    <div class="head">
+      <h2>Registry · scored skills</h2>
+      <a class="more" href="/registry/">Browse all →</a>
+    </div>
+    <div class="grid" id="regprev-grid"></div>
+  </div></section>
+
+  <!-- ═══ developer ═══ -->
+  <section class="dev"><div class="wrap" style="display:contents;">
+    <div>
+      <h2>Developer? (optional)<span style="color:var(--accent)">_</span></h2>
+      <p>You don't need this for everyday use. But if you build agents — SkillOps can be your agent's skill backend: one API key, and your agent pulls the skills you manage with a single <code>curl</code>.</p>
+      <p>Public skills can be pulled without a key. <a href="/docs/">Read the docs →</a></p>
+    </div>
+    <div class="code"><span class="c"># list all my skills</span>
+curl https://skillops.tech/api/<span class="a">v1/me/skills</span> \
+  -H <span class="a">"Authorization: Bearer xn_YOUR_KEY"</span>
+
+<span class="c"># pull a single public skill (no key)</span>
+curl https://skillops.tech/api/<span class="a">v1/skills/&lt;handle&gt;/&lt;slug&gt;</span></div>
+  </div></section>
+
+  <!-- ═══ 本地 vs 云端 价值对比 ═══ -->
+  <section class="tiers"><div class="wrap">
+    <h2>Free to use · account only when you need it<span style="color:var(--accent)">_</span></h2>
+    <p class="tiers-sub">Works with no login and no GitHub. The items below are unlocked once you create an account (free · just one account key) — here's the value, so you can decide.</p>
+    <div class="tiers-grid">
+      <div class="tier-col">
+        <div class="tc-head"><span class="tc-tag">Local · no login</span></div>
+        <ul>
+          <li>✓ Evaluate any skill online (SMS 10-dim)</li>
+          <li>✓ Create / edit / score</li>
+          <li>✓ Data stays in your browser</li>
+          <li class="off">— Lost when you switch devices / clear cache</li>
+          <li class="off">— Can't publish or be called by an agent</li>
+        </ul>
+      </div>
+      <div class="tier-col feat">
+        <div class="tc-head"><span class="tc-tag accent">Unlock with an account · free</span></div>
+        <ul>
+          <li>✓ Everything in Local</li>
+          <li>✓ <b>Permanent cloud save</b> + version score trends</li>
+          <li>✓ <b>Publish to Registry</b>, discoverable by anyone / any agent</li>
+          <li>✓ <b>API Key</b>: your agent pulls your private skills with one curl line</li>
+          <li>✓ Cross-device (account key — no GitHub / password / email)</li>
+        </ul>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="cta">
+    <h2>Get your skills under management<span class="u">_</span></h2>
+    <p>No login, no GitHub. Open the console and build your first one — your data stays in the browser until you need the cloud.</p>
+    <div class="btns">
+      <a class="btn primary" href="/dashboard/">Open the console →</a>
+      <a class="btn" href="/registry/">Browse the Registry</a>
+    </div>
+  </section>
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="/evaluate/">Evaluate</a>
+    <a href="/registry/">Registry</a>
+    <a href="/dashboard/">Console</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://skill.qiuyiwu.com" target="_blank">skill hub</a>
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · Xiaoneng/Ace · v1.0 · Qiu Yiwu · by Zaowu Cloud · 2026</span>
+  </div>
+</footer>
+
+<script>
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATZH = { strategy:'Strategy', writing:'Writing', design:'Design', presentation:'Presentation', meta:'Meta', 'knowledge-system':'Knowledge System' };
+
+const SAMPLE = `# JTBD Interview Analyzer
+## Purpose
+Break a user-interview transcript into structured insights using the Jobs-to-be-Done framework.
+## Triggers
+- analyze this interview
+- break it down with JTBD
+- extract the user's jobs
+## Steps
+1. Mark every "situation sentence"
+2. Extract three elements: situation / motivation / expected outcome, as a JTBD statement
+3. Cluster similar Jobs across interviews and count frequency
+4. Tag functional / emotional / social jobs
+5. Identify unmet Jobs
+6. Output an insight report + product-opportunity hypotheses
+## Output format
+Markdown in four parts: core Jobs (by frequency) / unmet Jobs / emotional-social dimensions / opportunity hypotheses (3, in "if…then…" form)
+## Quality bar
+- Every Job traceable to a transcript line
+- All three elements present
+- Hypotheses falsifiable`;
+
+$('w-sample').onclick = () => { $('w-input').value = SAMPLE; $('w-input').focus(); };
+
+async function evaluate() {
+  const content = $('w-input').value.trim();
+  $('w-err').style.display = 'none';
+  if (content.length < 40) { $('w-err').textContent = 'Content too short — at least 40 characters.'; $('w-err').style.display = 'block'; return; }
+  const btn = $('w-go'); btn.disabled = true; btn.textContent = 'Evaluating…';
+  $('w-result').classList.remove('show');
+  try {
+    const r = await fetch(`${API}/evaluate`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ content }) });
+    const j = await r.json();
+    if (!r.ok || j.error) { $('w-err').textContent = j.message || `Evaluation failed (${r.status}）`; $('w-err').style.display='block'; return; }
+    renderResult(j);
+  } catch(e) { $('w-err').textContent = 'Network error, please retry.'; $('w-err').style.display='block'; }
+  finally { btn.disabled = false; btn.textContent = 'Evaluate'; }
+}
+
+function renderResult(j) {
+  $('w-tier').textContent = j.tier; $('w-tier').className = 'wres-tier tier-' + j.tier;
+  $('w-summary').textContent = j.summary || '';
+  $('w-dims').innerHTML = (j.dimensions||[]).map(d => `
+    <div class="wdim"><span class="dn">${esc(d.zh)}</span><span class="db"><span class="f" data-s="${d.score}"></span></span><span class="ds">${d.score}</span></div>`).join('');
+  $('w-result').classList.add('show');
+  // count up + bars
+  let cur=0; const t0=performance.now();
+  (function tick(t){ const p=Math.min(1,(t-t0)/800); $('w-total').textContent=Math.round(p*j.total); if(p<1) requestAnimationFrame(tick); else $('w-total').textContent=j.total; })(performance.now());
+  setTimeout(()=>document.querySelectorAll('#w-dims .f').forEach(f=>{ const s=+f.dataset.s; f.style.width=(s/10*100)+'%'; if(s<=4) f.style.background='#b08968'; }), 100);
+  $('w-result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+$('w-go').onclick = evaluate;
+$('w-input').addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey)&&e.key==='Enter') evaluate(); });
+
+// social proof
+(async()=>{ try{ const s=await (await fetch(`${API}/evaluations/hub`)).json(); const it=s.items||[]; if(it.length){ const avg=Math.round(it.reduce((a,x)=>a+x.total,0)/it.length*10)/10; $('proof-stat').innerHTML=`<b>${it.length}</b> official skills scored · avg <b>${avg}</b>/100`; } }catch{} })();
+
+// registry preview (top 6 official)
+(async()=>{ try{ const s=await (await fetch(`${API}/evaluations/hub`)).json(); const top=(s.items||[]).sort((a,b)=>b.total-a.total).slice(0,6);
+  $('regprev-grid').innerHTML = top.map(x=>`<a class="card" href="https://skill.qiuyiwu.com/s/${esc(x.slug)}/" target="_blank">
+    <div class="top"><span class="nm">${esc(x.name||x.slug)}</span><span class="bd tier-${x.tier}">${x.total}/100 ${x.tier}</span></div>
+    <span class="ds">${esc((x.summary||'').slice(0,72))}…</span></a>`).join('');
+}catch{} })();
+
+// theme + lang
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=$('theme-toggle'); if(t)t.onclick=function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});};
+  var l=$('lang-toggle'); if(l){ var _en=location.pathname.indexOf('/en')===0; l.textContent=_en?'中':'EN'; l.onclick=function(){ location.href=_en?'/':'/en/'; }; }
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

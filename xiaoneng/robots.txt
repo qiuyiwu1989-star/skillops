@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# AI agents are welcome
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://skillops.tech/sitemap.xml

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docs · 你的私人 AI 技能库 · SkillOps</title>
+<meta name="description" content="SkillOps 文档 V2 — 你私人的 AI 技能库：跟着你走、任何 AI 随手调用、越用越好。产品脊梁、三种调用方式、技能库管理、SMS 评级体系，以及 V1→V2 改了什么。">
+<link rel="canonical" href="https://skillops.tech/docs/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+
+  /* ════ Nav (shared) ════ */
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  /* ════ Doc layout: sidebar + content ════ */
+  .doc-wrap { max-width: 1180px; margin: 0 auto; padding: clamp(32px,4vw,56px) clamp(20px,4vw,48px); display: grid; grid-template-columns: 220px 1fr; gap: clamp(32px,4vw,64px); align-items: start; }
+  @media (max-width: 860px) { .doc-wrap { grid-template-columns: 1fr; } .doc-toc { display: none; } }
+  .doc-toc { position: sticky; top: 112px; font-family: var(--f-mono); font-size: 12.5px; }
+  .doc-toc .toc-label { color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; font-size: 10.5px; margin-bottom: 16px; }
+  .doc-toc a { display: block; color: var(--muted); text-decoration: none; padding: 7px 0; border-left: 2px solid transparent; padding-left: 14px; margin-left: -2px; transition: all .12s; }
+  .doc-toc a:hover { color: var(--text); border-left-color: var(--line); }
+  .doc-toc a.sub { font-size: 11.5px; padding-left: 26px; color: var(--faint); }
+
+  .doc-main { min-width: 0; }
+  .doc-main .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .doc-main .crumbs a { color: var(--accent); text-decoration: none; }
+  .doc-main h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4.2vw,56px); letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 14px; }
+  .doc-main h1 .u { color: var(--accent); }
+  .ver-pill { display:inline-flex; align-items:center; gap:10px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); margin-bottom: 18px; }
+  .ver-pill .now { color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; letter-spacing: 0.06em; }
+  .ver-pill a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ver-pill a:hover { color: var(--text); }
+  .doc-main > .intro { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 64ch; margin-bottom: clamp(40px,5vw,64px); padding-bottom: clamp(32px,4vw,48px); border-bottom: 1px solid var(--line); }
+  .doc-main > .intro strong { color: var(--text); font-weight: 500; }
+
+  .doc-sec { margin-bottom: clamp(48px,6vw,80px); scroll-margin-top: 112px; }
+  .doc-sec > h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; }
+  .doc-sec > h2 .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); letter-spacing: 0.1em; }
+  .doc-sec > .sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; max-width: 62ch; }
+  .doc-sec p { font-size: 14.5px; color: var(--muted); line-height: 1.75; max-width: 64ch; margin-bottom: 16px; }
+  .doc-sec p strong { color: var(--text); font-weight: 500; }
+  .doc-sec code { font-family: var(--f-mono); font-size: 12.5px; background: var(--bg-soft); padding: 2px 7px; border-radius: 4px; color: var(--accent); }
+  .doc-sec h4.mh { font-family:var(--f-display); font-weight:500; font-size:18px; margin:28px 0 4px; letter-spacing:-0.01em; }
+
+  /* ════ Spine / channels / capability cards (reuse dim-grid) ════ */
+  .dim-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 24px 0; }
+  @media (max-width: 640px) { .dim-grid { grid-template-columns: 1fr; } }
+  .dim { background: var(--bg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .dim .dim-head { display: flex; align-items: baseline; gap: 10px; }
+  .dim .dim-num { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.08em; }
+  .dim .dim-name { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; }
+  .dim .dim-en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .dim p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; max-width: none; }
+  .dim .pts { font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); margin-top: auto; padding-top: 6px; letter-spacing: 0.04em; }
+  .dim .pts.live { color: var(--green,#2f7d6b); } .dim .pts.beta { color: var(--amber,#6b7536); }
+
+  /* ════ Tier table ════ */
+  .tier-tbl { border: 1px solid var(--line); margin: 24px 0; }
+  .tier-tbl .trow { display: grid; grid-template-columns: 80px 120px 1fr; gap: 0; border-bottom: 1px solid var(--hairline); }
+  .tier-tbl .trow:last-child { border-bottom: 0; }
+  .tier-tbl .trow > div { padding: 16px 20px; font-size: 14px; }
+  .tier-tbl .trow.head > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+  .tier-tbl .tier-badge { font-family: var(--f-mono); font-weight: 600; font-size: 16px; letter-spacing: 0.05em; }
+  .tier-tbl .range { font-family: var(--f-mono); font-size: 13px; color: var(--text); }
+  .tier-tbl .meaning { color: var(--muted); }
+  .tier-tbl .S .tier-badge { color: var(--accent); }
+  .tier-tbl .A .tier-badge { color: #2f7d6b; }
+  .tier-tbl .B .tier-badge { color: #6b7536; }
+  .tier-tbl .C .tier-badge { color: var(--muted); }
+  .tier-tbl .D .tier-badge { color: var(--faint); }
+
+  /* ════ V1→V2 comparison ════ */
+  .cmp-tbl { border: 1px solid var(--line); margin: 24px 0; overflow:hidden; border-radius:8px; }
+  .cmp-tbl .crow { display: grid; grid-template-columns: 110px 1fr 1fr; border-bottom: 1px solid var(--hairline); }
+  .cmp-tbl .crow:last-child { border-bottom: 0; }
+  .cmp-tbl .crow > div { padding: 14px 18px; font-size: 13.5px; line-height: 1.55; }
+  .cmp-tbl .crow.head > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .cmp-tbl .dim-k { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); border-right: 1px solid var(--hairline); }
+  .cmp-tbl .v1 { color: var(--faint); border-right: 1px solid var(--hairline); }
+  .cmp-tbl .v2 { color: var(--text); } .cmp-tbl .v2 b { color: var(--accent); font-weight: 500; }
+  @media (max-width: 640px) { .cmp-tbl .crow { grid-template-columns: 1fr; } .cmp-tbl .dim-k,.cmp-tbl .v1 { border-right:0; } }
+
+  /* ════ Steps ════ */
+  .steps { counter-reset: step; margin: 24px 0; }
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--hairline); }
+  .step:last-child { border-bottom: 0; }
+  .step::before { counter-increment: step; content: counter(step); font-family: var(--f-mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .step h4 { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .step p { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin: 0; max-width: 60ch; }
+
+  /* ════ Code block ════ */
+  .code-block { background: #161616; border: 1px solid var(--line); border-radius: 6px; padding: 18px 22px; margin: 20px 0; font-family: var(--f-mono); font-size: 13px; color: #ebe6db; line-height: 1.7; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .code-block .c { color: #6b7280; }
+  .code-block .a { color: var(--accent); }
+
+  /* ════ FAQ ════ */
+  .faq-item { border-bottom: 1px solid var(--hairline); padding: 20px 0; }
+  .faq-item h4 { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .faq-item p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0; max-width: 64ch; }
+  .faq-item a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+
+  /* ════ Callout ════ */
+  .callout { background: rgba(226,82,42,.06); border-left: 3px solid var(--accent); padding: 18px 22px; margin: 24px 0; font-size: 13.5px; color: var(--text); line-height: 1.65; }
+  .callout strong { color: var(--accent); }
+  .callout a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+
+  /* ════ Footer ════ */
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1180px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;
+  d.setAttribute('data-theme', s.theme||'rams');
+  d.setAttribute('data-accent', s.accent||'orange');
+  d.setAttribute('data-lang', s.lang||'zh');
+})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="docs"></nav>
+
+<div class="doc-wrap">
+
+  <!-- ════ TOC ════ -->
+  <aside class="doc-toc">
+    <div class="toc-label">on this page</div>
+    <a href="#what">这是什么</a>
+    <a href="#spine">产品脊梁</a>
+    <a href="#invoke">三种调用方式</a>
+    <a href="#manage">管理你的技能库</a>
+    <a href="#sms">SMS 评级体系</a>
+    <a href="#dimensions" class="sub">— 10 个维度</a>
+    <a href="#tiers" class="sub">— tier 分级</a>
+    <a href="#start">如何开始</a>
+    <a href="#whatschanged">V1 → V2 改了什么</a>
+    <a href="#teams">团队 / 治理</a>
+    <a href="#faq">FAQ</a>
+  </aside>
+
+  <!-- ════ MAIN ════ -->
+  <main class="doc-main">
+    <div class="crumbs"><a href="/">SkillOps</a> / docs</div>
+    <h1>文档<span class="u">_</span></h1>
+    <div class="ver-pill"><span class="now">V2 · 2026-06</span><span>·</span><a href="/docs/v1/">看 V1 归档 →</a><span>·</span><a href="#whatschanged">改了什么</a></div>
+    <p class="intro">
+      <strong>SkillOps 是你私人的 AI 技能库</strong> —— 把好用的提示词 / 技能存进来，<strong>跟着你走</strong>，在任何 AI 里<strong>随手调用</strong>，<strong>越用越好</strong>。
+      可以理解成 <strong>AI 技能的 1Password</strong>：你的能力资产沉淀在一个中立、不被任何一家 AI 锁住的地方。这份文档讲清它的脊梁、三种调用方式、技能库怎么管，以及评分标准 SMS。
+    </p>
+
+    <!-- ── WHAT ── -->
+    <section class="doc-sec" id="what">
+      <h2><span class="n">01</span>这是什么</h2>
+      <p class="sub">不是又一个 prompt 商店，而是「你自己的」技能库 —— 三件事：捕获 · 管理 · 调用。</p>
+      <p>
+        你每天在 ChatGPT / Claude 里反复打磨提示词，但它们散落在聊天记录、笔记、收藏夹里，换个 AI 就丢了。SkillOps 把这些<strong>变成可管理的资产</strong>：
+      </p>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-num">①</span><span class="dim-name">捕获</span></div><span class="dim-en">CAPTURE</span><p>顺手把一个好提示词 / SKILL.md 存进库，自动 SMS 评级、自动归档。是建库的 on-ramp。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">②</span><span class="dim-name">管理</span></div><span class="dim-en">MANAGE</span><p>评分、版本、培训提分、组合关系、标签、导出。让库越用越值钱 —— 这是护城河。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">③</span><span class="dim-name">调用</span></div><span class="dim-en">INVOKE</span><p>在任何 AI 里随手调起：复制 / 浏览器插件 / MCP。调用是矛尖，让管理变得有意义。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">④</span><span class="dim-name">便携</span></div><span class="dim-en">PORTABLE</span><p>中立、不锁定 —— 技能跟着你走，随时一键导出整库带走。这是引力中心。</p></div>
+      </div>
+      <p>
+        面向<strong>知识工作者</strong>（不只是开发者）：做战略、写作、创意、咨询、运营的人，都在积累自己的「打法」。SkillOps 让这些打法第一次有了可度量、可复用、可携带的形态。
+      </p>
+      <div class="callout">
+        生态位：<strong>Anthropic 做 Skill 格式标准，SkillOps 做你的私人技能库与管理层</strong>。就像 <code>npm + 1Password</code> —— 底层格式被巨头握住，「沉淀 / 评分 / 调用 / 便携」这层留给生态做，且<strong>跟着用户走、不当运行时</strong>。
+      </div>
+    </section>
+
+    <!-- ── SPINE ── -->
+    <section class="doc-sec" id="spine">
+      <h2><span class="n">02</span>产品脊梁</h2>
+      <p class="sub">四段递进 —— 每一段都有明确的角色，诚实标注现状。</p>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-num">引信</span><span class="dim-name">运行 / 调用</span></div><span class="dim-en">INVOKE</span><p>在任何 AI 里随手调起技能。这是<strong>矛尖</strong> —— 让人愿意把库建起来、用起来的那个动作。</p><span class="pts live">● 已上线</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">核心</span><span class="dim-name">管理</span></div><span class="dim-en">MANAGE</span><p>评分 / 版本 / 培训 / 组合 / 标签 / 导出 —— 库越用越好。这是<strong>护城河</strong>，别人难抄的复利层。</p><span class="pts live">● 已上线</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">终局</span><span class="dim-name">治理 / 团队</span></div><span class="dim-en">GOVERN</span><p>个人 → 组织：共享库、角色权限、质量门禁。把方法论变成团队的操作系统。</p><span class="pts beta">○ 建设中</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">第二幕</span><span class="dim-name">市场</span></div><span class="dim-en">MARKET</span><p>供给侧：发现、流通、可选的保护 / 变现，SMS 当信用层。不做开源白嫖市场。</p><span class="pts beta">○ 规划中</span></div>
+      </div>
+      <p>
+        一句话记忆：<strong>评分是钩子，调用是矛尖，管理是护城河，市场是第二幕，便携 / 中立是贯穿始终的引力中心。</strong>
+      </p>
+    </section>
+
+    <!-- ── INVOKE ── -->
+    <section class="doc-sec" id="invoke">
+      <h2><span class="n">03</span>三种调用方式</h2>
+      <p class="sub">技能跑在「你自己的 AI」里 —— SkillOps 只负责把技能取出来递给你，<strong>不替你执行、不锁定</strong>。</p>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-num">①</span><span class="dim-name">复制到任何 AI</span></div><span class="dim-en">COPY · 通用</span><p>一键复制内容，粘进 ChatGPT / Claude / 任意对话框即用。地板最低、哪都能用，每次调用自动 +1 计数。</p><span class="pts live">● 已上线</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">②</span><span class="dim-name">浏览器插件</span></div><span class="dim-en">EXTENSION · B</span><p>装在 ChatGPT / Claude 网页：粘一次 API Key，输入框旁 ⚡ 直接调起任意技能，免复制粘贴。面向知识工作者。</p><span class="pts beta">◐ v0.1</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">③</span><span class="dim-name">MCP</span></div><span class="dim-en">MCP · A</span><p>接 Claude Desktop / Code / Cursor：把整库接成工具，让 agent 自己 list / get / search。面向开发者 / agent。</p><span class="pts beta">◐ v0.1</span></div>
+      </div>
+      <p>插件与 MCP 用<strong>同一个 API Key</strong>。在<a href="/dashboard/" style="color:var(--accent)">控制台</a>每个技能的「调用」页都能看到这三种方式的接入方法。</p>
+      <div class="callout">
+        <strong>为什么不当运行时？</strong>有的竞品把技能放到自家服务器上执行 —— 短期方便，长期把你锁死、还掌握你的数据。SkillOps 反过来：<strong>技能在你选的 AI 里跑，库跟着你走</strong>。中立和便携，是我们不动摇的立场。
+      </div>
+    </section>
+
+    <!-- ── MANAGE ── -->
+    <section class="doc-sec" id="manage">
+      <h2><span class="n">04</span>管理你的技能库</h2>
+      <p class="sub">控制台 = 你的技能管理中心。这是产品的核心护城河 —— 库越用越好，靠的就是这一层。</p>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-name">全生命周期</span></div><span class="dim-en">LIFECYCLE</span><p>招聘 → 评级 → 迭代提分 → 发布 → 归档。每个技能都有清晰的状态与「下一步」。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-name">版本 + 维度 diff</span></div><span class="dim-en">VERSIONS</span><p>每次保存留一版，可查看 / 回滚 / 对比；提分后能看到是哪一维涨了多少。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-name">评分 + 小能培训</span></div><span class="dim-en">SCORE · COACH</span><p>SMS 逐维评级；小能定位最弱维度、重写 SKILL.md 帮你冲段位。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-name">组合关系图</span></div><span class="dim-en">GRAPH</span><p>给技能连边：可组合（compose_with）/ 依赖（depend_on），把库变成一张能编排的图。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-name">标签 · 搜索 · 批量</span></div><span class="dim-en">ORGANIZE</span><p>标签 / 集合分组，按分数 / 调用 / 最近排序，多选批量公开 / 归档 / 导出。</p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-name">一键导出（便携）</span></div><span class="dim-en">EXPORT</span><p>把整库导成 <code>SKILL.md</code> 文件夹（.zip）或可重导的 .json。随时带走、交接团队。</p></div>
+      </div>
+      <div class="callout">个人用<strong>不用登录、本地就能开始</strong>（数据存在你这台浏览器）。需要上云 / 公开 / 给 agent 调用时，再用一个账号 key 创建云端账号 —— 无需邮箱密码。</div>
+    </section>
+
+    <!-- ── SMS ── -->
+    <section class="doc-sec" id="sms">
+      <h2><span class="n">05</span>SMS 评级体系</h2>
+      <p class="sub">SMS = Skill Management Standard · 衡量一个技能成熟度的标准化度量，是建库的钩子。</p>
+      <p>
+        市面上的 skill / GPT / prompt 库都<strong>没有质量度量</strong>。SMS 把成熟度拆成 <strong>4 支柱 × 10 维</strong>（可理解 / 可执行 / 可工程 / 可信赖与价值），每维 0–10 分、<strong>总分 100</strong>，由引擎自动评估 + 关键资产人工校准。rubric 持续迭代 —— 当前看重<strong>是否沉淀了隐性经验与坑（gotchas）</strong>、以及触发设计能否让 agent 在对的时机准确召唤（路由自检）。<strong>完整方法论见 <a href="/sms/" style="color:var(--accent);border-bottom:1px solid var(--accent);text-decoration:none">SMS 标准 →</a></strong>
+      </p>
+
+      <h3 id="dimensions" style="font-family:var(--f-display);font-weight:500;font-size:20px;letter-spacing:-0.015em;margin:32px 0 4px;scroll-margin-top:112px;">10 个评分维度</h3>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-num">01</span><span class="dim-name">清晰度</span></div><span class="dim-en">CLARITY</span><p>用途、边界、价值是否一眼可懂；面向中文用户时，中文表达是否清晰自然。</p><span class="pts">可理解</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">02</span><span class="dim-name">可调用性</span></div><span class="dim-en">INVOCABILITY</span><p>触发设计是否让 agent 在对的时机准确召唤、不漏召 / 误触。</p><span class="pts">可理解</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">03</span><span class="dim-name">可执行性</span></div><span class="dim-en">EXECUTABILITY</span><p>步骤是否具体到可照做，含判断标准与异常处理，无「凭感觉」的空步。</p><span class="pts">可执行</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">04</span><span class="dim-name">输出稳定性</span></div><span class="dim-en">STABILITY</span><p>不同输入 / 不同人调用，产出结构是否一致、可预测。</p><span class="pts">可执行</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">05</span><span class="dim-name">结果质量</span></div><span class="dim-en">QUALITY</span><p>产出是否达资深从业者水准、沉淀了隐性经验与坑，而非复述常识或套模板。</p><span class="pts">可执行</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">06</span><span class="dim-name">可复用性</span></div><span class="dim-en">REUSABILITY</span><p>能否抽象迁移到多个场景 / 行业，而非绑死单一任务。</p><span class="pts">可工程</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">07</span><span class="dim-name">可组合性</span></div><span class="dim-en">COMPOSABILITY</span><p>输入输出契约是否清晰，可作为更大工作流的一个节点被编排。</p><span class="pts">可工程</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">08</span><span class="dim-name">可评估性</span></div><span class="dim-en">EVALUABILITY</span><p>是否有明确成功标准，输出好坏可被测试 / 回归 / 客观判断。</p><span class="pts">可工程</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">09</span><span class="dim-name">安全性</span></div><span class="dim-en">SAFETY</span><p>越界 / 注入 / 敏感信息 / 合规风险是否被主动处理；企业可否放心接入。</p><span class="pts">可信赖</span></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">10</span><span class="dim-name">商业价值</span></div><span class="dim-en">BUSINESS VALUE</span><p>是否解决高频、真实、有支付意愿的问题，价值可被量化。</p><span class="pts">可信赖</span></div>
+      </div>
+
+      <h3 id="tiers" style="font-family:var(--f-display);font-weight:500;font-size:20px;letter-spacing:-0.015em;margin:40px 0 4px;scroll-margin-top:112px;">Tier 分级</h3>
+      <p class="sub">总分映射到 5 段，决定技能的可见性与分发策略。</p>
+      <div class="tier-tbl">
+        <div class="trow head"><div>TIER</div><div>分数区间</div><div>含义</div></div>
+        <div class="trow S"><div class="tier-badge">S</div><div class="range">86–100</div><div class="meaning">核心资产 · 旗舰级，主推、可商业化</div></div>
+        <div class="trow A"><div class="tier-badge">A</div><div class="range">76–85</div><div class="meaning">稳定可用 · 公开发布、可放心调用</div></div>
+        <div class="trow B"><div class="tier-badge">B</div><div class="range">64–75</div><div class="meaning">公开门槛 · 达到可对外分发的最低线</div></div>
+        <div class="trow C"><div class="tier-badge">C</div><div class="range">50–63</div><div class="meaning">概念 · 建议设为私有，继续提分</div></div>
+        <div class="trow D"><div class="tier-badge">D</div><div class="range">&lt; 50</div><div class="meaning">待重写 · 候选重写 / 归档</div></div>
+      </div>
+      <div class="callout">
+        <strong>诚实声明：</strong>SMS 是「标准 + 引擎估算 + 人工校准」，不是绝对真理。分类、字段、rubric 公开可质疑，标准本身版本化迭代。把它当「可决策的参考坐标」，不是「裁决」。
+      </div>
+    </section>
+
+    <!-- ── START ── -->
+    <section class="doc-sec" id="start">
+      <h2><span class="n">06</span>如何开始</h2>
+      <p class="sub">三步上手，不用登录。</p>
+      <div class="steps">
+        <div class="step"><div><h4>打开控制台</h4><p>到 <a href="/dashboard/" style="color:var(--accent)">控制台</a> —— 不用注册、本地就能用，数据先存在你这台浏览器。</p></div></div>
+        <div class="step"><div><h4>招聘 / 捕获第一个技能</h4><p>粘贴一个好提示词 / 上传 SKILL.md / 从 GitHub 导入 / 从<a href="/registry/" style="color:var(--accent)">技能市场</a> fork。自动 SMS 评级、存为 v1。</p></div></div>
+        <div class="step"><div><h4>在任何 AI 里调用</h4><p>复制即用；想更顺手就装浏览器插件或接 MCP。需要上云 / 公开 / 给 agent 调用时，用账号 key 创建云端账号、生成 API Key。</p></div></div>
+      </div>
+      <div class="code-block"><span class="c"># Agent 一行 curl 拉取你库里的某个技能（用 API Key）</span>
+curl https://skillops.tech/api/<span class="a">v1/me/skills</span> -H <span class="a">"Authorization: Bearer xn_你的key"</span></div>
+    </section>
+
+    <!-- ── WHAT'S CHANGED ── -->
+    <section class="doc-sec" id="whatschanged">
+      <h2><span class="n">07</span>V1 → V2 改了什么</h2>
+      <p class="sub">V1 的叙事是「把 skill 当员工、用 HR 8 模块管理」——内部范式很完整，但对用户来说太绕、太开发者向。V2 把它收敛回一个普通人也懂的定位。<a href="/docs/v1/">V1 归档在此 →</a></p>
+      <div class="cmp-tbl">
+        <div class="crow head"><div>维度</div><div>V1（旧）</div><div>V2（现在）</div></div>
+        <div class="crow"><div class="dim-k">定位</div><div class="v1">AI Skill 全生命周期管理 OS · 把 skill 当「员工」、HR 8 模块</div><div class="v2"><b>你私人的 AI 技能库</b> · 跟着你走、随手调用、越用越好（AI 技能的 1Password）</div></div>
+        <div class="crow"><div class="dim-k">受众</div><div class="v1">偏开发者 / 团队管理者</div><div class="v2"><b>知识工作者优先</b>（写作 / 战略 / 创意 / 咨询），开发者也覆盖</div></div>
+        <div class="crow"><div class="dim-k">调用</div><div class="v1">主要靠复制 / curl</div><div class="v2"><b>三通道</b>：复制 + 浏览器插件 + MCP —— 调用被当成矛尖做出来</div></div>
+        <div class="crow"><div class="dim-k">管理</div><div class="v1">以评分为主</div><div class="v2"><b>全生命周期</b> + 组合关系图 + 标签 + 维度级 diff + 批量 + <b>一键导出</b></div></div>
+        <div class="crow"><div class="dim-k">便携</div><div class="v1">未强调</div><div class="v2"><b>中立 / 不锁定成为引力中心</b>，整库可一键导出带走</div></div>
+        <div class="crow"><div class="dim-k">评分</div><div class="v1">4 支柱 × 10 维 / 100；tier 表有笔误（D&lt;25）</div><div class="v2">同 4×10 / 100，<b>rubric 升级</b>（gotchas / 路由自检）；<b>tier 修正</b>（D&lt;50，区间连续）</div></div>
+        <div class="crow"><div class="dim-k">发现</div><div class="v1">GitHub 发现的技能直跳源仓库</div><div class="v2">每个发现的技能有<b>独立评分卡落地页</b>，含来源与 IP 声明</div></div>
+        <div class="crow"><div class="dim-k">诚实度</div><div class="v1">路线图画了「监控中」等未实现阶段</div><div class="v2"><b>砍掉点不到的阶段</b>，生命周期只留真能走到的：招聘→评级→提分→发布→归档</div></div>
+      </div>
+      <div class="callout">一句话：V1 在讲「我们内部怎么把技能当资产运营」；V2 在讲「<strong>你</strong>怎么拥有一个跟着你走、越用越好的 AI 技能库」。定位从供给侧叙事，收敛到用户侧价值。</div>
+    </section>
+
+    <!-- ── TEAMS / GOVERNANCE ── -->
+    <section class="doc-sec" id="teams">
+      <h2><span class="n">08</span>团队 / 治理</h2>
+      <p class="sub">个人用永久免费、不用登录。团队 / 组织是终局，正在建设。</p>
+      <p>多人组织、角色权限、共享技能库（<code>Library.owner</code>）、质量门禁 —— 这一层需要一套鉴权 / 多租户基建，是<strong>独立的里程碑</strong>，我们不画假 UI。在那之前，<strong>「一键导出」就是团队交接的方式</strong>：导出整库或选中的技能，发给同事在控制台重建，评分 / 版本随附。</p>
+      <div class="callout" style="text-align:center;">
+        <a href="mailto:hi@qiuyiwu.com?subject=SkillOps · 团队 / 私有部署咨询&body=简单介绍下你们的团队和需求：%0A- 团队 / 公司：%0A- skill / agent 规模：%0A- 最关心的能力（管理 / 私有部署 / 集成）：%0A" style="font-weight:600;">想聊团队方案？邮件我 →</a>
+      </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="doc-sec" id="faq">
+      <h2><span class="n">09</span>FAQ</h2>
+      <div class="faq-item">
+        <h4>这和直接用 ChatGPT / Claude 有什么区别？</h4>
+        <p>AI 是「运行时」，SkillOps 是「你的能力库」。你打磨的好提示词不该锁在某个聊天记录里 —— 存进库后，它可评分、可迭代、可组合，并且<strong>在任何 AI 里都能调用</strong>，换平台不丢。</p>
+      </div>
+      <div class="faq-item">
+        <h4>它和那些 skill 市场 / 闭源平台的区别？</h4>
+        <p>有的平台把技能放自家服务器执行 + 变现，本质是<strong>运行时 + 锁定</strong>。SkillOps 是相反的一极：<strong>不当运行时、不锁定</strong> —— 技能在你选的 AI 里跑，库随时可导出带走。中立和便携是立场，不是功能。</p>
+      </div>
+      <div class="faq-item">
+        <h4>「便携」具体意味着什么？</h4>
+        <p>控制台一键把整库导成标准 <code>SKILL.md</code> 文件夹（.zip）或可重导的 .json。你的资产不依赖我们存活 —— 这是我们给「跟着你走」的硬承诺。</p>
+      </div>
+      <div class="faq-item">
+        <h4>评级是 AI 打的还是人工打的？</h4>
+        <p><strong>AI 自动评分 + 关键资产人工校准</strong>。引擎按 4 支柱 × 10 维逐维评估，S 段核心资产额外人工复核。标准版本化迭代、公开可质疑。</p>
+      </div>
+      <div class="faq-item">
+        <h4>我的技能不是 Claude 格式，能用吗？</h4>
+        <p>SMS 维度是<strong>格式无关</strong>的 —— 评的是技能的内在质量。只要能整理成结构化描述（用途、触发、步骤、输出），ChatGPT 提示词 / 通用 prompt / 自定义 agent 都适用。</p>
+      </div>
+      <div class="faq-item">
+        <h4>多少钱？</h4>
+        <p>个人用<strong>永久免费、不用登录</strong>。团队 / 私有部署见上方 <a href="#teams">团队 / 治理</a>。</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="https://qiuyiwu.com" target="_blank">qiuyiwu.com</a>
+    <a href="/registry/">registry</a>
+    <a href="/dashboard/">控制台</a>
+    <a href="/sms/">SMS 标准</a>
+    <a href="/docs/v1/">docs v1</a>
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · docs · v2 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=document.getElementById('theme-toggle');
+  if(t)t.addEventListener('click',function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});});
+  var l=document.getElementById('lang-toggle');
+  if(l){l.textContent=d.getAttribute('data-lang')||'zh';l.addEventListener('click',function(){var c=d.getAttribute('data-lang')||'zh';var n=LANGS[(LANGS.indexOf(c)+1)%LANGS.length];setS({lang:n});l.textContent=n;});}
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

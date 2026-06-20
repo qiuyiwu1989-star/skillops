@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Skill Hub 评估 · SkillOps</title>
+<meta name="description" content="SkillOps 正在持续评估 Skill Hub 自家的 25 个 skill 资产 — 现场数据 · 每周日重跑.">
+<link rel="canonical" href="https://skillops.tech/demo/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+
+  /* ════ Own nav (mirror homepage) ════ */
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; gap: 32px;
+    padding: 18px clamp(20px, 4vw, 48px);
+    background: rgba(8,8,8,.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="rams"] .xn-nav  { background: rgba(251,250,246,.85); }
+  .xn-nav .brand {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: 22px; letter-spacing: -0.02em; color: var(--text);
+    text-decoration: none; display: flex; align-items: baseline; gap: 8px;
+  }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 22px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a {
+    font-family: var(--f-mono); font-size: 12px; color: var(--muted);
+    text-decoration: none; letter-spacing: 0.04em;
+    transition: color .15s;
+  }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta {
+    font-family: var(--f-mono); font-size: 12px; padding: 8px 18px;
+    border-radius: 999px; background: var(--accent); color: var(--bg);
+    text-decoration: none; letter-spacing: 0.04em;
+  }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 720px) { .xn-nav ul { display: none; } }
+
+  /* ════ Layout ════ */
+  .demo-stage { max-width: 1200px; margin: 0 auto; padding: clamp(40px,5vw,72px) clamp(20px, 4vw, 48px) clamp(56px,7vw,96px); }
+
+  /* ════ Hero ════ */
+  .demo-hero { padding-bottom: clamp(28px,3.5vw,48px); border-bottom: 1px solid var(--line); margin-bottom: clamp(40px,5vw,64px); }
+  .demo-hero .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 18px; }
+  .demo-hero .crumbs a { color: var(--accent); text-decoration: none; }
+  .demo-hero h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4.4vw,60px); letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 18px; }
+  .demo-hero h1 .u { color: var(--accent); }
+  .demo-hero .lede { font-size: 15.5px; color: var(--muted); max-width: 60ch; line-height: 1.65; }
+  .demo-hero .lede strong { color: var(--text); font-weight: 500; }
+  .demo-hero .live-pill { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 11px; padding: 5px 12px; border-radius: 999px; background: rgba(226,82,42,.12); color: var(--accent); margin-top: 16px; letter-spacing: 0.1em; }
+  .demo-hero .live-pill::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: live-pulse 1.8s infinite; }
+  @keyframes live-pulse { 50% { opacity: .3; } }
+
+  /* ════ Metrics row ════ */
+  .demo-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: clamp(40px,5vw,72px); }
+  @media (max-width: 880px) { .demo-metrics { grid-template-columns: repeat(2, 1fr); } }
+  .demo-metric { background: var(--bg); padding: 28px 24px; }
+  .demo-metric .lbl { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 10px; }
+  .demo-metric .num { font-family: var(--f-display); font-weight: 500; font-size: clamp(36px,4vw,54px); line-height: 1; letter-spacing: -0.025em; color: var(--text); }
+  .demo-metric .num .suf { font-family: var(--f-mono); font-size: .35em; color: var(--accent); margin-left: 4px; letter-spacing: 0.08em; }
+  .demo-metric .note { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); margin-top: 8px; letter-spacing: 0.04em; }
+
+  /* ════ Section heads ════ */
+  .demo-sec { margin-bottom: clamp(56px,6vw,88px); }
+  .demo-sec-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+  .demo-sec-head .num { font-family: var(--f-mono); font-size: 12px; color: var(--accent); letter-spacing: 0.12em; }
+  .demo-sec-head h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,34px); letter-spacing: -0.02em; line-height: 1.1; }
+  .demo-sec-head .lead { color: var(--muted); font-size: 13.5px; margin-left: auto; max-width: 36ch; line-height: 1.5; }
+
+  /* ════ Tier distribution ════ */
+  .tier-dist { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  @media (max-width: 720px) { .tier-dist { grid-template-columns: 1fr 1fr; } }
+  .tier-cell { background: var(--bg); padding: 24px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .tier-cell .t { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.14em; }
+  .tier-cell .n { font-family: var(--f-display); font-weight: 500; font-size: clamp(28px,3vw,40px); line-height: 1; color: var(--text); }
+  .tier-cell .desc { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; margin-top: auto; }
+  .tier-cell.S .t { color: var(--accent); }
+  .tier-cell.A .t { color: #4a9b8a; }
+  .tier-cell.B .t { color: #a8b56c; }
+  .tier-cell.C .t { color: var(--muted); }
+  .tier-cell.D .t { color: var(--faint); }
+
+  /* ════ Heatmap ════ */
+  .heatmap { display: grid; grid-template-columns: 180px 1fr 80px 80px; gap: 0; border-top: 1px solid var(--line); }
+  .heatmap .row { display: contents; }
+  .heatmap .row > * { padding: 14px 16px; border-bottom: 1px solid var(--hairline); font-size: 13.5px; }
+  .heatmap .head { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .heatmap .cat { font-family: var(--f-display); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
+  .heatmap .cat .desc { font-family: var(--f-mono); font-size: 11px; color: var(--muted); display: block; margin-top: 2px; letter-spacing: 0.02em; }
+  .heatmap .bar-cell { display: flex; align-items: center; gap: 10px; }
+  .heatmap .bar { flex: 1; height: 10px; background: linear-gradient(to right, var(--bg-soft) 0%, var(--bg-soft) var(--w, 0%), transparent var(--w, 0%)); border: 1px solid var(--line); position: relative; }
+  .heatmap .bar::after { content: ''; position: absolute; inset: 0 calc(100% - var(--w,0%)) 0 0; background: var(--accent); opacity: var(--op, .85); }
+  .heatmap .bar-label { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); min-width: 64px; text-align: right; letter-spacing: 0.04em; }
+  .heatmap .count { font-family: var(--f-mono); font-size: 13px; color: var(--text); text-align: right; letter-spacing: 0.04em; }
+  .heatmap .avg { font-family: var(--f-mono); font-size: 13px; color: var(--accent); text-align: right; letter-spacing: 0.04em; }
+  @media (max-width: 720px) { .heatmap { grid-template-columns: 1fr 80px 80px; } .heatmap .bar-cell { display: none; } .heatmap .head:nth-child(2) { display: none; } }
+
+  /* ════ Leaderboard ════ */
+  .leaderboard { border-top: 1px solid var(--line); }
+  .lb-row { display: grid; grid-template-columns: 48px 1fr 100px 100px 60px; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--hairline); align-items: center; font-size: 13.5px; transition: background .12s; cursor: pointer; }
+  .lb-row:hover { background: var(--bg-soft); padding-left: 8px; }
+  .lb-row .rank { font-family: var(--f-mono); font-size: 11px; color: var(--faint); text-align: right; letter-spacing: 0.04em; }
+  .lb-row .skill .name { font-family: var(--f-display); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
+  .lb-row .skill .slug { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.02em; margin-top: 2px; }
+  .lb-row .tier-cell { font-family: var(--f-mono); font-size: 11px; }
+  .lb-row .tier-S { color: var(--accent); }
+  .lb-row .tier-A { color: #4a9b8a; }
+  .lb-row .tier-B { color: #a8b56c; }
+  .lb-row .score { font-family: var(--f-mono); font-size: 13px; color: var(--text); text-align: right; letter-spacing: 0.04em; }
+  .lb-row .score .max { color: var(--faint); }
+  .lb-row .triggers { font-family: var(--f-mono); font-size: 11px; color: var(--muted); text-align: right; letter-spacing: 0.04em; }
+
+  /* ════ Activity ════ */
+  .activity { border-top: 1px solid var(--line); }
+  .activity-row { display: grid; grid-template-columns: 110px 80px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--hairline); font-size: 13px; }
+  .activity-row .date { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+  .activity-row .kind { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .activity-row .kind-audit { color: var(--accent); }
+  .activity-row .kind-add { color: #4a9b8a; }
+  .activity-row .kind-update { color: #a8b56c; }
+  .activity-row .msg a { color: var(--text); border-bottom: 1px solid var(--line); }
+  .activity-row .msg a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ════ Disclaimer ════ */
+  .demo-disclaimer {
+    margin-top: clamp(48px,6vw,80px);
+    padding: 24px 28px;
+    background: var(--bg-soft);
+    border-left: 3px solid var(--muted);
+    font-family: var(--f-mono); font-size: 12px;
+    color: var(--muted); line-height: 1.7;
+  }
+  .demo-disclaimer strong { color: var(--text); }
+  .demo-disclaimer a { color: var(--accent); border-bottom: 1px solid var(--accent); }
+
+  /* ════ Footer ════ */
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1200px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;
+  d.setAttribute('data-theme', s.theme||'rams');
+  d.setAttribute('data-accent', s.accent||'orange');
+  d.setAttribute('data-lang', s.lang||'zh');
+})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active=""></nav>
+
+<main class="demo-stage">
+
+  <section class="demo-hero">
+    <div class="crumbs"><a href="/">SkillOps</a> / live demo</div>
+    <h1>Skill Hub 自家 skill<br>正在被小能评估<span class="u">_</span></h1>
+    <p class="lede">
+      这不是 mockup —— 下面每一个分数都是 <strong>已发布目录里的 skill 资产</strong>被小能 SMS 引擎<strong>真实评估</strong>的输出（非手填）.
+      我们自己先吃 dogfood. 想给你自己的 skill 评分？去 <a href="/evaluate/" style="color:var(--accent);border-bottom:1px solid var(--accent);text-decoration:none">在线评估</a>.
+    </p>
+    <div class="live-pill">LIVE · 实时数据 · 由小能 SMS 引擎计算</div>
+  </section>
+
+  <!-- ════ METRICS (rendered from /api/evaluations/hub) ════ -->
+  <div class="demo-metrics">
+    <div class="demo-metric">
+      <div class="lbl">skills scored</div>
+      <div class="num" id="m-total">—</div>
+      <div class="note" id="m-total-note">小能已评分</div>
+    </div>
+    <div class="demo-metric">
+      <div class="lbl">avg sms score</div>
+      <div class="num"><span id="m-avg">—</span> <span class="suf">/100</span></div>
+      <div class="note">所有已评分 skill 均值</div>
+    </div>
+    <div class="demo-metric">
+      <div class="lbl">core assets</div>
+      <div class="num"><span id="m-score">—</span> <span class="suf">S</span></div>
+      <div class="note">S 级 · ≥ 86/100</div>
+    </div>
+    <div class="demo-metric">
+      <div class="lbl">engine</div>
+      <div class="num" style="font-size:24px">mimo-v2.5</div>
+      <div class="note">SMS v1.0 · 10-dim 实时</div>
+    </div>
+  </div>
+
+  <!-- ════ 01 · TIER ════ -->
+  <section class="demo-sec">
+    <div class="demo-sec-head">
+      <span class="num">01 · tier</span>
+      <h2>资产分级分布</h2>
+      <span class="lead">S = 核心 · A = 可用 · B = 实验 · C = 概念 · D = 无效</span>
+    </div>
+    <div class="tier-dist" id="tier-dist"></div>
+  </section>
+
+  <!-- ════ 02 · HEATMAP (real, by category) ════ -->
+  <section class="demo-sec">
+    <div class="demo-sec-head">
+      <span class="num">02 · capability</span>
+      <h2>领域覆盖热图</h2>
+      <span class="lead">每个领域有多少 skill · 实测平均分多少</span>
+    </div>
+    <div class="heatmap" id="heatmap">
+      <div class="row"><div class="head">领域 / 谱系</div><div class="head">平均分</div><div class="head">SKILL 数</div><div class="head">AVG SMS</div></div>
+    </div>
+  </section>
+
+  <!-- ════ 03 · LEADERBOARD (real) ════ -->
+  <section class="demo-sec">
+    <div class="demo-sec-head">
+      <span class="num">03 · leaderboard</span>
+      <h2>SMS 排行榜</h2>
+      <span class="lead">按实测总分排序 · 点击进 skill 详情</span>
+    </div>
+    <div class="leaderboard" id="leaderboard"><div style="padding:24px 0; font-family:var(--f-mono); font-size:13px; color:var(--muted)">加载实时评分中…</div></div>
+  </section>
+
+  <div class="demo-disclaimer">
+    <strong>关于评分:</strong> SMS (Skill Management Standard) 由 <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops">openclaw-skill-ops</a> 维护，10 个维度（清晰度 / 可调用性 / 可执行性 / 输出稳定性 / 结果质量 / 可复用性 / 可组合性 / 可评估性 / 安全性 / 商业价值）总分 100.<br>
+    <strong>关于数据:</strong> 本页所有评分均为小能 SMS 引擎（mimo-v2.5）<strong>对 Skill Hub 自家 skill 的真实评估输出</strong>，非手填. 想给自己的 skill 评分？去 <a href="/evaluate/">在线评估</a>.<br>
+    <strong>透明承诺:</strong> 所有 skill 评分公开. 商业合作前可以来这里看治理记录.
+  </div>
+
+</main>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="https://qiuyiwu.com" target="_blank">qiuyiwu.com</a>
+    
+    <a href="https://blog.qiuyiwu.com" target="_blank">博客</a>
+    <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">github</a>
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · live demo · v0.7 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<!-- Real data: small能 SMS engine output for Skill Hub's own skills -->
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'https://skillops.tech/api' : '/api';
+const TIER_NAME = { S:'CORE', A:'STABLE', B:'BETA', C:'CONCEPT', D:'DEPRECATED' };
+const CAT_LABEL = {
+  strategy: ['战略·创新', 'methodology engine'],
+  writing: ['写作', 'long-form chinese'],
+  design: ['设计', 'visual + ip'],
+  presentation: ['PPT 演示', 'presentation'],
+  meta: ['元能力', 'meta tooling'],
+  'knowledge-system': ['知识系统', 'web apps'],
+};
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function loadHub() {
+  let items = [];
+  try {
+    const r = await fetch(`${API}/evaluations/hub`);
+    const j = await r.json();
+    items = j.items || [];
+  } catch (e) {}
+
+  if (!items.length) {
+    document.getElementById('leaderboard').innerHTML = '<div style="padding:24px 0; font-family:var(--f-mono); font-size:13px; color:var(--muted)">评分数据加载中，请稍后刷新…</div>';
+    return;
+  }
+
+  // ── metrics ──
+  const total = items.length;
+  const avg = Math.round(items.reduce((s,x)=>s+x.total,0)/total*10)/10;
+  const sCount = items.filter(x=>x.tier==='S').length;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-total-note').textContent = '小能已评分 · 真实输出';
+  document.getElementById('m-avg').textContent = avg;
+  document.getElementById('m-score').textContent = sCount;
+
+  // ── tier distribution ──
+  const tiers = ['S','A','B','C','D'];
+  const tcount = {}; tiers.forEach(t=>tcount[t]=0);
+  items.forEach(x=>{ if(tcount[x.tier]!==undefined) tcount[x.tier]++; });
+  document.getElementById('tier-dist').innerHTML = tiers.map(t=>`
+    <div class="tier-cell ${t}"><span class="t">${t} TIER</span><span class="n">${tcount[t]}</span><span class="desc">${TIER_NAME[t]}</span></div>
+  `).join('');
+
+  // ── heatmap by category ──
+  const byCat = {};
+  items.forEach(x=>{ const c=x.category||'strategy'; (byCat[c]=byCat[c]||[]).push(x.total); });
+  const heatRows = Object.keys(byCat).sort((a,b)=>{
+    const av=byCat[b].reduce((s,n)=>s+n,0)/byCat[b].length, bv=byCat[a].reduce((s,n)=>s+n,0)/byCat[a].length;
+    return av-bv;
+  }).map(c=>{
+    const arr=byCat[c]; const cavg=Math.round(arr.reduce((s,n)=>s+n,0)/arr.length*10)/10;
+    const pct=Math.round(cavg/100*100); const [zh,en]=CAT_LABEL[c]||[c,''];
+    return `<div class="row">
+      <div class="cat">${esc(zh)}<span class="desc">${esc(en)}</span></div>
+      <div class="bar-cell"><div class="bar" style="--w:${pct}%; --op:${(0.4+pct/200).toFixed(2)}"></div><span class="bar-label">${pct}%</span></div>
+      <div class="count">${arr.length}</div>
+      <div class="avg">${cavg}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('heatmap').insertAdjacentHTML('beforeend', heatRows);
+
+  // ── leaderboard ──
+  const sorted = items.slice().sort((a,b)=>b.total-a.total);
+  document.getElementById('leaderboard').innerHTML = sorted.map((s,i)=>`
+    <a class="lb-row" href="/s/${esc(s.slug)}/" style="text-decoration:none; color:inherit;">
+      <span class="rank">${String(i+1).padStart(2,'0')}/</span>
+      <div class="skill"><div class="name">${esc(s.name)}</div><div class="slug">${esc(s.slug)}</div></div>
+      <span class="tier-cell tier-${s.tier}">${s.tier} · ${TIER_NAME[s.tier]||''}</span>
+      <span class="score">${s.total}<span class="max">/100</span></span>
+      <span class="triggers"></span>
+    </a>
+  `).join('');
+}
+loadHub();
+
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=document.getElementById('theme-toggle');
+  if(t)t.addEventListener('click',function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});});
+  var l=document.getElementById('lang-toggle');
+  if(l){l.textContent=d.getAttribute('data-lang')||'zh';l.addEventListener('click',function(){var c=d.getAttribute('data-lang')||'zh';var n=LANGS[(LANGS.indexOf(c)+1)%LANGS.length];setS({lang:n});l.textContent=n;});}
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>

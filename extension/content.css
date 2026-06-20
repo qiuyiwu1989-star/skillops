@@ -1,0 +1,3 @@
+/* SkillOps extension — UI lives in a Shadow DOM (see content.js), so page styles can't leak in.
+   This file is intentionally minimal; kept for future page-level tweaks. */
+#xn-skillops-root { all: initial; }

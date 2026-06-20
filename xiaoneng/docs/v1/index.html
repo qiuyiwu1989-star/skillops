@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="rams" data-accent="orange" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docs V1（归档）· SkillOps</title>
+<meta name="description" content="SkillOps 文档 V1 归档。最新理念见 /docs/。">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://skillops.tech/docs/v1/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hub.css">
+<style>
+  body { padding-top: 96px; background: var(--bg); }
+
+  /* ════ Nav (shared) ════ */
+  .xn-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; gap: 28px; padding: 18px clamp(20px, 4vw, 48px); background: rgba(251,250,246,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  html[data-theme="light"] .xn-nav { background: rgba(255,255,255,.85); }
+  html[data-theme="dark"] .xn-nav { background: rgba(8,8,8,.85); }
+  .xn-nav .brand { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; color: var(--text); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+  .xn-nav .brand .en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.18em; }
+  .xn-nav .brand .u { color: var(--accent); }
+  .xn-nav ul { display: flex; gap: 20px; list-style: none; margin: 0 0 0 auto; padding: 0; }
+  .xn-nav ul a { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.04em; transition: color .15s; }
+  .xn-nav ul a:hover, .xn-nav ul a.active { color: var(--text); }
+  .xn-nav .nav-cta { font-family: var(--f-mono); font-size: 12px; padding: 8px 18px; border-radius: 999px; background: var(--accent); color: var(--bg); text-decoration: none; letter-spacing: 0.04em; }
+  .xn-nav .icon-btn { background: transparent; border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 999px; padding: 0; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
+  .xn-nav .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .xn-nav .icon-btn .ico-sun, .xn-nav .icon-btn .ico-moon, .xn-nav .icon-btn .ico-rams { display: none; }
+  html[data-theme="dark"] .xn-nav .ico-moon { display: inline; }
+  html[data-theme="light"] .xn-nav .ico-sun { display: inline; }
+  html[data-theme="rams"]  .xn-nav .ico-rams { display: inline; }
+  .xn-nav .lang-toggle { background: transparent; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+  @media (max-width: 860px) { .xn-nav ul { display: none; } }
+
+  /* ════ Doc layout: sidebar + content ════ */
+  .doc-wrap { max-width: 1180px; margin: 0 auto; padding: clamp(32px,4vw,56px) clamp(20px,4vw,48px); display: grid; grid-template-columns: 220px 1fr; gap: clamp(32px,4vw,64px); align-items: start; }
+  @media (max-width: 860px) { .doc-wrap { grid-template-columns: 1fr; } .doc-toc { display: none; } }
+  .doc-toc { position: sticky; top: 112px; font-family: var(--f-mono); font-size: 12.5px; }
+  .doc-toc .toc-label { color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; font-size: 10.5px; margin-bottom: 16px; }
+  .doc-toc a { display: block; color: var(--muted); text-decoration: none; padding: 7px 0; border-left: 2px solid transparent; padding-left: 14px; margin-left: -2px; transition: all .12s; }
+  .doc-toc a:hover { color: var(--text); border-left-color: var(--line); }
+  .doc-toc a.sub { font-size: 11.5px; padding-left: 26px; color: var(--faint); }
+
+  .doc-main { min-width: 0; }
+  .doc-main .crumbs { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.12em; margin-bottom: 16px; }
+  .doc-main .crumbs a { color: var(--accent); text-decoration: none; }
+  .doc-main h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(32px,4.2vw,56px); letter-spacing: -0.025em; line-height: 1.05; margin-bottom: 18px; }
+  .doc-main h1 .u { color: var(--accent); }
+  .doc-main > .intro { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 64ch; margin-bottom: clamp(40px,5vw,64px); padding-bottom: clamp(32px,4vw,48px); border-bottom: 1px solid var(--line); }
+  .doc-main > .intro strong { color: var(--text); font-weight: 500; }
+
+  .doc-sec { margin-bottom: clamp(48px,6vw,80px); scroll-margin-top: 112px; }
+  .doc-sec > h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(24px,3vw,36px); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; }
+  .doc-sec > h2 .n { font-family: var(--f-mono); font-size: 14px; color: var(--accent); letter-spacing: 0.1em; }
+  .doc-sec > .sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; max-width: 60ch; }
+  .doc-sec p { font-size: 14.5px; color: var(--muted); line-height: 1.75; max-width: 64ch; margin-bottom: 16px; }
+  .doc-sec p strong { color: var(--text); font-weight: 500; }
+  .doc-sec code { font-family: var(--f-mono); font-size: 12.5px; background: var(--bg-soft); padding: 2px 7px; border-radius: 4px; color: var(--accent); }
+
+  /* ════ 10-dimension table ════ */
+  .dim-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 24px 0; }
+  @media (max-width: 640px) { .dim-grid { grid-template-columns: 1fr; } }
+  .dim { background: var(--bg); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .dim .dim-head { display: flex; align-items: baseline; gap: 10px; }
+  .dim .dim-num { font-family: var(--f-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.08em; }
+  .dim .dim-name { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; }
+  .dim .dim-en { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .dim p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; max-width: none; }
+  .dim .pts { font-family: var(--f-mono); font-size: 10.5px; color: var(--faint); margin-top: auto; padding-top: 6px; letter-spacing: 0.04em; }
+
+  /* ════ Tier table ════ */
+  .tier-tbl { border: 1px solid var(--line); margin: 24px 0; }
+  .tier-tbl .trow { display: grid; grid-template-columns: 80px 120px 1fr; gap: 0; border-bottom: 1px solid var(--hairline); }
+  .tier-tbl .trow:last-child { border-bottom: 0; }
+  .tier-tbl .trow > div { padding: 16px 20px; font-size: 14px; }
+  .tier-tbl .trow.head > div { background: var(--bg-soft); font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+  .tier-tbl .tier-badge { font-family: var(--f-mono); font-weight: 600; font-size: 16px; letter-spacing: 0.05em; }
+  .tier-tbl .range { font-family: var(--f-mono); font-size: 13px; color: var(--text); }
+  .tier-tbl .meaning { color: var(--muted); }
+  .tier-tbl .S .tier-badge { color: var(--accent); }
+  .tier-tbl .A .tier-badge { color: #4a9b8a; }
+  .tier-tbl .B .tier-badge { color: #a8b56c; }
+  .tier-tbl .C .tier-badge { color: var(--muted); }
+  .tier-tbl .D .tier-badge { color: var(--faint); }
+
+  /* ════ Steps ════ */
+  .steps { counter-reset: step; margin: 24px 0; }
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--hairline); }
+  .step:last-child { border-bottom: 0; }
+  .step::before { counter-increment: step; content: counter(step); font-family: var(--f-mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .step h4 { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .step p { font-size: 13.5px; color: var(--muted); line-height: 1.65; margin: 0; max-width: 60ch; }
+
+  /* ════ Code block ════ */
+  .code-block { background: #161616; border: 1px solid var(--line); border-radius: 6px; padding: 18px 22px; margin: 20px 0; font-family: var(--f-mono); font-size: 13px; color: #ebe6db; line-height: 1.7; overflow-x: auto; }
+  .code-block .c { color: #6b7280; }
+  .code-block .a { color: var(--accent); }
+
+  /* ════ FAQ ════ */
+  .faq-item { border-bottom: 1px solid var(--hairline); padding: 20px 0; }
+  .faq-item h4 { font-family: var(--f-display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .faq-item p { font-size: 13.5px; color: var(--muted); line-height: 1.7; margin: 0; max-width: 64ch; }
+  .faq-item a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+
+  /* ════ Callout ════ */
+  .callout { background: rgba(226,82,42,.06); border-left: 3px solid var(--accent); padding: 18px 22px; margin: 24px 0; font-size: 13.5px; color: var(--text); line-height: 1.65; }
+  .callout strong { color: var(--accent); }
+  .callout a { color: var(--accent); border-bottom: 1px solid var(--accent); text-decoration: none; }
+
+  /* ════ Footer ════ */
+  .xn-footer { padding: 32px clamp(20px, 4vw, 48px) 48px; border-top: 1px solid var(--line); background: var(--bg); }
+  .xn-footer .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; max-width: 1180px; margin: 0 auto; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.04em; }
+  .xn-footer .row a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .xn-footer .row a:hover { color: var(--accent); }
+  .xn-footer .row .sig { margin-left: auto; }
+</style>
+<script>
+(function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
+  var d=document.documentElement;
+  d.setAttribute('data-theme', s.theme||'rams');
+  d.setAttribute('data-accent', s.accent||'orange');
+  d.setAttribute('data-lang', s.lang||'zh');
+})();
+</script>
+</head>
+<body>
+
+<nav class="xn-nav" id="xn-nav" data-active="docs"></nav>
+
+<div class="doc-wrap">
+
+  <!-- ════ TOC ════ -->
+  <aside class="doc-toc">
+    <div class="toc-label">on this page</div>
+    <a href="#what">什么是小能</a>
+    <a href="#sms">技能评级体系</a>
+    <a href="#dimensions" class="sub">— 10 个维度</a>
+    <a href="#tiers" class="sub">— tier 分级</a>
+    <a href="#start">如何开始</a>
+    <a href="#roadmap">产品路线图</a>
+    <a href="#teams">团队 / 企业</a>
+    <a href="#faq">FAQ</a>
+  </aside>
+
+  <!-- ════ MAIN ════ -->
+  <main class="doc-main">
+    <div class="crumbs"><a href="/">SkillOps</a> / <a href="/docs/">docs</a> / v1（归档）</div>
+    <div class="callout" style="margin-top:0;margin-bottom:28px"><strong>📄 这是 V1 归档</strong>（v0.7 · 2026 初的 HR / 8 模块叙事）。产品理念已升级 —— 最新见 <a href="/docs/">文档 V2 →</a>，并附 <a href="/docs/#whatschanged">V1 → V2 改了什么</a>。此页保留作历史记录。</div>
+    <h1>文档 V1<span class="u">_</span></h1>
+    <p class="intro">
+      <strong>SkillOps</strong> 是 AI Skill 的全生命周期管理操作系统，由 <strong>小能 / Ace</strong>（一个 Skill HRD 智能体）执行. 这份文档讲清它最核心的能力 ——
+      <strong>技能评级体系（SMS 标准）</strong>，以及如何让你自己的 skill 被评估.
+    </p>
+
+    <!-- ── WHAT ── -->
+    <section class="doc-sec" id="what">
+      <h2><span class="n">01</span>什么是 SkillOps</h2>
+      <p class="sub">把 skill 当成"资产组合"来管理，而不是一堆 markdown 文件.</p>
+      <p>
+        如果你在产出 skill / prompt / agent，你迟早会遇到三个问题：<strong>不知道哪个在挣钱</strong>、<strong>新 skill 没人 review</strong>、<strong>资产组合没有全局视角</strong>.
+        SkillOps 用 HR 的范式解决这件事 —— 把每个 skill 当成"员工"，由 小能/Ace 跑完 8 个模块：<strong>招聘 · 评估 · 管理 · 分发 · 培训 · 绩效 · 项目评估 · 退役</strong>.
+      </p>
+      <p>
+        生态位上：<strong>Anthropic 做 Skill 格式标准，SkillOps 做 Skill 管理</strong>. 就像 <code>npm + Snyk</code>、<code>GitHub + Sourcegraph</code> 的关系 —— 底层标准被巨头握住，ops / governance / portfolio 这一层留给生态做.
+      </p>
+      <div class="callout">
+        <strong>当前状态 v1.0.</strong> 评估、管理（控制台）、registry、agent 调用已可用. 完整 8 模块 × 9 子技能见下方 <a href="#roadmap">产品路线图</a>.
+      </div>
+    </section>
+
+    <!-- ── SMS ── -->
+    <section class="doc-sec" id="sms">
+      <h2><span class="n">02</span>技能评级体系</h2>
+      <p class="sub">SMS = Skill Management Standard · 衡量一个 skill 成熟度的标准化度量.</p>
+      <p>
+        市面上的 skill / GPT / prompt 库都<strong>没有质量度量</strong> —— HuggingFace 没有、GPT Store 没有、LangSmith 关注 runtime 不关注资产. SMS 是第一个针对 skill 本身的标准化评分.
+      </p>
+      <p>
+        SMS <strong>v2.0</strong> 把成熟度拆成 <strong>4 支柱 × 10 维</strong>（可理解 / 可执行 / 可工程 / 可信赖与价值），每维 0–10 分、总分 100，由 <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" style="color:var(--accent);border-bottom:1px solid var(--accent);text-decoration:none">openclaw-skill-ops</a> 引擎自动计算. <strong>完整方法论（支柱、锚点、反模式、分档）见 <a href="/sms/" style="color:var(--accent);border-bottom:1px solid var(--accent);text-decoration:none">SMS 方法论 →</a></strong>
+      </p>
+
+      <h3 id="dimensions" style="font-family:var(--f-display);font-weight:500;font-size:20px;letter-spacing:-0.015em;margin:32px 0 4px;scroll-margin-top:112px;">10 个评分维度</h3>
+      <div class="dim-grid">
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">01</span><span class="dim-name">清晰度</span></div>
+          <span class="dim-en">CLARITY</span>
+          <p>描述、触发词、用途是否一眼能懂. Agent 和人类能否快速判断"这个 skill 是干什么的".</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">02</span><span class="dim-name">可调用性</span></div>
+          <span class="dim-en">INVOCABILITY</span>
+          <p>触发词是否设计良好，agent 在合适的场景下能否准确地把它召唤出来，而不是漏掉或误触.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">03</span><span class="dim-name">可执行性</span></div>
+          <span class="dim-en">EXECUTABILITY</span>
+          <p>步骤是否具体、可操作. 是"给方法"还是"给套路"，agent 拿到能不能直接跑.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">04</span><span class="dim-name">输出稳定性</span></div>
+          <span class="dim-en">STABILITY</span>
+          <p>多次调用输出结构是否一致. 是稳定产出固定格式，还是每次随机漂移.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">05</span><span class="dim-name">结果质量</span></div>
+          <span class="dim-en">QUALITY</span>
+          <p>产出的实际质量. 是专家级洞察，还是通用模板填空.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">06</span><span class="dim-name">可复用性</span></div>
+          <span class="dim-en">REUSABILITY</span>
+          <p>能否跨场景复用. 是为单一任务写死，还是抽象到能迁移到多个上下文.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">07</span><span class="dim-name">可组合性</span></div>
+          <span class="dim-en">COMPOSABILITY</span>
+          <p>能否和其他 skill 串联. 是孤立工具，还是能进入更大的工作流编排.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">08</span><span class="dim-name">可评估性</span></div>
+          <span class="dim-en">EVALUABILITY</span>
+          <p>输出好坏是否可被判断. 有没有明确的成功标准，能不能被测试和回归.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">09</span><span class="dim-name">安全性</span></div>
+          <span class="dim-en">SAFETY</span>
+          <p>是否有越界、注入、误导风险. 在企业场景下能否放心接入.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+        <div class="dim">
+          <div class="dim-head"><span class="dim-num">10</span><span class="dim-name">商业价值</span></div>
+          <span class="dim-en">BUSINESS VALUE</span>
+          <p>这个 skill 是否解决真实、有支付意愿的问题. 决定它在资产组合里的优先级.</p>
+          <span class="pts">0–10 分</span>
+        </div>
+      </div>
+
+      <h3 id="tiers" style="font-family:var(--f-display);font-weight:500;font-size:20px;letter-spacing:-0.015em;margin:40px 0 4px;scroll-margin-top:112px;">Tier 分级</h3>
+      <p class="sub">总分映射到 5 个等级，决定 skill 在 Hub 里的可见性与分发策略.</p>
+      <div class="tier-tbl">
+        <div class="trow head"><div>TIER</div><div>分数区间</div><div>含义</div></div>
+        <div class="trow S"><div class="tier-badge">S</div><div class="range">86–100</div><div class="meaning">核心资产 · 旗舰级，主推、可商业化</div></div>
+        <div class="trow A"><div class="tier-badge">A</div><div class="range">76–85</div><div class="meaning">稳定可用 · 公开发布、可放心调用</div></div>
+        <div class="trow B"><div class="tier-badge">B</div><div class="range">64–75</div><div class="meaning">实验 · 公开发布的最低门槛</div></div>
+        <div class="trow C"><div class="tier-badge">C</div><div class="range">50–63</div><div class="meaning">概念 · 设为 private，不对外分发</div></div>
+        <div class="trow D"><div class="tier-badge">D</div><div class="range">&lt; 25</div><div class="meaning">无效 · 候选退役 / 重写</div></div>
+      </div>
+      <div class="callout">
+        <strong>真实样例：</strong>Skill Hub 已发布的 25 个 skill 的评级公开在 <a href="/registry/">registry</a> 与 <a href="/demo/">demo</a> —— 2 个 S 段、12 个 A 段，均分 70.4/100，与每个 skill 详情页同源.
+      </div>
+    </section>
+
+    <!-- ── START ── -->
+    <section class="doc-sec" id="start">
+      <h2><span class="n">03</span>如何开始</h2>
+      <p class="sub">两条路径：自己跑开源版，或申请托管版 early access.</p>
+
+      <h4 style="font-family:var(--f-display);font-weight:500;font-size:18px;margin:24px 0 4px;">路径 A · 开源自托管（现在就能用）</h4>
+      <p>openclaw-skill-ops 是开源的. 把你的 skill 整理成 <code>skills.json</code> + <code>SKILL.md</code>，本地跑评分脚本：</p>
+      <div class="code-block"><span class="c"># 1. clone openclaw-skill-ops</span><br>git clone https://github.com/qiuyiwu1989-star/<span class="a">openclaw-skill-ops</span><br><br><span class="c"># 2. 指向你的 skills 目录，跑 SMS 审计</span><br>python run_sms_audit.py --skills <span class="a">./my-skills/</span><br><br><span class="c"># 3. 得到 10 维评分 + tier + 改进建议</span></div>
+
+      <h4 style="font-family:var(--f-display);font-weight:500;font-size:18px;margin:32px 0 4px;">路径 B · 托管版 Early Access（推荐）</h4>
+      <div class="steps">
+        <div class="step">
+          <div>
+            <h4>申请 early access</h4>
+            <p>发邮件简单介绍你的 skill 资产（数量、当前管理方式、最大痛点）. 我们人工挑选 20 个早期用户深度配合.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>接入你的 skill 库</h4>
+            <p>支持 GitHub repo / 本地目录 / Skill Hub 格式. 小能自动扫描、解析、评分.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>每周自动审计 + 仪表盘</h4>
+            <p>每周日自动重跑，给你一个 Portfolio Dashboard：tier 分布、能力热图、排行榜、改进建议、趋势.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout" style="text-align:center;">
+        <a href="mailto:hi@qiuyiwu.com?subject=小能 · 申请 Early Access&body=简单介绍下你的 skill 资产：%0A- skill 数量：%0A- 当前管理方式：%0A- 最大痛点：%0A" style="font-weight:600;">申请 Early Access →</a>
+      </div>
+    </section>
+
+    <!-- ── ROADMAP ── -->
+    <section class="doc-sec" id="roadmap">
+      <h2><span class="n">04</span>产品路线图</h2>
+      <p class="sub">SkillOps 把 skill 当成"团队"来管理 —— <strong>8 个 HR 模块</strong>，由 小能/Ace 的 <strong>9 个子技能</strong>执行（分发是平台原生能力）。诚实标注现状，不画饼。</p>
+      <div class="dim-grid">
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·01</span><span class="dim-name">招聘</span></div><span class="dim-en">RECRUIT · BETA</span><p>从 GitHub / 上传发现 skill，访谈生成 Skill Card 或从零锻造。<br><code>skill-card-gen · skill-forge</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·02</span><span class="dim-name">评估</span></div><span class="dim-en">EVALUATE · LIVE</span><p>SMS 10 维评级。已上线，<a href="/evaluate/" style="color:var(--accent)">在线评估</a>。<br><code>skill-audit</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·03</span><span class="dim-name">管理</span></div><span class="dim-en">ORGANIZE · LIVE</span><p>扫描登记 + 依赖/组合图谱，本地优先。<a href="/dashboard/" style="color:var(--accent)">控制台</a>。<br><code>skill-registry-scan · skill-graph</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·04</span><span class="dim-name">分发</span></div><span class="dim-en">DISTRIBUTE · LIVE</span><p>公开 registry + API key 给 agent 调用。已上线。<br><code>平台原生（registry + API）</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·05</span><span class="dim-name">培训</span></div><span class="dim-en">DEVELOP · SPEC ✓</span><p>读评级、定位最弱维度、重写 SKILL.md 提分到目标段位。<br><code>skill-coach</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·06</span><span class="dim-name">绩效</span></div><span class="dim-en">PERFORMANCE · SPEC ✓</span><p>调用量 / 分数趋势 / 退化预警，红黄绿持续监控。<br><code>skill-metrics</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·07</span><span class="dim-name">项目评估</span></div><span class="dim-en">PORTFOLIO · BETA</span><p>按 agent / 项目把 skill 当组合盘点，看资产健康。<br><code>agent-capability-map</code></p></div>
+        <div class="dim"><div class="dim-head"><span class="dim-num">M·08</span><span class="dim-name">退役</span></div><span class="dim-en">RETIRE · SPEC ✓</span><p>识别低产 / 重复 / 过时 skill，查依赖、给迁移路径、可逆归档。<br><code>skill-retire</code></p></div>
+      </div>
+      <div class="callout">生态位：<strong>Anthropic 做 Skill 格式标准，SkillOps 做 Skill 管理</strong>。就像 <code>npm + Snyk</code>、<code>GitHub + Sourcegraph</code> —— 底层标准被巨头握住，ops / governance / portfolio 这层留给生态做。完整 8 模块 × 9 子技能映射见 <a href="/sms/#tools" style="color:var(--accent)">SMS 标准</a>。</div>
+    </section>
+
+    <!-- ── TEAMS / ENTERPRISE ── -->
+    <section class="doc-sec" id="teams">
+      <h2><span class="n">05</span>团队 / 企业</h2>
+      <p class="sub">个人用永久免费、不用登录。团队和企业有更深的需求时，可以聊。</p>
+      <p>如果你的团队有 <strong>10+ skill / prompt / agent</strong> 需要体系化管理、私有化部署、自定义评分维度、或把这套方法论 stack 接进你们的产品 —— 我们提供托管版与企业方案。当前 early-access 阶段<strong>免费深度配合</strong>，价格随首批用户一起敲定。</p>
+      <div class="callout" style="text-align:center;">
+        <a href="mailto:hi@qiuyiwu.com?subject=SkillOps · 企业私有部署咨询&body=简单介绍下你们的团队和需求：%0A- 团队 / 公司：%0A- skill / agent 规模：%0A- 最关心的能力（评估 / 管理 / 私有部署 / 集成）：%0A" style="font-weight:600;">邮件聊聊 →</a>
+      </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="doc-sec" id="faq">
+      <h2><span class="n">06</span>FAQ</h2>
+      <div class="faq-item">
+        <h4>小能和 Anthropic Skills 是竞争关系吗？</h4>
+        <p>不是. Anthropic 定义 Skill 的<strong>格式标准</strong>，小能构建在这个标准<strong>之上</strong>做管理. 就像 npm 定义包格式、Snyk 做依赖治理 —— 我们是互补的两层.</p>
+      </div>
+      <div class="faq-item">
+        <h4>技能评级是 AI 打的还是人工打的？</h4>
+        <p>当前是 <strong>AI 自动评分 + 人工校准</strong>混合. <code>run_sms_audit.py</code> 从 skill 元数据和文档自动计算 10 维分数，S 级核心资产会额外人工 review. v0.7 阶段部分分数为合理估算，全量 pipeline 接入后纯自动化.</p>
+      </div>
+      <div class="faq-item">
+        <h4>我的 skill 不是 Claude Code 格式，能用吗？</h4>
+        <p>SMS 维度是<strong>格式无关</strong>的 —— 评估的是 skill 的内在质量. 只要能整理成结构化描述（用途、触发条件、步骤、输出），就能评分. Claude Code / 通用 prompt / 自定义 agent 都适用.</p>
+      </div>
+      <div class="faq-item">
+        <h4>评分结果会公开吗？</h4>
+        <p>由你决定. Skill Hub 自家的评分<strong>主动全部公开</strong>（见 <a href="/registry/">registry</a>）作为透明承诺. 你自己的 skill 评分默认私有，可选择性公开.</p>
+      </div>
+      <div class="faq-item">
+        <h4>多少钱？</h4>
+        <p>个人用<strong>永久免费、不用登录</strong>. 团队 / 企业 / 私有部署见上方 <a href="#teams">团队 / 企业</a> —— early access 阶段免费深度配合.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="xn-footer">
+  <div class="row">
+    <a href="https://qiuyiwu.com" target="_blank">qiuyiwu.com</a>
+    <a href="https://skill.qiuyiwu.com" target="_blank">skill hub</a>
+    <a href="/registry/">registry</a>
+    <a href="/dashboard/">控制台</a>
+    <a href="https://github.com/qiuyiwu1989-star/openclaw-skill-ops" target="_blank">github</a>
+    <a href="mailto:hi@qiuyiwu.com">hi@qiuyiwu.com</a>
+    <span class="sig">SkillOps · docs · v0.7 · 邱懿武 · 造物云出品 · 2026</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var THEMES=['dark','light','rams'],LANGS=['zh','en'],d=document.documentElement;
+  function getS(){try{return JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){return {};}}
+  function setS(p){var s=Object.assign(getS(),p);localStorage.setItem('atlas_ui',JSON.stringify(s));if(s.theme)d.setAttribute('data-theme',s.theme);if(s.lang)d.setAttribute('data-lang',s.lang);}
+  var t=document.getElementById('theme-toggle');
+  if(t)t.addEventListener('click',function(){var c=d.getAttribute('data-theme')||'rams';setS({theme:THEMES[(THEMES.indexOf(c)+1)%THEMES.length]});});
+  var l=document.getElementById('lang-toggle');
+  if(l){l.textContent=d.getAttribute('data-lang')||'zh';l.addEventListener('click',function(){var c=d.getAttribute('data-lang')||'zh';var n=LANGS[(LANGS.indexOf(c)+1)%LANGS.length];setS({lang:n});l.textContent=n;});}
+})();
+</script>
+  <script defer src="/nav.js"></script>
+</body>
+</html>
