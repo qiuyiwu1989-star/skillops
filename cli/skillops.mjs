@@ -17,7 +17,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadConfig, saveConfig, loadIndex, saveIndex, loadEnvFile, ROOT } from './lib/store.mjs';
+import { loadConfig, saveConfig, loadIndex, saveIndex, loadEnvFile, loadState, saveState, appendTelemetry, readTelemetry, ROOT } from './lib/store.mjs';
 import { scanVaults, census } from './lib/scan.mjs';
 import { upsertFrontmatterKey } from './lib/fm.mjs';
 
@@ -120,9 +120,60 @@ const commands = {
   },
 
   status() {
+    // --hook 模式：给 SessionStart hook 用 —— 无 ANSI、无警报则完全沉默（不打扰会话）
+    if (has('hook')) {
+      const { report } = runScan();
+      const lines = [];
+      if (report.unregistered.length) {
+        const names = report.unregistered.slice(0, 8).map(s => s.name).join('、');
+        lines.push(`⚠ ${report.unregistered.length} 个技能无户口：${names}${report.unregistered.length > 8 ? ' …' : ''}（可 skillops register <名> --id qiuyiwu/<名> 落户，第三方技能先跳过）`);
+      }
+      for (const c of report.conflicts)
+        lines.push(`✗ 分歧「${c.key}」：${c.group.map(s => s.dir).join(' ≠ ')}（同身份不同内容，建议向户主汇报）`);
+      const st = loadState();
+      if (!st.lastReportAt || Date.now() - Date.parse(st.lastReportAt) > 7 * 864e5)
+        lines.push(`📋 技能人事周报到期（上次：${st.lastReportAt ? st.lastReportAt.slice(0, 10) : '从未'}）。请跑 skillops report 并向户主汇报、请他拍板。`);
+      if (lines.length) console.log(`[skillops 技能人事体检 · 花名册 ${report.total} 人]\n` + lines.join('\n'));
+      return; // 干净则零输出
+    }
     const { cfg, report } = runScan();
     console.log(C.b('▶ 体检') + C.dim(`  技能 ${report.total} · 有户口 ${report.total - report.unregistered.length} · 分歧 ${report.conflicts.length} · 分身 ${report.clones.length}`));
     printAlerts(report, cfg);
+  },
+
+  // 遥测：PostToolUse(Skill) hook 把 payload 从 stdin 灌进来；永不报错、永不出声（不能搅扰会话）
+  async track() {
+    try {
+      let raw = '';
+      if (!process.stdin.isTTY) for await (const chunk of process.stdin) raw += chunk;
+      const payload = raw ? JSON.parse(raw) : {};
+      const skill = payload?.tool_input?.skill || payload?.tool_input?.name || args[1] || null;
+      if (skill) appendTelemetry({ ts: new Date().toISOString(), skill: String(skill).slice(0, 120) });
+    } catch { /* 遥测失败绝不影响会话 */ }
+  },
+
+  // 人事周报：agent 跑它、把输出汇报给户主（CEO 只读和拍板）
+  report() {
+    const { skills, report } = runScan();
+    const st = loadState();
+    const since = st.lastReportAt ? Math.max(Date.parse(st.lastReportAt), Date.now() - 30 * 864e5) : Date.now() - 7 * 864e5;
+    const calls = readTelemetry(since);
+    const byName = {};
+    for (const c of calls) byName[c.skill] = (byName[c.skill] || 0) + 1;
+    const top = Object.entries(byName).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const born = skills.filter(s => Date.parse(s.mtime) >= since - 864e5);
+    const L = [];
+    L.push(`# 技能人事周报  ${new Date().toISOString().slice(0, 10)}`);
+    L.push(`统计窗口：${new Date(since).toISOString().slice(0, 10)} 起 · 花名册 ${report.total} 人（有户口 ${report.total - report.unregistered.length}）`);
+    L.push('');
+    if (born.length) L.push(`## 新生/近期变动 ${born.length} 个\n` + born.map(s => `- ${s.id || s.name}（${s.vault} · ${s.mtime}）${s.id ? '' : ' ⚠ 未落户'}`).join('\n'));
+    if (top.length) L.push(`## 调用榜（遥测 ${calls.length} 次）\n` + top.map(([n, k]) => `- ${n} × ${k}`).join('\n'));
+    else L.push('## 调用榜\n（遥测刚接上，本期还没有数据）');
+    if (report.unregistered.length) L.push(`## 待拍板 · 无户口 ${report.unregistered.length} 个\n` + report.unregistered.map(s => `- ${s.name}（${s.vault}）`).join('\n'));
+    if (report.conflicts.length) L.push(`## 待拍板 · 分歧 ${report.conflicts.length} 组\n` + report.conflicts.map(c => `- ${c.key}: ${c.group.map(s => s.dir).join(' ≠ ')}`).join('\n'));
+    if (report.clones.length) L.push(`## 分身 ${report.clones.length} 组（待 P2 deploy 接管台账）`);
+    console.log(L.join('\n'));
+    saveState({ ...st, lastReportAt: new Date().toISOString() });
   },
 
   register() {
@@ -165,8 +216,10 @@ ${C.dim('真身在你的文件里（file-as-truth），这里只做登记与体�
   vault ls / vault rm <名>                    卷管理
   scan                                        盘点 → 花名册 + 体检
   ls [--vault 名]                             花名册
-  status                                      只看警报
+  status [--hook]                             警报（--hook 给 SessionStart 用：干净则沉默）
   register <技能> --id ns/name                落户
+  report                                      技能人事周报（agent 汇报给户主拍板）
+  track                                       遥测（PostToolUse hook 从 stdin 灌 payload）
   score <技能>                                SMS 评分（LLM_* 环境变量）`);
   },
 };

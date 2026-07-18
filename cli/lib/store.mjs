@@ -34,6 +34,22 @@ export function saveIndex(ix) {
   fs.writeFileSync(INDEX, JSON.stringify(ix, null, 2) + '\n', 'utf8');
 }
 
+// state.json：轻量运行状态（上次周报时间等）
+const STATE = path.join(ROOT, 'state.json');
+export function loadState() { return readJson(STATE, {}); }
+export function saveState(st) { ensureRoot(); fs.writeFileSync(STATE, JSON.stringify(st, null, 2) + '\n', 'utf8'); }
+
+// telemetry.jsonl：技能调用遥测（PostToolUse hook 追加，一行一次调用）
+export const TELEMETRY = path.join(ROOT, 'telemetry.jsonl');
+export function appendTelemetry(row) { ensureRoot(); fs.appendFileSync(TELEMETRY, JSON.stringify(row) + '\n', 'utf8'); }
+export function readTelemetry(sinceTs = 0) {
+  try {
+    return fs.readFileSync(TELEMETRY, 'utf8').split('\n').filter(Boolean)
+      .map(l => { try { return JSON.parse(l); } catch { return null; } })
+      .filter(r => r && Date.parse(r.ts) >= sinceTs);
+  } catch { return []; }
+}
+
 // 把 ~/.skillops/env 里的 KEY=VALUE 注入 process.env（已存在的不覆盖）
 export function loadEnvFile() {
   try {
