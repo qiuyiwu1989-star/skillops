@@ -131,6 +131,102 @@ function evalSummary(listing) {
   return { label: 'Eval 已验证', detail };
 }
 
+const TRUST_STATE_LABELS = {
+  approved: '旧版批准，待双人终审',
+  certified: '双人终审有效',
+  pending_second_review: '待第二人复核',
+  pending_review: '待终审',
+  pending: '待终审',
+  expiring: '认证即将到期',
+  expired: '认证已过期',
+  stale: '证据已失效',
+  withdrawn: '已撤回',
+  recalled: '已召回',
+  revoked: '已吊销',
+  retired: '技能已退役',
+  active_pending_revalidation: '已恢复，待重新验证',
+};
+
+const INSTALL_REASON_LABELS = {
+  license_allows_source_link_only: '许可仅允许来源索引',
+  complete_package_missing: '缺少完整技能包',
+  collector_snapshot_is_not_a_complete_package: '采集快照不是完整技能包',
+  package_audit_required: '需要完成当前技能包审计',
+  human_certification_required: '需要两位独立可信人工完成终审',
+  certification_expiring: '终审认证即将到期，请尽快复核',
+  certification_expired: '终审认证已过期',
+  evidence_stale: '终审绑定证据已失效',
+  pending_second_review: '还需要第二位独立人工复核',
+  pending_review: '尚未完成可信人工终审',
+  release_withdrawn: '当前发行版本已撤回',
+  release_recalled: '当前发行版本已召回',
+  release_revoked: '当前发行版本已吊销',
+  skill_retired: '技能已退役，停止新安装',
+  revalidation_required: '技能恢复后需要重新验证',
+  explicitly_ineligible: '安装资格被治理策略明确关闭',
+};
+
+function certificationState(listing) {
+  const certification = listing.verification?.certification || {};
+  const lifecycle = listing.lifecycle?.state || listing.lifecycle?.status || listing.skill?.status;
+  const release = listing.release?.status || listing.releaseStatus;
+  const queue = listing.verification?.queueStatus || listing.reviewQueue?.queueStatus;
+  let code = queue || certification.status || listing.verification?.status || 'pending_review';
+  if (release === 'recalled' || certification.status === 'recalled') code = 'recalled';
+  else if (release === 'revoked') code = 'revoked';
+  else if (release === 'withdrawn' || certification.status === 'withdrawn') code = 'withdrawn';
+  else if (lifecycle === 'retired') code = 'retired';
+  else if (lifecycle === 'active_pending_revalidation') code = 'active_pending_revalidation';
+  else if (certification.status === 'stale' || certification.status === 'expired') code = certification.status;
+  else if (certification.status === 'certified' && certification.validUntil) {
+    const remaining = Date.parse(certification.validUntil) - Date.now();
+    if (Number.isFinite(remaining) && remaining <= 0) code = 'expired';
+    else if (Number.isFinite(remaining) && remaining <= 30 * 24 * 60 * 60 * 1000) code = 'expiring';
+  }
+  const tone = ['certified'].includes(code) ? 'positive'
+    : ['recalled', 'revoked', 'withdrawn', 'retired'].includes(code) ? 'critical'
+      : 'caution';
+  return { code, label: TRUST_STATE_LABELS[code] || `终审状态：${visibleString(code)}`, tone };
+}
+
+function installReasonText(reason) {
+  if (typeof reason === 'object' && reason) return visibleString(reason.messageZh || reason.message || INSTALL_REASON_LABELS[reason.code] || reason.code);
+  return INSTALL_REASON_LABELS[reason] || visibleString(reason);
+}
+
+function installationDecision(listing) {
+  const trust = certificationState(listing);
+  const install = listing.install || {};
+  const declaredEligibility = typeof install.eligibility === 'object' ? install.eligibility.eligible : install.eligibility;
+  const reasons = [];
+  const suppliedReasons = [
+    ...(Array.isArray(install.reasons) ? install.reasons : []),
+    ...(Array.isArray(install.eligibility?.reasons) ? install.eligibility.reasons : []),
+    install.reason,
+  ].filter(Boolean);
+  reasons.push(...suppliedReasons.map(installReasonText));
+  if (declaredEligibility === false || listing.install?.eligibility === false) reasons.push(INSTALL_REASON_LABELS.explicitly_ineligible);
+  if (listing.distribution === 'source_link_only') reasons.push(INSTALL_REASON_LABELS.license_allows_source_link_only);
+  if (install.packageComplete !== true) reasons.push(INSTALL_REASON_LABELS.complete_package_missing);
+  const stateReason = {
+    pending_second_review: 'pending_second_review', pending_review: 'pending_review', pending: 'pending_review',
+    stale: 'evidence_stale', expired: 'certification_expired', withdrawn: 'release_withdrawn',
+    recalled: 'release_recalled', revoked: 'release_revoked', retired: 'skill_retired',
+    active_pending_revalidation: 'revalidation_required',
+  }[trust.code];
+  if (stateReason) reasons.push(INSTALL_REASON_LABELS[stateReason]);
+  const trusted = trust.code === 'certified' || trust.code === 'expiring';
+  const statusEligible = listing.install?.status === 'eligible';
+  const eligible = statusEligible && declaredEligibility !== false
+    && install.packageComplete === true && listing.distribution !== 'source_link_only' && trusted;
+  return { eligible, trust, reasons: [...new Set(reasons.filter(Boolean))] };
+}
+
+function trustBadge(listing) {
+  const trust = certificationState(listing);
+  return text('span', trust.label, `trust-badge trust-${trust.tone}`);
+}
+
 function evidenceRow(label, value) {
   const wrapper = document.createElement('div');
   wrapper.append(text('dt', label), text('dd', value));
@@ -187,12 +283,11 @@ function openEvidence(listing) {
   summaryCopy.append(text('span', category, 'tag'), text('p', listing.description, 'detail-description'));
   const boundary = document.createElement('div');
   boundary.className = 'install-boundary';
-  const installEligible = listing.install?.status === 'eligible';
-  boundary.append(text('strong', installEligible ? '可进入受控部署' : '安装边界'), text('p', installEligible
+  const installation = installationDecision(listing);
+  const installEligible = installation.eligible;
+  boundary.append(trustBadge(listing), text('strong', installEligible ? '可进入受控部署' : '当前不可直接安装'), text('p', installEligible
     ? '完整包已批准。安装仍需通过 skillops deploy 的目标检查、漂移检测和 lock 台账。'
-    : listing.distribution === 'content'
-      ? '正文可分发，但当前同步快照不是完整技能包，因此不提供直接安装。'
-      : '许可不明确，仅提供来源链接，不复制正文，也不提供直接安装。'));
+    : `${installation.reasons.join('；') || '当前可信证据不满足受控部署要求'}，不提供直接安装。`));
   const installAction = document.createElement('button');
   installAction.type = 'button';
   installAction.className = 'btn sm install-action';
@@ -243,11 +338,18 @@ function openEvidence(listing) {
       ['包完整性', listing.install?.packageComplete === true ? '完整' : '仅同步部分内容'],
     ]),
     detailGroup('人工审核', [
+      ['认证状态', installation.trust.label],
       ['审核状态', humanStatus(listing.verification?.status)], ['审核人', review.reviewer || '未记录'],
       ['审核方式', review.reviewerType === 'agent_assisted' ? 'Agent 辅助预审' : '人工审核'],
       ['审核理由', review.reason || '未记录'],
       ['审核时间', review.at ? new Date(review.at).toLocaleString('zh-CN') : '未记录'],
       ['审核指纹', listing.verification?.reviewedFingerprint || '未记录', 'mono'],
+      ['证据快照', shortHash(listing.verification?.evidence?.evidenceDigest), 'mono'],
+      ['绑定技能包', shortHash(listing.verification?.evidence?.packageDigest), 'mono'],
+      ['绑定 SMS', shortHash(listing.verification?.evidence?.smsDigest), 'mono'],
+      ['绑定 Eval', shortHash(listing.verification?.evidence?.evalDigest), 'mono'],
+      ['终审认证', shortHash(listing.verification?.certification?.certificationDigest || listing.verification?.certification?.evidenceDigest), 'mono'],
+      ['有效期', listing.verification?.certification?.validUntil ? new Date(listing.verification.certification.validUntil).toLocaleString('zh-CN') : '未记录'],
     ]),
   );
   elements.dialog.showModal();
@@ -268,7 +370,10 @@ function cardFor(listing, { compact = false } = {}) {
   main.className = 'card-layout';
   const topline = document.createElement('div');
   topline.className = 'card-topline';
-  topline.append(text('span', categoryLabel(listingCategory(listing)), 'tag'), text('span', humanDistribution(listing.distribution), 'tag'));
+  const tags = document.createElement('div');
+  tags.className = 'card-topline-tags';
+  tags.append(text('span', categoryLabel(listingCategory(listing)), 'tag'), text('span', humanDistribution(listing.distribution), 'tag'));
+  topline.append(tags, trustBadge(listing));
   main.append(topline, text('h3', listing.name));
   const originalName = listing.original?.name && listing.original.name !== listing.name
     ? listing.original.name
@@ -279,11 +384,13 @@ function cardFor(listing, { compact = false } = {}) {
   main.append(text('p', listing.description, 'description'));
 
   const evalInfo = evalSummary(listing);
+  const installation = installationDecision(listing);
   const metrics = document.createElement('dl');
   metrics.className = 'market-metrics';
   metrics.append(
     evidenceRow('SMS 静态潜力', listing.sms?.total == null ? '待评分' : `${listing.sms.total} 分 · ${smsBand(Number(listing.sms.total))} 段`),
     evidenceRow('Eval 运行实绩', evalInfo.detail),
+    evidenceRow('安装状态', installation.eligible ? '可进入受控部署' : `不可安装：${installation.reasons[0] || '可信证据不完整'}`),
     evidenceRow('安全与许可', `${humanStatus(listing.security?.status)} · ${listing.license?.spdx || humanStatus(listing.license?.status)}`),
   );
 

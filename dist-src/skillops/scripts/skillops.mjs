@@ -28,6 +28,11 @@ import { loadConfig, saveConfig, loadIndex, saveIndex, loadEnvFile, loadState, s
 import { scanVaults, census } from './lib/scan.mjs';
 import { upsertFrontmatterKey } from './lib/fm.mjs';
 import { deploySkill, inspectDeployments, lockPath as deploymentLockPath } from './lib/deploy.mjs';
+import { createUpdateAssessment } from './lib/update-policy.mjs';
+import { PerformanceLedger } from './lib/performance-ledger.mjs';
+import { acceptCoachProposal, createCoachProposal } from './lib/coach-proposal.mjs';
+import { planRetirement, RetirementStore } from './lib/retirement.mjs';
+import { commitManagedLockMigration, createManagedLockMigrationPlan } from './lib/managed-lock-migration.mjs';
 
 // ── 小工具：ANSI + 中英文混排对齐 ──
 const C = { dim: s => `\x1b[2m${s}\x1b[0m`, b: s => `\x1b[1m${s}\x1b[0m`, g: s => `\x1b[32m${s}\x1b[0m`, y: s => `\x1b[33m${s}\x1b[0m`, r: s => `\x1b[31m${s}\x1b[0m`, o: s => `\x1b[38;5;208m${s}\x1b[0m` };
@@ -38,6 +43,50 @@ const args = process.argv.slice(2);
 const cmd = args[0];
 const flag = name => { const i = args.indexOf(`--${name}`); return i === -1 ? null : (args[i + 1] ?? true); };
 const has = name => args.includes(`--${name}`);
+
+function requiredFlag(name, usage) {
+  const value = flag(name);
+  if (value === null || value === true || String(value).startsWith('--')) {
+    const error = new Error(`缺少 --${name} 参数。\n用法：${usage}`);
+    error.code = 'CLI_ARGUMENT_REQUIRED';
+    throw error;
+  }
+  return String(value);
+}
+
+function optionalFlag(name, usage) {
+  const value = flag(name);
+  if (value === null) return null;
+  if (value === true || String(value).startsWith('--')) {
+    const error = new Error(`--${name} 需要参数值。\n用法：${usage}`);
+    error.code = 'CLI_ARGUMENT_REQUIRED';
+    throw error;
+  }
+  return String(value);
+}
+
+function readJsonFile(file, label = 'JSON 输入') {
+  const resolved = path.resolve(file);
+  let raw;
+  try { raw = fs.readFileSync(resolved, 'utf8'); }
+  catch (cause) {
+    const error = new Error(`${label}无法读取：${resolved}`);
+    error.code = 'JSON_FILE_UNREADABLE';
+    error.cause = cause;
+    throw error;
+  }
+  try { return JSON.parse(raw); }
+  catch (cause) {
+    const error = new Error(`${label}不是有效 JSON：${resolved}`);
+    error.code = 'JSON_INVALID';
+    error.cause = cause;
+    throw error;
+  }
+}
+
+function printJson(value) {
+  console.log(JSON.stringify(value, null, 2));
+}
 
 const NS_RE = /^[a-z0-9][a-z0-9-]*$/i;
 const ID_RE = /^[a-z0-9][a-z0-9-]*\/[a-z0-9][a-z0-9._-]*$/i;
@@ -314,6 +363,116 @@ const commands = {
     if (r.summary) console.log(C.dim(`\n${r.summary}`));
   },
 
+  updateAssess() {
+    const usage = 'skillops update-assess --input <评估输入.json> [--now <ISO 时间>]';
+    const input = readJsonFile(requiredFlag('input', usage), '更新评估输入');
+    printJson(createUpdateAssessment(input, flag('now') ? { now: flag('now') } : {}));
+  },
+
+  performance() {
+    const sub = args[1];
+    if (sub === 'record') {
+      const usage = 'skillops performance record --ledger <绩效台账.json> --input <事件.json>';
+      const ledger = new PerformanceLedger(requiredFlag('ledger', usage));
+      const input = readJsonFile(requiredFlag('input', usage), '绩效事件输入');
+      printJson(ledger.append(input));
+      return;
+    }
+    if (sub === 'status') {
+      const usage = 'skillops performance status --ledger <绩效台账.json> --input <查询.json>';
+      const ledger = new PerformanceLedger(requiredFlag('ledger', usage));
+      const input = readJsonFile(requiredFlag('input', usage), '绩效状态查询');
+      printJson(ledger.summarize(input));
+      return;
+    }
+    const error = new Error('performance 需要子命令 record 或 status。\n用法：skillops performance <record|status> ...');
+    error.code = 'CLI_SUBCOMMAND_REQUIRED';
+    throw error;
+  },
+
+  coach() {
+    const sub = args[1];
+    if (sub === 'propose') {
+      const usage = 'skillops coach propose --input <提案输入.json>';
+      printJson(createCoachProposal(readJsonFile(requiredFlag('input', usage), 'Coach 提案输入')));
+      return;
+    }
+    if (sub === 'accept') {
+      const usage = 'skillops coach accept --proposal <提案.json> --input <接受信息.json>';
+      const proposal = readJsonFile(requiredFlag('proposal', usage), 'Coach 提案');
+      const acceptance = readJsonFile(requiredFlag('input', usage), 'Coach 接受信息');
+      printJson(acceptCoachProposal(proposal, acceptance));
+      return;
+    }
+    const error = new Error('coach 需要子命令 propose 或 accept。\n用法：skillops coach <propose|accept> ...');
+    error.code = 'CLI_SUBCOMMAND_REQUIRED';
+    throw error;
+  },
+
+  retire() {
+    const sub = args[1];
+    if (sub === 'plan') {
+      const usage = 'skillops retire plan --input <退役输入.json> [--now <ISO 时间>]';
+      const input = readJsonFile(requiredFlag('input', usage), '退役计划输入');
+      printJson(planRetirement(input, flag('now') ? { now: flag('now') } : {}));
+      return;
+    }
+    if (sub === 'apply') {
+      const usage = 'skillops retire apply --ledger <退役台账.json> --plan <计划.json> --confirm <计划摘要> --actor <操作者引用> [--at <ISO 时间>]';
+      const store = new RetirementStore(requiredFlag('ledger', usage));
+      const plan = readJsonFile(requiredFlag('plan', usage), '退役计划');
+      const confirmPlanDigest = requiredFlag('confirm', usage);
+      const actor = requiredFlag('actor', usage);
+      printJson(store.retire(plan, { confirmPlanDigest, actor, ...(flag('at') ? { at: flag('at') } : {}) }));
+      return;
+    }
+    if (sub === 'status') {
+      const usage = 'skillops retire status --ledger <退役台账.json> [--skill <namespace/name>]';
+      const store = new RetirementStore(requiredFlag('ledger', usage));
+      const skill = flag('skill');
+      if (skill === true) {
+        const error = new Error(`--skill 需要技能 id。\n用法：${usage}`);
+        error.code = 'CLI_ARGUMENT_REQUIRED';
+        throw error;
+      }
+      printJson(skill ? store.status(String(skill)) : store.list());
+      return;
+    }
+    if (sub === 'restore') {
+      const usage = 'skillops retire restore --ledger <退役台账.json> --skill <namespace/name> --actor <操作者引用> --reason <恢复原因> [--at <ISO 时间>]';
+      const store = new RetirementStore(requiredFlag('ledger', usage));
+      const skillId = requiredFlag('skill', usage);
+      const actor = requiredFlag('actor', usage);
+      const reason = requiredFlag('reason', usage);
+      printJson(store.restore(skillId, { actor, reason, ...(flag('at') ? { at: flag('at') } : {}) }));
+      return;
+    }
+    const error = new Error('retire 需要子命令 plan、apply、status 或 restore。\n用法：skillops retire <plan|apply|status|restore> ...');
+    error.code = 'CLI_SUBCOMMAND_REQUIRED';
+    throw error;
+  },
+
+  lockMigrate() {
+    const sub = args[1];
+    if (sub === 'plan') {
+      const usage = 'skillops lock-migrate plan --input <迁移输入.json> [--now <ISO 时间>]';
+      const input = readJsonFile(requiredFlag('input', usage), 'Lock 迁移输入');
+      const now = optionalFlag('now', usage);
+      printJson(createManagedLockMigrationPlan(input, now ? { now } : {}));
+      return;
+    }
+    if (sub === 'apply') {
+      const usage = 'skillops lock-migrate apply --input <迁移提交.json> [--at <ISO 时间>]';
+      const input = readJsonFile(requiredFlag('input', usage), 'Lock 迁移提交输入');
+      const at = optionalFlag('at', usage);
+      printJson(commitManagedLockMigration(input, at ? { clock: () => new Date(at) } : {}));
+      return;
+    }
+    const error = new Error('lock-migrate 需要子命令 plan 或 apply。\n用法：skillops lock-migrate <plan|apply> ...');
+    error.code = 'CLI_SUBCOMMAND_REQUIRED';
+    throw error;
+  },
+
   help() {
     console.log(`${C.b('skillops')} — AI 技能的人事部（HRD）· V3.1 便携标准包
 ${C.dim('真身在你自己的文件里（file-as-truth）；部署是带 lock 台账的受控副本，不会改写技能真身。')}
@@ -330,10 +489,35 @@ ${C.dim('真身在你自己的文件里（file-as-truth）；部署是带 lock �
   report                                      人事周报
   track                                       遥测（hook 用）
   score <技能>                                 SMS 评分（需 LLM_* 环境变量）
+  update-assess --input <评估输入.json>         评估明确 Release 更新（只读，不执行更新）
+  performance record --ledger <台账> --input <事件.json>
+                                               原子登记隐私安全的绩效事件
+  performance status --ledger <台账> --input <查询.json>
+                                               汇总绩效状态（不回显安装身份）
+  coach propose --input <提案输入.json>          生成摘要绑定的隔离提案
+  coach accept --proposal <提案.json> --input <接受信息.json>
+                                               接受提案并生成重走供给链请求
+  retire plan --input <退役输入.json>            检查四类依赖并生成确认计划
+  retire apply --ledger <台账> --plan <计划.json> --confirm <摘要> --actor <引用>
+                                               确认后原子追加可逆退役记录
+  retire status --ledger <台账> [--skill <id>]   查询单个或全部退役状态
+  retire restore --ledger <台账> --skill <id> --actor <引用> --reason <原因>
+                                               追加恢复记录并进入待复评
+  lock-migrate plan --input <迁移输入.json>      只读核验显式 Registry 映射并生成计划
+  lock-migrate apply --input <迁移提交.json>     确认后原子创建 Managed Lock v2
+
+${C.dim('治理边界：这些命令不执行技能、不联网、不删除文件，也不撤回或吊销 Release。')}
 
 ${C.dim('数据：' + ROOT + '   标准与方法论见 references/   造物云出品 · © 邱懿武')}`);
   },
 };
 
-const fn = commands[cmd] || commands.help;
-await fn();
+const commandAliases = { 'update-assess': 'updateAssess', 'lock-migrate': 'lockMigrate' };
+const fn = commands[commandAliases[cmd] || cmd] || commands.help;
+try {
+  await fn();
+} catch (error) {
+  const code = error?.code ? ` [${error.code}]` : '';
+  console.error(C.r(`治理命令失败${code}：${error?.message || String(error)}`));
+  process.exitCode = 1;
+}

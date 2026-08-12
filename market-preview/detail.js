@@ -33,10 +33,40 @@ const STATUS_LABELS = {
   review: '需要关注',
   pending: '等待验证',
   complete: '已完成',
-  approved: '已批准',
+  approved: '旧版批准，待双人终审',
   verified: '已有实绩',
   eligible: '符合受控部署条件',
   source_required: '需要补齐来源包',
+  certified: '双人终审有效',
+  pending_second_review: '待第二人复核',
+  pending_review: '待终审',
+  expiring: '认证即将到期',
+  expired: '认证已过期',
+  stale: '证据已失效',
+  withdrawn: '已撤回',
+  recalled: '已召回',
+  revoked: '已吊销',
+  retired: '技能已退役',
+  active_pending_revalidation: '已恢复，待重新验证',
+};
+
+const INSTALL_REASON_LABELS = {
+  license_allows_source_link_only: '许可仅允许来源索引',
+  complete_package_missing: '缺少完整技能包',
+  collector_snapshot_is_not_a_complete_package: '采集快照不是完整技能包',
+  package_audit_required: '需要完成当前技能包审计',
+  human_certification_required: '需要两位独立可信人工完成终审',
+  certification_expiring: '终审认证即将到期，请尽快复核',
+  certification_expired: '终审认证已过期',
+  evidence_stale: '终审绑定证据已失效',
+  pending_second_review: '还需要第二位独立人工复核',
+  pending_review: '尚未完成可信人工终审',
+  release_withdrawn: '当前发行版本已撤回',
+  release_recalled: '当前发行版本已召回',
+  release_revoked: '当前发行版本已吊销',
+  skill_retired: '技能已退役，停止新安装',
+  revalidation_required: '技能恢复后需要重新验证',
+  explicitly_ineligible: '安装资格被治理策略明确关闭',
 };
 
 const elements = {
@@ -109,6 +139,61 @@ function statusLabel(value) {
   return STATUS_LABELS[value] || visibleString(value || '未记录');
 }
 
+function trustState(listing) {
+  const certification = listing.verification?.certification || {};
+  const lifecycle = listing.lifecycle?.state || listing.lifecycle?.status || listing.skill?.status;
+  const release = listing.release?.status || listing.releaseStatus;
+  const queue = listing.verification?.queueStatus || listing.reviewQueue?.queueStatus;
+  let code = queue || certification.status || listing.verification?.status || 'pending_review';
+  if (release === 'recalled' || certification.status === 'recalled') code = 'recalled';
+  else if (release === 'revoked') code = 'revoked';
+  else if (release === 'withdrawn' || certification.status === 'withdrawn') code = 'withdrawn';
+  else if (lifecycle === 'retired') code = 'retired';
+  else if (lifecycle === 'active_pending_revalidation') code = 'active_pending_revalidation';
+  else if (certification.status === 'stale' || certification.status === 'expired') code = certification.status;
+  else if (certification.status === 'certified' && certification.validUntil) {
+    const remaining = Date.parse(certification.validUntil) - Date.now();
+    if (Number.isFinite(remaining) && remaining <= 0) code = 'expired';
+    else if (Number.isFinite(remaining) && remaining <= 30 * 24 * 60 * 60 * 1000) code = 'expiring';
+  }
+  const tone = code === 'certified' ? 'positive'
+    : ['recalled', 'revoked', 'withdrawn', 'retired'].includes(code) ? 'critical'
+      : 'caution';
+  return { code, label: statusLabel(code), tone };
+}
+
+function installReasonText(reason) {
+  if (typeof reason === 'object' && reason) return visibleString(reason.messageZh || reason.message || INSTALL_REASON_LABELS[reason.code] || reason.code);
+  return INSTALL_REASON_LABELS[reason] || visibleString(reason);
+}
+
+function installDecision(listing) {
+  const trust = trustState(listing);
+  const install = listing.install || {};
+  const declaredEligibility = typeof install.eligibility === 'object' ? install.eligibility.eligible : install.eligibility;
+  const supplied = [
+    ...(Array.isArray(install.reasons) ? install.reasons : []),
+    ...(Array.isArray(install.eligibility?.reasons) ? install.eligibility.reasons : []),
+    install.reason,
+  ].filter(Boolean);
+  const reasons = supplied.map(installReasonText);
+  if (declaredEligibility === false || install.eligibility === false) reasons.push(INSTALL_REASON_LABELS.explicitly_ineligible);
+  if (listing.distribution === 'source_link_only') reasons.push(INSTALL_REASON_LABELS.license_allows_source_link_only);
+  if (install.packageComplete !== true) reasons.push(INSTALL_REASON_LABELS.complete_package_missing);
+  const reasonCode = {
+    pending_second_review: 'pending_second_review', pending_review: 'pending_review', pending: 'pending_review',
+    stale: 'evidence_stale', expired: 'certification_expired', withdrawn: 'release_withdrawn',
+    recalled: 'release_recalled', revoked: 'release_revoked', retired: 'skill_retired',
+    active_pending_revalidation: 'revalidation_required',
+  }[trust.code];
+  if (reasonCode) reasons.push(INSTALL_REASON_LABELS[reasonCode]);
+  const trusted = trust.code === 'certified' || trust.code === 'expiring';
+  const statusEligible = listing.install?.status === 'eligible';
+  const eligible = statusEligible && declaredEligibility !== false
+    && install.packageComplete === true && listing.distribution !== 'source_link_only' && trusted;
+  return { eligible, trust, reasons: [...new Set(reasons.filter(Boolean))] };
+}
+
 function categoryLabel(value) {
   return CATEGORY_LABELS[value] || visibleString(value || 'uncategorized').replace(/[-_]/g, ' ');
 }
@@ -169,7 +254,7 @@ function renderHero(listing) {
   elements.description.textContent = visibleString(listing.localization?.descriptionZh || listing.description || '暂无中文说明');
   document.title = `${elements.name.textContent} | SkillOps 能力市场`;
 
-  const source = sourceLink(listing);
+  const source = sourceLink(listing, listing.distribution === 'source_link_only' ? '查看来源并继续判断' : '查看原始来源');
   const back = text('a', '返回能力市场', 'button ghost');
   back.href = readConfig().marketUrl;
   elements.actions.replaceChildren(...[source, back].filter(Boolean));
@@ -183,15 +268,15 @@ function renderHero(listing) {
     ['技能包', listing.install?.packageComplete ? '完整' : '不完整'],
   ]);
 
-  const eligible = listing.install?.status === 'eligible' && listing.install?.packageComplete === true;
+  const decision = installDecision(listing);
+  const eligible = decision.eligible;
   elements.installBoundary.className = `install-boundary ${eligible ? 'eligible' : 'restricted'}`;
   elements.installBoundary.replaceChildren(
+    text('span', decision.trust.label, `trust-badge trust-${decision.trust.tone}`),
     text('strong', eligible ? '可进入受控部署' : '当前不可直接安装'),
     text('p', eligible
       ? '技能包已完整同步。部署仍需经过目标检查、漂移检测和 lock 台账。'
-      : listing.distribution === 'source_link_only'
-        ? '当前许可仅允许来源索引，请从原始来源继续判断。'
-        : '当前同步内容不是完整技能包，需要先补齐关联文件并重新审核。'),
+      : decision.reasons.join('；') || '当前可信证据不满足受控部署要求。'),
   );
   if (eligible && listing.distribution !== 'source_link_only') {
     const deploy = text('button', '复制部署命令', 'button small');
@@ -359,6 +444,9 @@ function chineseReviewReason(review) {
 function renderGovernance(listing) {
   const findings = Array.isArray(listing.security?.findings) ? listing.security.findings : [];
   const review = listing.verification?.lastReview || {};
+  const certification = listing.verification?.certification || {};
+  const evidence = listing.verification?.evidence || {};
+  const decision = installDecision(listing);
   const licenseDetails = [
     listing.license?.spdx ? `SPDX: ${listing.license.spdx}` : '未识别明确 SPDX 许可证',
     listing.license?.redistributable ? '允许按许可证边界再分发。' : '当前不复制正文，仅保留来源链接。',
@@ -369,11 +457,21 @@ function renderGovernance(listing) {
   const reviewDetails = [
     chineseReviewReason(review),
     `审核者: ${review.reviewer || '未记录'} · ${review.at ? new Date(review.at).toLocaleString('zh-CN') : '时间未记录'}`,
+    `终审进度: ${Array.isArray(certification.approvals) ? certification.approvals.length : 0}/${certification.requiredApprovals || 2}`,
+    `有效期: ${certification.validUntil ? new Date(certification.validUntil).toLocaleString('zh-CN') : '未记录'}`,
+  ];
+  const evidenceDetails = [
+    `证据快照: ${shortHash(evidence.evidenceDigest)}`,
+    `绑定技能包: ${shortHash(evidence.packageDigest)}`,
+    `绑定 SMS: ${shortHash(evidence.smsDigest)}`,
+    `绑定 Eval: ${shortHash(evidence.evalDigest)}`,
+    `绑定终审: ${shortHash(certification.certificationDigest || certification.evidenceDigest)}`,
   ];
   elements.governance.replaceChildren(
     governanceBlock('许可边界', listing.license?.spdx || statusLabel(listing.license?.status), licenseDetails),
     governanceBlock('安全扫描', statusLabel(listing.security?.status), safetyDetails),
-    governanceBlock('人工审核', statusLabel(listing.verification?.status), reviewDetails),
+    governanceBlock('可信终审', decision.trust.label, reviewDetails),
+    governanceBlock('证据绑定', evidence.evidenceDigest ? '可追溯' : '证据摘要未记录', evidenceDetails),
   );
 }
 
@@ -389,8 +487,9 @@ function renderPackage(listing) {
   const body = complete
     ? '来源文件已形成完整清单。只有包指纹和全包审计保持有效时，才可进入受控部署。'
     : '缺少 references、scripts、模板或其他关联文件时，不提供直接安装。请先补齐完整技能包并重新经过审核。';
+  const decision = installDecision(listing);
   const status = document.createElement('div');
-  status.className = `package-status ${complete ? 'complete' : 'incomplete'}`;
+  status.className = `package-status ${decision.eligible ? 'complete' : 'incomplete'}`;
   status.append(text('strong', title), text('p', body));
   const facts = document.createElement('dl');
   facts.className = 'package-facts';
@@ -401,6 +500,8 @@ function renderPackage(listing) {
     ['包指纹', shortHash(packageDigest)],
     ['全包审计', packageAudit?.status ? statusLabel(packageAudit.status) : '未完成'],
     ['安装资格', statusLabel(listing.install?.status)],
+    ['安装结论', decision.eligible ? '可进入受控部署' : '当前不可直接安装'],
+    ['结构化原因', decision.reasons.join('；') || '未记录'],
     ['部署方式', listing.install?.method || 'skillops deploy'],
     ['保护机制', '目标检查 · 漂移检测 · lock 台账'],
   ]);

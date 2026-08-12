@@ -4,7 +4,7 @@
 
 - [ ] 复核首批 3 个 SkillHub listing 的完整包与许可可得性；不可得则保持来源索引
 - [x] V3.7-B：把四眼终审 policy 接入 Candidate/Store，旧 reviewer 字符串仅保留为 legacy history
-- [ ] V3.7-C：已完成待审/到期/召回中文运营队列；待接可信 IdP 回执入口、CLI 与市场认证展示
+- [x] V3.7-C：完成待审/到期/召回中文运营队列与市场认证展示；可信 IdP 回执入口留待 V4.0 组织试点
 
 ## Next
 
@@ -13,10 +13,12 @@
 - [x] V3.8-C/D：完成 certified Candidate → Release 发布接缝与造物云 dry-run/staging mock Adapter，不连接生产
 - [x] V3.9-A/B：完成 Registry Client、离线缓存、Lock v2、受控安装计划、CAS 原子安装与故障回滚
 - [x] V3.9-C/D：完成更新复评、Coach 摘要化隔离提案、可逆 Retire 与隐私绩效账本
+- [x] V3.9-E/F：完成中文治理 CLI、旧 Lock v1 到 v2 的显式 Registry 映射迁移与原子恢复边界
 - [ ] V4.0：实现造物云 adapter staging 与组织治理小规模试点
 
 ## Done
 
+- [x] 2026-08-13：完成 V3.9 产品化接缝：中文治理 CLI 串联更新判断、绩效、Coach、可逆退役与 Lock 迁移；市场显示双人终审、证据失效、撤回/召回/退役和结构化不可安装原因；Legacy Lock 通过独立目标包重算、明确 Release 映射和 planDigest 确认原子迁移到 Lock v2，v1 原样保留。288/288 自动化测试通过。
 - [x] 2026-08-13：完成 V3.9 HRD 治理闭环核心：更新差异与复评门禁、新包 Eval/终审不可继承、隐私绩效账本、摘要化 Coach 提案、依赖感知可逆退役与恢复待复评；267/267 测试通过，不调用模型、不改技能真身、不执行技能。
 - [x] 2026-08-13：完成三阶段第二批开发：V3.7 中文终审运营队列；V3.8 造物云 dry-run/staging mock 四动作投影与幂等回执；V3.9 Registry 快照/Feed 缓存、明确 Release 解析、planDigest 确认、CAS 原子安装和 Lock v2 回滚。237/237 自动化测试通过，仍未连接生产或执行技能。
 - [x] 2026-08-13：完成三阶段第一批核心：V3.7 Candidate/Store 四眼终审与再认证；V3.8 稳定身份、不可变 Release、append-only Registry、只读 Feed；V3.9 确定性安装计划、operation 幂等、Lock v2 与漂移/撤回/过期阻断。旧单人字符串审批不再赋予安装资格。
