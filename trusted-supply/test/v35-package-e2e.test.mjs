@@ -80,7 +80,7 @@ function candidateInput(packageArtifact) {
   };
 }
 
-test('local package import reaches CAS, full-package audit, SMS, content audit, human review, and eligible listing', t => {
+test('legacy single review remains visible but cannot make a complete package install eligible', t => {
   const site = workspace(t, 'safe');
   writePackage(site.source);
   const imported = site.cas.importDirectory(site.source, {
@@ -111,7 +111,8 @@ test('local package import reaches CAS, full-package audit, SMS, content audit, 
   }, { clock: () => new Date('2026-08-13T12:04:00.000Z') });
 
   const listing = site.candidates.listing(initial.id);
-  assert.equal(listing.install.status, 'eligible');
+  assert.equal(listing.install.status, 'source_required');
+  assert.equal(listing.install.reason, 'human_certification_required');
   assert.equal(listing.install.packageComplete, true);
   assert.equal(listing.package.packageDigest, imported.artifact.packageDigest);
   assert.equal(listing.package.fileCount, 4);

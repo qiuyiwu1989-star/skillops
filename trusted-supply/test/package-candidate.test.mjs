@@ -138,12 +138,13 @@ test('re-ingesting the same package digest is idempotent and keeps current appro
   assert.equal(refreshed.eval.status, 'pending');
 });
 
-test('listing installation requires a complete package and a current passing package audit', () => {
+test('listing installation requires a complete package, current package audit, and current human certification', () => {
   const approved = approvedCandidate();
   const listing = toListing(approved);
 
   assert.equal(listing.distribution, 'content');
-  assert.equal(listing.install.status, 'eligible');
+  assert.equal(listing.install.status, 'source_required');
+  assert.equal(listing.install.reason, 'human_certification_required');
   assert.equal(listing.install.packageComplete, true);
   assert.equal(listing.package.packageDigest, approved.artifact.package.packageDigest);
   assert.equal(listing.package.audit.status, 'pass');

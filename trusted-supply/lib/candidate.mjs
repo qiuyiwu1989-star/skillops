@@ -6,6 +6,14 @@ import { createSmsAssessment, isSmsCurrent } from './sms.mjs';
 import { localizeCandidateMetadata } from './localization.mjs';
 import { validatePackageArtifact } from './package.mjs';
 import { validateEvalResult } from './eval-result.mjs';
+import {
+  createReviewAttestation,
+  createReviewEvidenceSnapshot,
+  createReviewLifecycleEvent,
+  createReviewPolicy,
+  evaluateReviewCertification,
+  reviewEvidenceChanges,
+} from './review-policy.mjs';
 
 const DECISIONS = new Set(['approve', 'reject', 'quarantine']);
 const REVIEWER_TYPES = new Set(['human', 'agent_assisted']);
@@ -54,6 +62,137 @@ function packageAuditIsCurrent(candidate) {
 
 function pendingAssessment() {
   return { status: 'pending' };
+}
+
+function canonical(value) {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
+  }
+  return value;
+}
+
+function stableDigest(value) {
+  return `sha256:${crypto.createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex')}`;
+}
+
+function stableLicenseEvidence(candidate) {
+  const license = candidate?.audit?.license;
+  if (!license) return null;
+  return {
+    status: license.status,
+    spdx: license.spdx ?? null,
+    reason: license.reason,
+    redistributable: license.redistributable === true,
+  };
+}
+
+function stableSmsEvidence(candidate) {
+  if (!isSmsCurrent(candidate)) return null;
+  const sms = candidate.sms;
+  return {
+    schemaVersion: sms.schemaVersion,
+    status: sms.status,
+    rubricVersion: sms.rubricVersion,
+    dimensions: sms.dimensions,
+    total: sms.total,
+    tier: sms.tier,
+    scorer: sms.scorer,
+    basedOnFingerprint: sms.basedOnFingerprint,
+  };
+}
+
+function stableEvalEvidence(candidate) {
+  const digest = packageDigest(candidate);
+  if (!digest || candidate?.eval?.status !== 'complete') return null;
+  try {
+    const result = validateEvalResult(candidate.eval, { packageDigest: digest });
+    return {
+      schemaVersion: result.schemaVersion,
+      status: result.status,
+      suiteId: result.suiteId,
+      suiteVersion: result.suiteVersion,
+      suiteDigest: result.suiteDigest,
+      basedOnPackageDigest: result.basedOnPackageDigest,
+      runner: result.runner,
+      environment: result.environment,
+      cases: result.cases.map(item => ({
+        id: item.id,
+        status: item.status,
+        assertions: item.assertions,
+        outputSummary: item.outputSummary,
+        error: item.error,
+      })),
+      passed: result.passed,
+      failed: result.failed,
+      successRate: result.successRate,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function reviewContext(candidate) {
+  return {
+    submitterPrincipalId: candidate.reviewContext?.submitterPrincipalId || null,
+    conflictedPrincipalIds: candidate.reviewContext?.conflictedPrincipalIds || [],
+  };
+}
+
+function reviewMaterials(candidate) {
+  return {
+    contentFingerprint: candidate?.artifact?.fingerprint || null,
+    packageDigest: packageDigest(candidate),
+    licenseDigest: stableLicenseEvidence(candidate) ? stableDigest(stableLicenseEvidence(candidate)) : null,
+    smsDigest: stableSmsEvidence(candidate) ? stableDigest(stableSmsEvidence(candidate)) : null,
+    evalDigest: stableEvalEvidence(candidate) ? stableDigest(stableEvalEvidence(candidate)) : null,
+    policyDigest: candidate?.reviewPolicy?.policyDigest || null,
+  };
+}
+
+function incompleteReviewReasons(candidate) {
+  if (!candidate.reviewPolicy) return ['review_policy_required'];
+  const materials = reviewMaterials(candidate);
+  const reasons = [];
+  if (!materials.contentFingerprint) reasons.push('content_evidence_required');
+  if (!materials.licenseDigest) reasons.push('license_evidence_required');
+  if (candidate.reviewPolicy.requirePackage && !materials.packageDigest) reasons.push('package_evidence_required');
+  if (candidate.reviewPolicy.requirePackage && materials.packageDigest && !packageAuditIsCurrent(candidate)) reasons.push('package_audit_required');
+  if (candidate.reviewPolicy.requireSms && !materials.smsDigest) reasons.push('sms_evidence_required');
+  if (candidate.reviewPolicy.requireEval && !materials.evalDigest) reasons.push('eval_evidence_required');
+  if (!candidate.audit || candidate.audit.basedOnFingerprint !== materials.contentFingerprint) reasons.push('content_audit_required');
+  return [...new Set(reasons)];
+}
+
+function pendingCertification(candidate, reasons, { clock } = {}) {
+  const evaluatedAt = now(clock);
+  const priorSnapshot = candidate.reviewEvidence || candidate.reviewAttestations?.findLast?.(event => event.evidenceSnapshot)?.evidenceSnapshot;
+  const current = reviewMaterials(candidate);
+  const changed = priorSnapshot
+    ? reviewEvidenceChanges(priorSnapshot, { ...priorSnapshot, ...current })
+    : [];
+  const hasPriorHumanApproval = (candidate.reviewAttestations || [])
+    .some(event => event.type === 'human_review' && event.decision === 'approve');
+  return Object.freeze({
+    status: hasPriorHumanApproval ? 'stale' : 'pending',
+    reasons: Object.freeze(changed.length ? changed : reasons),
+    approvals: Object.freeze([]),
+    requiredApprovals: candidate.reviewPolicy?.minimumIndependentHumanApprovals || 2,
+    validUntil: null,
+    evaluatedAt,
+    evidenceDigest: null,
+    policyDigest: candidate.reviewPolicy?.policyDigest || null,
+  });
+}
+
+function candidateStatusForCertification(candidate, certification) {
+  if (certification.status === 'certified') return 'approved';
+  if (['rejected', 'changes_requested', 'withdrawn', 'recalled', 'expired', 'stale'].includes(certification.status)) {
+    return certification.status;
+  }
+  if (!candidate.reviewPolicy && (candidate.reviewEvents || []).length) return candidate.status;
+  if (['quarantined', 'rejected', 'screening'].includes(candidate.status)) return candidate.status;
+  return 'review';
 }
 
 function initialEval(input) {
@@ -107,9 +246,102 @@ export function createCandidate(input = {}, { clock } = {}) {
     reviewedPackageDigest: null,
     reviewedPackageManifestFingerprint: null,
     reviewEvents: [],
+    reviewPolicy: null,
+    reviewEvidence: null,
+    reviewContext: { submitterPrincipalId: null, conflictedPrincipalIds: [] },
+    reviewAttestations: [],
+    reviewLifecycleEvents: [],
+    certification: Object.freeze({
+      status: 'pending', reasons: Object.freeze(['review_policy_required']), approvals: Object.freeze([]),
+      requiredApprovals: 2, validUntil: null, evaluatedAt: createdAt,
+      evidenceDigest: null, policyDigest: null,
+    }),
     createdAt,
     updatedAt: createdAt,
   };
+}
+
+export function refreshReviewCertification(candidate, { clock } = {}) {
+  const reasons = incompleteReviewReasons(candidate);
+  if (reasons.length) {
+    const certification = pendingCertification(candidate, reasons, { clock });
+    return {
+      ...candidate,
+      status: candidateStatusForCertification(candidate, certification),
+      certification,
+    };
+  }
+  const reviewPolicy = createReviewPolicy(candidate.reviewPolicy);
+  const reviewEvidence = createReviewEvidenceSnapshot(reviewMaterials({ ...candidate, reviewPolicy }), {
+    policy: reviewPolicy,
+  });
+  const certification = evaluateReviewCertification({
+    policy: reviewPolicy,
+    snapshot: reviewEvidence,
+    attestations: candidate.reviewAttestations || [],
+    lifecycleEvents: candidate.reviewLifecycleEvents || [],
+    ...reviewContext(candidate),
+    now: now(clock),
+  });
+  const certified = certification.status === 'certified';
+  return {
+    ...candidate,
+    status: candidateStatusForCertification(candidate, certification),
+    reviewPolicy,
+    reviewEvidence,
+    certification,
+    reviewedFingerprint: certified ? candidate.artifact.fingerprint : candidate.reviewedFingerprint,
+    reviewedPackageDigest: certified ? packageDigest(candidate) : candidate.reviewedPackageDigest,
+    reviewedPackageManifestFingerprint: certified
+      ? packageManifestFingerprint(candidate.artifact?.package)
+      : candidate.reviewedPackageManifestFingerprint,
+  };
+}
+
+export function configureReview(candidate, {
+  policy,
+  submitterPrincipalId = null,
+  conflictedPrincipalIds = [],
+} = {}, { clock } = {}) {
+  if (!Array.isArray(conflictedPrincipalIds)) throw new TypeError('conflictedPrincipalIds must be an array');
+  const reviewPolicy = createReviewPolicy(policy);
+  const reviewContextValue = {
+    submitterPrincipalId: submitterPrincipalId == null ? null : String(submitterPrincipalId),
+    conflictedPrincipalIds: [...new Set(conflictedPrincipalIds.map(String))].sort(),
+  };
+  return refreshReviewCertification({ ...candidate, reviewPolicy, reviewContext: reviewContextValue }, { clock });
+}
+
+export function recordReviewAttestation(candidate, input, { clock } = {}) {
+  const current = refreshReviewCertification(candidate, { clock });
+  if (!current.reviewPolicy) throw new Error('review policy must be configured before attestation');
+  if (!current.reviewEvidence) throw new Error(`review evidence is incomplete: ${current.certification.reasons.join(', ')}`);
+  const event = createReviewAttestation(input, {
+    policy: current.reviewPolicy,
+    snapshot: current.reviewEvidence,
+    clock,
+  });
+  return refreshReviewCertification({
+    ...current,
+    reviewAttestations: [...(current.reviewAttestations || []), event],
+    updatedAt: event.at,
+  }, { clock: () => new Date(event.at) });
+}
+
+export function recordReviewLifecycleEvent(candidate, input, { clock } = {}) {
+  const current = refreshReviewCertification(candidate, { clock });
+  if (!current.reviewPolicy) throw new Error('review policy must be configured before lifecycle control');
+  if (!current.reviewEvidence) throw new Error(`review evidence is incomplete: ${current.certification.reasons.join(', ')}`);
+  const event = createReviewLifecycleEvent(input, {
+    policy: current.reviewPolicy,
+    snapshot: current.reviewEvidence,
+    clock,
+  });
+  return refreshReviewCertification({
+    ...current,
+    reviewLifecycleEvents: [...(current.reviewLifecycleEvents || []), event],
+    updatedAt: event.at,
+  }, { clock: () => new Date(event.at) });
 }
 
 export function recordEval(candidate, result) {
@@ -118,12 +350,12 @@ export function recordEval(candidate, result) {
   const evaluation = validateEvalResult(result, { packageDigest: digest });
   const previousEvents = candidate.evalEvents || [];
   const event = Object.freeze(structuredClone(evaluation));
-  return {
+  return refreshReviewCertification({
     ...candidate,
     eval: event,
     evalEvents: [...previousEvents, event],
     updatedAt: event.completedAt,
-  };
+  }, { clock: () => new Date(event.completedAt) });
 }
 
 export function recordPackageAudit(candidate, audit = {}, { clock } = {}) {
@@ -150,7 +382,7 @@ export function recordPackageAudit(candidate, audit = {}, { clock } = {}) {
     findings,
   });
   const invalidatesApproval = candidate.status === 'approved' && status !== 'pass';
-  return {
+  return refreshReviewCertification({
     ...candidate,
     status: status === 'block' ? 'quarantined' : invalidatesApproval ? 'stale' : candidate.status,
     packageAudit: event,
@@ -161,7 +393,7 @@ export function recordPackageAudit(candidate, audit = {}, { clock } = {}) {
       ? null
       : candidate.reviewedPackageManifestFingerprint,
     updatedAt: timestamp,
-  };
+  }, { clock: () => new Date(timestamp) });
 }
 
 export function applyAudit(candidate, options = {}) {
@@ -170,7 +402,9 @@ export function applyAudit(candidate, options = {}) {
   if (audit.security.status === 'block') status = 'quarantined';
   else if (audit.license.status === 'blocked') status = 'rejected';
   else if (!audit.eligibleForReview) status = 'screening';
-  return { ...candidate, status, audit, updatedAt: audit.checkedAt };
+  return refreshReviewCertification({ ...candidate, status, audit, updatedAt: audit.checkedAt }, {
+    clock: () => new Date(audit.checkedAt),
+  });
 }
 
 export function reviewCandidate(candidate, review = {}, { clock } = {}) {
@@ -245,7 +479,7 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
   const changed = contentChanged || licenseChanged || packageRevisionChanged;
   const updatedAt = now(clock);
   if (!changed) {
-    return {
+    return refreshReviewCertification({
       ...candidate,
       source,
       artifact: {
@@ -256,9 +490,9 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
       },
       catalog: input.catalog ?? candidate.catalog ?? null,
       updatedAt,
-    };
+    }, { clock: () => new Date(updatedAt) });
   }
-  return {
+  return refreshReviewCertification({
     ...candidate,
     status: candidate.status === 'approved' ? 'stale' : 'discovered',
     source,
@@ -280,10 +514,11 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
     reviewedPackageDigest: null,
     reviewedPackageManifestFingerprint: null,
     updatedAt,
-  };
+  }, { clock: () => new Date(updatedAt) });
 }
 
 export function toListing(candidate) {
+  candidate = refreshReviewCertification(candidate);
   if (candidate?.status !== 'approved') throw new Error('only approved candidates can generate listings');
   if (contentFingerprint(candidate.artifact?.content || '') !== candidate.artifact?.fingerprint) {
     throw new Error('content fingerprint does not match the approved artifact');
@@ -313,6 +548,8 @@ export function toListing(candidate) {
   const redistributable = candidate.audit.license.redistributable === true;
   const packageComplete = Boolean(packageArtifact && candidate.catalog?.packageComplete === true);
   const packageAuditCurrent = packageAuditIsCurrent(candidate);
+  const certified = candidate.certification?.status === 'certified'
+    && candidate.certification.evidenceDigest === candidate.reviewEvidence?.evidenceDigest;
   const format = candidate.audit.format;
   const localization = localizeCandidateMetadata(candidate);
   const listing = {
@@ -336,13 +573,15 @@ export function toListing(candidate) {
     sms: candidate.audit.sms,
     eval: candidate.eval || { status: 'pending' },
     verification: {
-      status: 'approved',
+      status: certified ? 'certified' : 'approved',
       reviewedFingerprint: candidate.reviewedFingerprint,
       lastReview: candidate.reviewEvents.at(-1) || null,
+      certification: candidate.certification || null,
+      evidence: candidate.reviewEvidence || null,
     },
     distribution: redistributable ? 'content' : 'source_link_only',
     install: {
-      status: redistributable && packageComplete && packageAuditCurrent ? 'eligible' : 'source_required',
+      status: redistributable && packageComplete && packageAuditCurrent && certified ? 'eligible' : 'source_required',
       method: 'skillops deploy',
       packageComplete,
       reason: !redistributable
@@ -351,7 +590,9 @@ export function toListing(candidate) {
           ? 'complete_package_missing'
           : !packageComplete
             ? 'collector_snapshot_is_not_a_complete_package'
-            : packageAuditCurrent ? 'approved_complete_package' : 'package_audit_required',
+            : !packageAuditCurrent
+              ? 'package_audit_required'
+              : certified ? 'certified_complete_package' : 'human_certification_required',
     },
   };
   if (packageArtifact) {

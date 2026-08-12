@@ -44,7 +44,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 引入四眼规则、批准有效期、复审到期、申诉、撤回与召回事件。
 - 内容、包、许可、SMS、Eval 或策略变化自动转为 `stale`，从精选/可安装货架撤出。
 
-阶段进展：核心 policy、证据快照、可验证身份、四眼计票、有效期、stale/撤回/召回状态机与 9 项测试已完成。下一步接入 Candidate/Store、CLI、市场详情与运营队列，详见 `specs/009-v37-review-recertification.md`。
+阶段进展：核心 policy、证据快照、可验证身份、四眼计票、有效期、stale/撤回/召回状态机已接入 Candidate/Store；完整包只有当前双人认证才可安装，旧字符串审批只保留历史。下一步接入可信 IdP 回执、CLI、市场详情与运营队列，详见 `specs/009-v37-review-recertification.md`。
 
 ### V3.8 · 统一 Registry 合约
 
@@ -53,7 +53,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 发布只读 feed/API；任何下游只能消费发布投影，不能读取候选池。
 - 支持 `upsert / withdraw / supersede` 生命周期和幂等回执。
 
-实施规格已冻结，新增不可变 Release、append-only 事件、只读 Feed 与造物云 dry-run 投影边界，详见 `specs/010-v38-unified-registry.md`。实现必须等待 V3.7 终审投影稳定。
+阶段进展：稳定 Skill/Release/Source 身份、不可变 Release、append-only Registry、可重放投影、只读分页 Feed、公共隐私裁剪与 certified Candidate 发布桥已实现。下一步完成造物云 dry-run Adapter，详见 `specs/010-v38-unified-registry.md`。
 
 ### V3.9 · 内部 HRD 管理闭环
 
@@ -62,7 +62,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 市场安装进入 lock 台账，版本变化进入复评，真实使用遥测进入退化预警。
 - 形成“招聘 → 考核 → 分发 → 绩效 → 培训 → 退役”闭环。
 
-实施规格已冻结，覆盖 Registry Client、Lock v2、更新计划、复评、Coach 隔离建议、可逆退役与隐私遥测，详见 `specs/011-v39-managed-distribution-loop.md`。安装对象只能是明确 Release，不能从 Candidate 或市场卡片直接安装。
+阶段进展：确定性安装/更新计划、operation 幂等冲突、Lock v2、三方状态投影和 withdrawn/revoked/证据过期/target drift 阻断已实现；当前只规划，不复制、不联网、不执行技能。下一步接 Registry Client、离线缓存与原子执行器，详见 `specs/011-v39-managed-distribution-loop.md`。
 
 ## Later
 

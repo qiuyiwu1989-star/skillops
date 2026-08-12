@@ -1,6 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createCandidate, applyAudit, recordEval, recordPackageAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
+import {
+  applyAudit,
+  configureReview,
+  createCandidate,
+  recordEval,
+  recordPackageAudit,
+  recordReviewAttestation,
+  recordReviewLifecycleEvent,
+  refreshCandidate,
+  refreshReviewCertification,
+  reviewCandidate,
+  toListing,
+} from './candidate.mjs';
 import { findDuplicateRelations } from './duplicates.mjs';
 import { createSmsAssessment } from './sms.mjs';
 
@@ -79,6 +91,18 @@ export class CandidateStore {
       || oldEvalEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextEvalEvents[eventIndex]))) {
       throw new Error('eval events are append-only and cannot be changed');
     }
+    const oldAttestations = previous.reviewAttestations || [];
+    const nextAttestations = next.reviewAttestations || [];
+    if (nextAttestations.length < oldAttestations.length
+      || oldAttestations.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextAttestations[eventIndex]))) {
+      throw new Error('review attestations are append-only and cannot be changed');
+    }
+    const oldLifecycleEvents = previous.reviewLifecycleEvents || [];
+    const nextLifecycleEvents = next.reviewLifecycleEvents || [];
+    if (nextLifecycleEvents.length < oldLifecycleEvents.length
+      || oldLifecycleEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextLifecycleEvents[eventIndex]))) {
+      throw new Error('review lifecycle events are append-only and cannot be changed');
+    }
     data.candidates[index] = next;
     this.write(data);
     return clone(data.candidates[index]);
@@ -102,15 +126,31 @@ export class CandidateStore {
         fingerprint: candidate.artifact?.fingerprint,
         clock: options.clock,
       });
-      return {
+      return refreshReviewCertification({
         ...candidate,
         status: candidate.status === 'approved' ? 'stale' : 'discovered',
         sms,
         audit: null,
         reviewedFingerprint: candidate.status === 'approved' ? null : candidate.reviewedFingerprint,
         updatedAt: sms.scoredAt,
-      };
+      }, { clock: () => new Date(sms.scoredAt) });
     });
+  }
+
+  configureReview(id, configuration, options = {}) {
+    return this.update(id, candidate => configureReview(candidate, configuration, options));
+  }
+
+  reviewAttest(id, attestation, options = {}) {
+    return this.update(id, candidate => recordReviewAttestation(candidate, attestation, options));
+  }
+
+  reviewLifecycle(id, event, options = {}) {
+    return this.update(id, candidate => recordReviewLifecycleEvent(candidate, event, options));
+  }
+
+  reviewStatus(id, options = {}) {
+    return this.update(id, candidate => refreshReviewCertification(candidate, options));
   }
 
   review(id, review, options = {}) {

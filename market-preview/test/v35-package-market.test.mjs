@@ -56,7 +56,7 @@ function approve(store, input, { packagePass = false } = {}) {
   });
 }
 
-test('approved package evidence survives market build with digest, manifest, audit, and eligible install', t => {
+test('legacy-approved package evidence survives market build but requires current human certification to install', t => {
   const site = workspace(t);
   const packageArtifact = createPackageArtifact({
     sourceVersion: 'fixture@1',
@@ -73,7 +73,8 @@ test('approved package evidence survives market build with digest, manifest, aud
   const payload = JSON.parse(fs.readFileSync(path.join(site.preview, 'data', 'skills', `${approved.id}.json`), 'utf8'));
   const listing = payload.listing;
 
-  assert.equal(listing.install.status, 'eligible');
+  assert.equal(listing.install.status, 'source_required');
+  assert.equal(listing.install.reason, 'human_certification_required');
   assert.equal(listing.package.packageDigest, packageArtifact.packageDigest);
   assert.equal(listing.package.fileCount, 3);
   assert.deepEqual(listing.package.manifest.map(file => file.path), ['SKILL.md', 'references/guide.md', 'scripts/run.mjs']);
