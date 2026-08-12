@@ -7,6 +7,8 @@ import test from 'node:test';
 
 import { collectSkillHub, resolveSkillHubOptions } from '../lib/skillhub-collector.mjs';
 import { CandidateStore } from '../lib/store.mjs';
+import { PackageStore } from '../lib/package-store.mjs';
+import { auditPackageFiles } from '../lib/package-audit.mjs';
 import { completeSmsInput } from './sms-fixture.mjs';
 
 function sha256(value) {
@@ -122,6 +124,12 @@ test('sync ingests signed, externally benign candidates without auto approval', 
   assert.equal(JSON.parse(fs.readFileSync(workspace.reportPath, 'utf8')).policy.autoApprove, false);
 
   const supply = new CandidateStore(workspace.storePath);
+  const packageStore = new PackageStore(`${workspace.storePath}.packages`);
+  const packageAudit = auditPackageFiles(
+    packageStore.readFiles(candidates[0].artifact.package.packageDigest),
+    candidates[0].artifact.package,
+  );
+  supply.auditPackage(candidates[0].id, { ...packageAudit, auditor: 'fixture-package-auditor' });
   supply.assessSms(candidates[0].id, completeSmsInput(78));
   supply.audit(candidates[0].id);
   const approved = supply.review(candidates[0].id, {

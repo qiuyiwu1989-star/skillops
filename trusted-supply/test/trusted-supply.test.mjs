@@ -328,3 +328,18 @@ test('CLI performs an offline ingest-audit-review-listing flow with explicit hum
   assert.equal(listing.json.verification.status, 'approved');
   assert.equal(listing.json.distribution, 'content');
 });
+
+test('CLI package-show reports an honest missing-package boundary', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skillops-package-show-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const storePath = path.join(root, 'store.json');
+  const store = new CandidateStore(storePath);
+  const candidate = store.ingest(fixtureByName('healthy-pack', 'customer-brief'));
+  const shown = runCli(['package-show', candidate.id, '--store', storePath]);
+
+  assert.equal(shown.status, 0, shown.stderr);
+  assert.equal(shown.json.candidateId, candidate.id);
+  assert.equal(shown.json.package, null);
+  assert.equal(shown.json.packageAudit, null);
+  assert.equal(Boolean(shown.json.installEligible), false);
+});

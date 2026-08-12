@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 import { collectWhitelist, parseWhitelist } from '../lib/source-collector.mjs';
 import { CandidateStore } from '../lib/store.mjs';
+import { PackageStore } from '../lib/package-store.mjs';
+import { auditPackageFiles } from '../lib/package-audit.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(HERE, '../cli.mjs');
@@ -126,6 +128,12 @@ test('collect refreshes an approved candidate to stale after a new content commi
   await collectWhitelist({ whitelist: input, storePath, baseDir: root, allowLocal: true });
   const store = new CandidateStore(storePath);
   const first = store.list()[0];
+  const packageStore = new PackageStore(`${storePath}.packages`);
+  const packageAudit = auditPackageFiles(
+    packageStore.readFiles(first.artifact.package.packageDigest),
+    first.artifact.package,
+  );
+  store.auditPackage(first.id, { ...packageAudit, auditor: 'fixture-package-auditor' });
   store.audit(first.id);
   store.review(first.id, {
     decision: 'approve', reviewer: 'fixture-reviewer', reason: 'Initial snapshot accepted.', smsWaiver: true,

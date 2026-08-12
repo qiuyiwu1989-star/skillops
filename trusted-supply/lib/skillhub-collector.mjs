@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { classifyLicense, parseSkillDocument, scanSecurity } from './audit.mjs';
+import { PackageStore } from './package-store.mjs';
 import { CandidateStore } from './store.mjs';
 
 const API_ORIGIN = 'https://api.skillhub.cn';
@@ -17,6 +18,9 @@ const DEFAULT_OPTIONS = Object.freeze({
   maxPerCategory: 2,
   maxSkillBytes: 512 * 1024,
   maxLicenseBytes: 256 * 1024,
+  maxPackageFiles: 500,
+  maxPackageFileBytes: 8 * 1024 * 1024,
+  maxPackageBytes: 32 * 1024 * 1024,
   timeoutMs: 15_000,
   requireSigned: true,
   requireBenignReports: 2,
@@ -24,7 +28,10 @@ const DEFAULT_OPTIONS = Object.freeze({
   audit: false,
 });
 
-const HARD_LIMITS = Object.freeze({ limit: 50, scanLimit: 200, maxSkillBytes: 2 * 1024 * 1024, maxLicenseBytes: 1024 * 1024 });
+const HARD_LIMITS = Object.freeze({
+  limit: 50, scanLimit: 200, maxSkillBytes: 2 * 1024 * 1024, maxLicenseBytes: 1024 * 1024,
+  maxPackageFiles: 2_000, maxPackageFileBytes: 32 * 1024 * 1024, maxPackageBytes: 128 * 1024 * 1024,
+});
 
 export class SkillHubCollectionError extends Error {
   constructor(code, message) {
@@ -58,6 +65,9 @@ export function resolveSkillHubOptions(input = {}) {
     maxPerCategory: integer(input.maxPerCategory ?? DEFAULT_OPTIONS.maxPerCategory, 'maxPerCategory', HARD_LIMITS.limit),
     maxSkillBytes: integer(input.maxSkillBytes ?? DEFAULT_OPTIONS.maxSkillBytes, 'maxSkillBytes', HARD_LIMITS.maxSkillBytes),
     maxLicenseBytes: integer(input.maxLicenseBytes ?? DEFAULT_OPTIONS.maxLicenseBytes, 'maxLicenseBytes', HARD_LIMITS.maxLicenseBytes),
+    maxPackageFiles: integer(input.maxPackageFiles ?? DEFAULT_OPTIONS.maxPackageFiles, 'maxPackageFiles', HARD_LIMITS.maxPackageFiles),
+    maxPackageFileBytes: integer(input.maxPackageFileBytes ?? DEFAULT_OPTIONS.maxPackageFileBytes, 'maxPackageFileBytes', HARD_LIMITS.maxPackageFileBytes),
+    maxPackageBytes: integer(input.maxPackageBytes ?? DEFAULT_OPTIONS.maxPackageBytes, 'maxPackageBytes', HARD_LIMITS.maxPackageBytes),
     timeoutMs: integer(input.timeoutMs ?? DEFAULT_OPTIONS.timeoutMs, 'timeoutMs', 120_000),
     requireBenignReports: Number(input.requireBenignReports ?? DEFAULT_OPTIONS.requireBenignReports),
     requireSigned: input.requireSigned ?? DEFAULT_OPTIONS.requireSigned,
@@ -107,20 +117,90 @@ async function fetchJson(route, query, context) {
   }
 }
 
-async function fetchText(route, query, context, maxBytes) {
+async function fetchBuffer(route, query, context, maxBytes) {
   const response = await fetchResponse(endpoint(route, query), context);
-  const text = await response.text();
-  if (Buffer.byteLength(text, 'utf8') > maxBytes) fail('file_size_limit_exceeded', `${query.path} exceeds ${maxBytes} bytes`);
-  if (text.includes('\0')) fail('binary_file_rejected', `${query.path} contains NUL bytes`);
-  return text;
+  const content = Buffer.from(await response.arrayBuffer());
+  if (content.length > maxBytes) fail('file_size_limit_exceeded', `${query.path} exceeds ${maxBytes} bytes`);
+  return content;
+}
+
+async function fetchText(route, query, context, maxBytes) {
+  const content = await fetchBuffer(route, query, context, maxBytes);
+  if (content.includes(0)) fail('binary_file_rejected', `${query.path} contains NUL bytes`);
+  return content.toString('utf8');
 }
 
 function safeFilePath(value) {
-  const filePath = String(value || '').replaceAll('\\', '/');
+  const raw = String(value || '');
+  if (raw.includes('\\')) fail('unsafe_file_path', `unsafe SkillHub file path: ${value}`);
+  const filePath = raw.normalize('NFC');
   if (!filePath || filePath.startsWith('/') || filePath.includes('\0') || filePath.split('/').some(part => !part || part === '.' || part === '..')) {
     fail('unsafe_file_path', `unsafe SkillHub file path: ${value}`);
   }
   return filePath;
+}
+
+function declaredInteger(value, label) {
+  const number = Number(value);
+  if (!Number.isSafeInteger(number) || number < 0) fail('invalid_file_manifest', `${label} must be a non-negative integer`);
+  return number;
+}
+
+function declaredSha256(value, filePath) {
+  const digest = String(value || '').toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(digest)) fail('invalid_file_manifest', `${filePath} must declare sha256`);
+  return digest;
+}
+
+function mediaType(filePath) {
+  const extension = path.posix.extname(filePath).toLowerCase();
+  return ({
+    '.md': 'text/markdown', '.markdown': 'text/markdown', '.txt': 'text/plain', '.json': 'application/json',
+    '.yaml': 'application/yaml', '.yml': 'application/yaml', '.js': 'text/javascript', '.mjs': 'text/javascript',
+    '.ts': 'text/typescript', '.py': 'text/x-python', '.sh': 'text/x-shellscript', '.html': 'text/html',
+    '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif', '.webp': 'image/webp', '.pdf': 'application/pdf',
+  })[extension] || 'application/octet-stream';
+}
+
+function isUnsupportedFileType(file) {
+  const kind = String(file.type || file.kind || '').toLowerCase();
+  return file.symlink === true || file.isSymlink === true || ['symlink', 'link', 'hardlink', 'device', 'socket', 'fifo'].includes(kind);
+}
+
+async function collectSkillHubPackage(files, { slug, namespace, version }, options, context) {
+  if (files.length > options.maxPackageFiles) fail('package_file_limit_exceeded', `@${namespace}/${slug} has ${files.length} files; limit is ${options.maxPackageFiles}`);
+  const normalized = files.map(file => {
+    if (isUnsupportedFileType(file)) fail('unsupported_file_type', `@${namespace}/${slug} contains unsupported file type: ${file.path}`);
+    const filePath = safeFilePath(file.path);
+    const size = declaredInteger(file.size, `${filePath} size`);
+    if (size > options.maxPackageFileBytes) fail('file_size_limit_exceeded', `${filePath} exceeds ${options.maxPackageFileBytes} bytes`);
+    return { ...file, path: filePath, size, sha256: declaredSha256(file.sha256, filePath) };
+  });
+  const totalDeclared = normalized.reduce((total, file) => total + file.size, 0);
+  if (totalDeclared > options.maxPackageBytes) fail('package_size_limit_exceeded', `@${namespace}/${slug} package exceeds ${options.maxPackageBytes} bytes`);
+
+  const packageFiles = [];
+  const contents = new Map();
+  for (const file of normalized) {
+    const content = await fetchBuffer(`/api/v1/skills/${encodeURIComponent(slug)}/file`, {
+      path: file.path, version, namespace,
+    }, context, options.maxPackageFileBytes);
+    if (content.length !== file.size) fail('integrity_mismatch', `${file.path} size mismatch for @${namespace}/${slug}`);
+    if (sha256(content) !== file.sha256) fail('integrity_mismatch', `${file.path} hash mismatch for @${namespace}/${slug}`);
+    packageFiles.push({
+      path: file.path,
+      content,
+      mediaType: file.mediaType || file.contentType || mediaType(file.path),
+      executable: file.executable === true || file.mode === '100755',
+    });
+    contents.set(file.path, content);
+  }
+  return {
+    files: packageFiles,
+    sourceVersion: version,
+    contents,
+  };
 }
 
 function benignReports(reports = {}) {
@@ -191,16 +271,25 @@ async function inspectSkill(item, options, context) {
   const skillFile = files.find(file => file.path === 'SKILL.md');
   if (!skillFile) fail('missing_skill_file', `@${namespace}/${slug} has no root SKILL.md`);
   if (Number(skillFile.size) > options.maxSkillBytes) fail('file_size_limit_exceeded', `SKILL.md exceeds ${options.maxSkillBytes} bytes`);
-  const content = await fetchText(`/api/v1/skills/${encodeURIComponent(slug)}/file`, { path: 'SKILL.md', version, namespace }, context, options.maxSkillBytes);
-  if (skillFile.sha256 && sha256(content) !== skillFile.sha256) fail('integrity_mismatch', `SKILL.md hash mismatch for @${namespace}/${slug}`);
+  const collectedPackage = await collectSkillHubPackage(files, { slug, namespace, version }, options, context);
+  const skillContent = collectedPackage.contents.get('SKILL.md');
+  if (!skillContent) fail('missing_skill_file', `@${namespace}/${slug} has no downloaded root SKILL.md`);
+  if (skillContent.includes(0)) fail('binary_file_rejected', `SKILL.md contains NUL bytes`);
+  const content = skillContent.toString('utf8');
+  if (Buffer.byteLength(content, 'utf8') > options.maxSkillBytes) fail('file_size_limit_exceeded', `SKILL.md exceeds ${options.maxSkillBytes} bytes`);
 
   const licenseFile = chooseLicenseFile(files);
   const license = licenseFile
-    ? await fetchText(`/api/v1/skills/${encodeURIComponent(slug)}/file`, { path: licenseFile.path, version, namespace }, context, options.maxLicenseBytes)
+    ? (() => {
+      const licenseContent = collectedPackage.contents.get(licenseFile.path);
+      if (!licenseContent) fail('missing_package_file', `license was not downloaded: ${licenseFile.path}`);
+      if (licenseContent.length > options.maxLicenseBytes) fail('file_size_limit_exceeded', `${licenseFile.path} exceeds ${options.maxLicenseBytes} bytes`);
+      if (licenseContent.includes(0)) fail('binary_file_rejected', `${licenseFile.path} contains NUL bytes`);
+      return licenseContent.toString('utf8');
+    })()
     : licenseFromFrontmatter(content);
   const localSecurity = scanSecurity(content);
   const packageFiles = files.map(file => safeFilePath(file.path));
-  const packageComplete = packageFiles.every(filePath => filePath === 'SKILL.md' || LICENSE_FILE.test(path.posix.basename(filePath)));
   return {
     namespace,
     slug,
@@ -209,7 +298,11 @@ async function inspectSkill(item, options, context) {
     license,
     licenseFile: licenseFile?.path || null,
     packageFiles,
-    packageComplete,
+    packageInput: {
+      files: collectedPackage.files,
+      sourceVersion: collectedPackage.sourceVersion,
+    },
+    packageComplete: true,
     licenseAssessment: classifyLicense(license),
     localSecurity,
     externalSecurityProviders: providers,
@@ -226,12 +319,21 @@ function atomicJson(filePath, value) {
   fs.renameSync(temporary, filePath);
 }
 
-export async function collectSkillHub({ storePath, reportPath, fetchImpl = globalThis.fetch, clock, ...input } = {}) {
+export async function collectSkillHub({ storePath, packageStorePath, reportPath, fetchImpl = globalThis.fetch, clock, ...input } = {}) {
   if (!storePath) fail('invalid_store', 'storePath is required');
   if (typeof fetchImpl !== 'function') fail('missing_fetch', 'fetch implementation is required');
   const options = resolveSkillHubOptions(input);
   const context = { fetchImpl, timeoutMs: options.timeoutMs };
-  const store = new CandidateStore(storePath);
+  const absoluteStorePath = path.resolve(storePath);
+  const store = new CandidateStore(absoluteStorePath);
+  const packages = new PackageStore(
+    packageStorePath ? path.resolve(packageStorePath) : `${absoluteStorePath}.packages`,
+    { limits: {
+      maxFiles: options.maxPackageFiles,
+      maxFileBytes: options.maxPackageFileBytes,
+      maxTotalBytes: options.maxPackageBytes,
+    } },
+  );
   const generatedAt = (clock ? clock() : new Date()).toISOString();
   const report = {
     schemaVersion: 1,
@@ -282,6 +384,12 @@ export async function collectSkillHub({ storePath, reportPath, fetchImpl = globa
       report.stats.inspected++;
       const inspected = await inspectSkill(item, options, context);
       const versionIdentity = inspected.signature.content_hash || sha256(inspected.content);
+      const storedPackage = packages.putFiles(inspected.packageInput.files, {
+        sourceVersion: inspected.packageInput.sourceVersion,
+        collectedAt: generatedAt,
+      });
+      packages.verify(storedPackage.artifact.packageDigest);
+      inspected.package = storedPackage.artifact;
       const candidate = store.ingest({
         source: {
           kind: 'skillhub',
@@ -302,6 +410,7 @@ export async function collectSkillHub({ storePath, reportPath, fetchImpl = globa
         },
         content: inspected.content,
         license: inspected.license,
+        package: inspected.package,
         sms: { status: 'pending' },
         eval: { status: 'pending' },
         catalog: {
@@ -324,6 +433,7 @@ export async function collectSkillHub({ storePath, reportPath, fetchImpl = globa
           packageComplete: inspected.packageComplete,
           packageFileCount: inspected.packageFiles.length,
           packageFiles: inspected.packageFiles.slice(0, 100),
+          packageDigest: inspected.package.packageDigest,
         },
       }, { clock });
       const finalCandidate = options.audit ? store.audit(candidate.id) : candidate;
@@ -345,6 +455,12 @@ export async function collectSkillHub({ storePath, reportPath, fetchImpl = globa
         localSecurity: inspected.localSecurity,
         externalSecurity: { status: 'benign', providers: inspected.externalSecurityProviders },
         signed: inspected.signature.signed === true,
+        package: {
+          packageDigest: inspected.package.packageDigest,
+          fileCount: inspected.package.fileCount,
+          totalBytes: inspected.package.totalBytes,
+          storageAction: storedPackage.action,
+        },
       });
     } catch (error) {
       const serialized = serializeError(error, item);

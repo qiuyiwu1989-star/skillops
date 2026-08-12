@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { classifyLicense, scanSecurity } from './audit.mjs';
+import { PackageStore } from './package-store.mjs';
 import { CandidateStore } from './store.mjs';
 
 const DEFAULT_LIMITS = Object.freeze({
@@ -11,6 +12,9 @@ const DEFAULT_LIMITS = Object.freeze({
   maxSkillFilesPerRepository: 250,
   maxSkillBytes: 512 * 1024,
   maxLicenseBytes: 256 * 1024,
+  maxPackageFiles: 500,
+  maxPackageFileBytes: 8 * 1024 * 1024,
+  maxPackageBytes: 32 * 1024 * 1024,
   maxTreeEntries: 50_000,
   maxTreeOutputBytes: 16 * 1024 * 1024,
 });
@@ -20,6 +24,9 @@ const HARD_LIMITS = Object.freeze({
   maxSkillFilesPerRepository: 1_000,
   maxSkillBytes: 2 * 1024 * 1024,
   maxLicenseBytes: 1024 * 1024,
+  maxPackageFiles: 2_000,
+  maxPackageFileBytes: 32 * 1024 * 1024,
+  maxPackageBytes: 128 * 1024 * 1024,
   maxTreeEntries: 200_000,
   maxTreeOutputBytes: 64 * 1024 * 1024,
 });
@@ -254,14 +261,68 @@ function objectSize(snapshot, object) {
   return size;
 }
 
-function readObject(snapshot, entry, maxBytes, label) {
+function readObjectBuffer(snapshot, entry, maxBytes, label) {
   if (entry.type !== 'blob') fail('invalid_git_object', `${label} is not a blob: ${entry.path}`);
   if (entry.mode === '120000') fail('symbolic_link_rejected', `${label} is a symbolic link: ${entry.path}`);
+  if (!['100644', '100755'].includes(entry.mode)) fail('unsupported_file_type', `${label} has unsupported mode ${entry.mode}: ${entry.path}`);
   const size = objectSize(snapshot, entry.object);
   if (size > maxBytes) fail('file_size_limit_exceeded', `${entry.path} is ${size} bytes; limit is ${maxBytes}`);
-  const content = runGit(['-C', snapshot.gitDir, 'cat-file', 'blob', entry.object], { maxBuffer: maxBytes + 1 });
+  return runGit(['-C', snapshot.gitDir, 'cat-file', 'blob', entry.object], { maxBuffer: maxBytes + 1 });
+}
+
+function readObject(snapshot, entry, maxBytes, label) {
+  const content = readObjectBuffer(snapshot, entry, maxBytes, label);
   if (content.includes(0)) fail('binary_file_rejected', `${label} contains NUL bytes: ${entry.path}`);
   return content.toString('utf8');
+}
+
+function mediaType(filePath) {
+  const extension = path.posix.extname(filePath).toLowerCase();
+  return ({
+    '.md': 'text/markdown', '.markdown': 'text/markdown', '.txt': 'text/plain', '.json': 'application/json',
+    '.yaml': 'application/yaml', '.yml': 'application/yaml', '.js': 'text/javascript', '.mjs': 'text/javascript',
+    '.ts': 'text/typescript', '.py': 'text/x-python', '.sh': 'text/x-shellscript', '.html': 'text/html',
+    '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif', '.webp': 'image/webp', '.pdf': 'application/pdf',
+  })[extension] || 'application/octet-stream';
+}
+
+function packageEntriesForSkill(skillEntry, entries) {
+  const skillDir = path.posix.dirname(skillEntry.path) === '.' ? '' : path.posix.dirname(skillEntry.path);
+  const nestedSkillDirs = entries
+    .filter(entry => entry.path !== skillEntry.path && path.posix.basename(entry.path) === 'SKILL.md')
+    .map(entry => path.posix.dirname(entry.path) === '.' ? '' : path.posix.dirname(entry.path))
+    .filter(directory => directory && (skillDir ? directory.startsWith(`${skillDir}/`) : true));
+  return entries.filter(entry => {
+    if (skillDir && !entry.path.startsWith(`${skillDir}/`)) return false;
+    if (!skillDir && entry.path === '') return false;
+    return !nestedSkillDirs.some(directory => entry.path === directory || entry.path.startsWith(`${directory}/`));
+  });
+}
+
+function collectGitPackage(snapshot, skillEntry, entries, limits, commit) {
+  const skillDir = path.posix.dirname(skillEntry.path) === '.' ? '' : path.posix.dirname(skillEntry.path);
+  const packageEntries = packageEntriesForSkill(skillEntry, entries);
+  if (packageEntries.length > limits.maxPackageFiles) {
+    fail('package_file_limit_exceeded', `${skillEntry.path} package has ${packageEntries.length} files; limit is ${limits.maxPackageFiles}`);
+  }
+  const files = [];
+  let totalBytes = 0;
+  for (const entry of packageEntries) {
+    const content = readObjectBuffer(snapshot, entry, limits.maxPackageFileBytes, 'package file');
+    totalBytes += content.length;
+    if (totalBytes > limits.maxPackageBytes) {
+      fail('package_size_limit_exceeded', `${skillEntry.path} package exceeds ${limits.maxPackageBytes} bytes`);
+    }
+    const relativePath = skillDir ? entry.path.slice(skillDir.length + 1) : entry.path;
+    files.push({
+      path: relativePath,
+      content,
+      mediaType: mediaType(relativePath),
+      executable: entry.mode === '100755',
+    });
+  }
+  return { files, sourceVersion: commit };
 }
 
 function licensePriority(licensePath, skillPath) {
@@ -320,10 +381,12 @@ function scanRepository(repository, limits) {
     const artifacts = skills.map(entry => {
       const content = readObject(snapshot, entry, limits.maxSkillBytes, 'SKILL.md');
       const license = detectedLicense(snapshot, entries, entry.path, limits, licenseCache);
+      const packageInput = collectGitPackage(snapshot, entry, entries, limits, snapshot.commit);
       return {
         path: entry.path,
         content,
         license,
+        packageInput,
         security: scanSecurity(content),
       };
     });
@@ -349,6 +412,7 @@ function serializeError(error, repository, index) {
 export function collectWhitelist({
   whitelist,
   storePath,
+  packageStorePath,
   reportPath,
   baseDir = process.cwd(),
   limits: limitOverrides,
@@ -361,7 +425,16 @@ export function collectWhitelist({
   // source errors here so one bad entry does not suppress valid repositories.
   const parsed = parseWhitelistStructure(whitelist, { baseDir });
   const limits = limitOverrides ? resolveLimits({ ...parsed.limits, ...limitOverrides }) : parsed.limits;
-  const store = new CandidateStore(path.resolve(baseDir, storePath));
+  const absoluteStorePath = path.resolve(baseDir, storePath);
+  const store = new CandidateStore(absoluteStorePath);
+  const packages = new PackageStore(
+    packageStorePath ? path.resolve(baseDir, packageStorePath) : `${absoluteStorePath}.packages`,
+    { limits: {
+      maxFiles: limits.maxPackageFiles,
+      maxFileBytes: limits.maxPackageFileBytes,
+      maxTotalBytes: limits.maxPackageBytes,
+    } },
+  );
   const generatedAt = (clock ? clock() : new Date()).toISOString();
   const report = {
     schemaVersion: 1,
@@ -385,8 +458,16 @@ export function collectWhitelist({
       repository = normalizeRepository({ entry, index, baseDir: parsed.baseDir, allowLocal }, { checkLocalExists: false });
       const scanned = scanRepository(repository, limits);
       const candidates = [];
-      // Ingestion starts only after every artifact in this repository has passed snapshot validation.
-      for (const artifact of scanned.artifacts) {
+      // Publish and verify every package in this source before mutating the candidate store.
+      const storedArtifacts = scanned.artifacts.map(artifact => {
+        const stored = packages.putFiles(artifact.packageInput.files, {
+          sourceVersion: artifact.packageInput.sourceVersion,
+          collectedAt: generatedAt,
+        });
+        packages.verify(stored.artifact.packageDigest);
+        return { ...artifact, package: stored.artifact, packageStorageAction: stored.action };
+      });
+      for (const artifact of storedArtifacts) {
         report.stats.skills.discovered++;
         const candidate = store.ingest({
           source: {
@@ -399,6 +480,7 @@ export function collectWhitelist({
           },
           content: artifact.content,
           license: artifact.license.value,
+          package: artifact.package,
           sms: { status: 'pending' },
         }, { clock });
         ingestedIds.push(candidate.id);
@@ -413,6 +495,12 @@ export function collectWhitelist({
           license: artifact.license.assessment,
           licenseSourcePath: artifact.license.sourcePath,
           security: artifact.security,
+          package: {
+            packageDigest: artifact.package.packageDigest,
+            fileCount: artifact.package.fileCount,
+            totalBytes: artifact.package.totalBytes,
+            storageAction: artifact.packageStorageAction,
+          },
         });
       }
       report.stats.repositories.succeeded++;

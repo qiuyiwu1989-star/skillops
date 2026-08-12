@@ -16,7 +16,7 @@
 | `trusted-supply/` | V3.1 可信技能供给 MVP：候选池、许可/安全硬门、人工审核、市场技能卡 | 本地验证，尚未接生产 |
 | `dist-src/skillops/` | 便携 CLI 唯一源码：盘点、落户、部署台账、漂移检测 | 可分发标准包 |
 
-V3.4 后的全面升级路线见 `ROADMAP.md`；当前执行规格为 `specs/007-v35-trusted-skill-packages.md`。下一阶段先把单文件候选升级为完整技能包 revision，再进入 Eval、人类终审和造物云适配。
+V3.4 后的全面升级路线见 `ROADMAP.md`；V3.5 完整技能包 revision 地基见 `specs/007-v35-trusted-skill-packages.md`。下一阶段复核首批真实来源包，再进入 Eval、人类终审和造物云适配。
 
 ## 核心理念（脊梁）
 

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createCandidate, applyAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
+import { createCandidate, applyAudit, recordPackageAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
 import { findDuplicateRelations } from './duplicates.mjs';
 import { createSmsAssessment } from './sms.mjs';
 
@@ -67,6 +67,12 @@ export class CandidateStore {
       || oldEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextEvents[eventIndex]))) {
       throw new Error('review events are append-only and cannot be changed');
     }
+    const oldPackageEvents = previous.packageAuditEvents || [];
+    const nextPackageEvents = next.packageAuditEvents || [];
+    if (nextPackageEvents.length < oldPackageEvents.length
+      || oldPackageEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextPackageEvents[eventIndex]))) {
+      throw new Error('package audit events are append-only and cannot be changed');
+    }
     data.candidates[index] = next;
     this.write(data);
     return clone(data.candidates[index]);
@@ -74,6 +80,10 @@ export class CandidateStore {
 
   audit(id, options = {}) {
     return this.update(id, candidate => applyAudit(candidate, options));
+  }
+
+  auditPackage(id, audit, options = {}) {
+    return this.update(id, candidate => recordPackageAudit(candidate, audit, options));
   }
 
   assessSms(id, assessment, options = {}) {

@@ -40,6 +40,10 @@ test('install action requires an eligible complete package and excludes source-o
   assert.match(JS, /listing\.install\?\.packageComplete === true/);
   assert.match(JS, /listing\.distribution !== 'source_link_only'/);
   assert.match(JS, /漂移检测和 lock 台账/);
+  assert.match(JS, /packageRecord\.packageDigest/);
+  assert.match(JS, /packageAudit\?\.status/);
+  assert.match(JS, /文件清单/);
+  assert.match(JS, /manifest\.slice\(0, 20\)/);
 });
 
 test('Rams design contract is responsive, accessible and shadow-free', () => {

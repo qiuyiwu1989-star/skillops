@@ -7,17 +7,22 @@ import { CandidateStore } from './lib/store.mjs';
 import { collectWhitelist } from './lib/source-collector.mjs';
 import { collectSkillHub } from './lib/skillhub-collector.mjs';
 import { confirmSmsDraft, createHeuristicSmsDraft } from './lib/assessment-pipeline.mjs';
+import { PackageStore } from './lib/package-store.mjs';
+import { auditPackageFiles } from './lib/package-audit.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
 Usage:
-  node trusted-supply/cli.mjs collect <whitelist.json> --store <json-file> [--report <json-file>] [--allow-local]
-  node trusted-supply/cli.mjs sync-skillhub --store <json-file> [--report <json-file>] [--limit <1-50>] [--shelves <recommended,trending,hot,newest>] [--audit]
+  node trusted-supply/cli.mjs collect <whitelist.json> --store <json-file> [--package-store <directory>] [--report <json-file>] [--allow-local]
+  node trusted-supply/cli.mjs sync-skillhub --store <json-file> [--package-store <directory>] [--report <json-file>] [--limit <1-50>] [--shelves <recommended,trending,hot,newest>] [--audit]
   node trusted-supply/cli.mjs ingest <SKILL.md> --source-url <url> --repo <owner/repo> --path <path> --commit <sha> [--license <SPDX>]
   node trusted-supply/cli.mjs sms-import <candidate-id> --input <assessment.json>
   node trusted-supply/cli.mjs sms-draft <candidate-id> [--out <draft.json>]
   node trusted-supply/cli.mjs sms-confirm <candidate-id> --input <draft.json> --scorer <name>
   node trusted-supply/cli.mjs sms-show <candidate-id>
+  node trusted-supply/cli.mjs package-import <candidate-id> --from <directory> --package-store <directory>
+  node trusted-supply/cli.mjs package-show <candidate-id>
+  node trusted-supply/cli.mjs package-audit <candidate-id> --package-store <directory> --auditor <name>
   node trusted-supply/cli.mjs audit <candidate-id> [--sms-threshold <score>]
   node trusted-supply/cli.mjs list [--status <status>]
   node trusted-supply/cli.mjs show <candidate-id>
@@ -57,6 +62,36 @@ function output(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
+function publicPackage(packageArtifact) {
+  if (!packageArtifact) return null;
+  return {
+    schemaVersion: packageArtifact.schemaVersion,
+    packageDigest: packageArtifact.packageDigest,
+    manifest: structuredClone(packageArtifact.manifest),
+    fileCount: packageArtifact.fileCount,
+    totalBytes: packageArtifact.totalBytes,
+    collectedAt: packageArtifact.collectedAt,
+    basedOnSourceVersion: packageArtifact.basedOnSourceVersion,
+  };
+}
+
+function packageStoreFrom(flags) {
+  return new PackageStore(path.resolve(String(required(flags['package-store'], 'package-store'))));
+}
+
+function skillContentFromPackage(packageStore, packageDigest) {
+  const files = packageStore.readFiles(packageDigest);
+  const skill = files.find(file => file.path === 'SKILL.md');
+  if (!skill) throw new Error('complete package is missing root SKILL.md');
+  try {
+    const content = new TextDecoder('utf-8', { fatal: true }).decode(skill.content);
+    if (content.includes('\0')) throw new Error('NUL byte');
+    return content;
+  } catch (error) {
+    throw new Error(`package SKILL.md must be valid UTF-8 text: ${error.message}`);
+  }
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const { positional, flags } = parseArgs(argv);
   const [command, target] = positional;
@@ -72,6 +107,7 @@ export async function main(argv = process.argv.slice(2)) {
       output(collectWhitelist({
         whitelist: path.resolve(required(target, 'whitelist-file')),
         storePath,
+        packageStorePath: flags['package-store'] ? path.resolve(String(flags['package-store'])) : undefined,
         reportPath: flags.report ? path.resolve(String(flags.report)) : undefined,
         baseDir: process.cwd(),
         allowLocal: Boolean(flags['allow-local']),
@@ -80,6 +116,7 @@ export async function main(argv = process.argv.slice(2)) {
     case 'sync-skillhub':
       output(await collectSkillHub({
         storePath,
+        packageStorePath: flags['package-store'] ? path.resolve(String(flags['package-store'])) : undefined,
         reportPath: flags.report ? path.resolve(String(flags.report)) : undefined,
         limit: flags.limit === undefined ? undefined : Number(flags.limit),
         scanLimit: flags['scan-limit'] === undefined ? undefined : Number(flags['scan-limit']),
@@ -138,6 +175,61 @@ export async function main(argv = process.argv.slice(2)) {
       const candidate = store.get(required(target, 'candidate-id'));
       if (!candidate) throw new Error(`candidate not found: ${target}`);
       output(candidate.sms);
+      return 0;
+    }
+    case 'package-show': {
+      const candidate = store.get(required(target, 'candidate-id'));
+      if (!candidate) throw new Error(`candidate not found: ${target}`);
+      output({
+        candidateId: candidate.id,
+        package: publicPackage(candidate.artifact?.package),
+        packageAudit: candidate.packageAudit || null,
+        installEligible: candidate.status === 'approved'
+          && candidate.artifact?.package?.packageDigest
+          && candidate.packageAudit?.status === 'pass'
+          && candidate.packageAudit?.basedOnPackageDigest === candidate.artifact.package.packageDigest,
+      });
+      return 0;
+    }
+    case 'package-import': {
+      const candidateId = required(target, 'candidate-id');
+      const candidate = store.get(candidateId);
+      if (!candidate) throw new Error(`candidate not found: ${candidateId}`);
+      const sourceDirectory = path.resolve(String(required(flags.from, 'from')));
+      const packageStore = packageStoreFrom(flags);
+      const basedOnSourceVersion = candidate.source?.commit || candidate.artifact?.versionIdentity;
+      const imported = packageStore.importDirectory(sourceDirectory, { basedOnSourceVersion });
+      const packageContent = skillContentFromPackage(packageStore, imported.artifact.packageDigest);
+      const refreshed = store.ingest({
+        id: candidate.id,
+        source: candidate.source,
+        content: packageContent,
+        license: candidate.artifact?.license,
+        sms: candidate.sms,
+        eval: candidate.eval,
+        catalog: { ...(candidate.catalog || {}), packageComplete: true },
+        package: imported.artifact,
+      });
+      output({
+        candidateId: refreshed.id,
+        action: imported.action,
+        package: publicPackage(refreshed.artifact.package),
+        packageComplete: refreshed.catalog?.packageComplete === true,
+        status: refreshed.status,
+      });
+      return 0;
+    }
+    case 'package-audit': {
+      const candidateId = required(target, 'candidate-id');
+      const auditor = String(required(flags.auditor, 'auditor'));
+      const candidate = store.get(candidateId);
+      if (!candidate) throw new Error(`candidate not found: ${candidateId}`);
+      const packageArtifact = candidate.artifact?.package;
+      if (!packageArtifact) throw new Error('candidate has no complete package to audit');
+      const packageStore = packageStoreFrom(flags);
+      const files = packageStore.readFiles(packageArtifact.packageDigest);
+      const result = auditPackageFiles(files, packageArtifact);
+      output(store.auditPackage(candidateId, { ...result, auditor }));
       return 0;
     }
     case 'audit':

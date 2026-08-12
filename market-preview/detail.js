@@ -345,10 +345,15 @@ function renderGovernance(listing) {
 
 function renderPackage(listing) {
   const complete = listing.install?.packageComplete === true;
-  const fileCount = listing.catalog?.packageFileCount ?? listing.install?.fileCount;
+  const packageRecord = listing.package || listing.artifact?.package || {};
+  const manifest = Array.isArray(packageRecord.manifest) ? packageRecord.manifest : [];
+  const fileCount = packageRecord.fileCount ?? listing.catalog?.packageFileCount ?? listing.install?.fileCount;
+  const totalBytes = packageRecord.totalBytes;
+  const packageDigest = packageRecord.packageDigest || listing.install?.packageDigest;
+  const packageAudit = packageRecord.audit || listing.packageAudit || listing.install?.packageAudit;
   const title = complete ? '技能包已完整同步' : '当前仅同步部分内容';
   const body = complete
-    ? '来源文件已形成完整清单。只有审核指纹保持一致时，才可进入受控部署。'
+    ? '来源文件已形成完整清单。只有包指纹和全包审计保持有效时，才可进入受控部署。'
     : '缺少 references、scripts、模板或其他关联文件时，不提供直接安装。请先补齐完整技能包并重新经过审核。';
   const status = document.createElement('div');
   status.className = `package-status ${complete ? 'complete' : 'incomplete'}`;
@@ -358,11 +363,32 @@ function renderPackage(listing) {
   addFacts(facts, [
     ['包完整性', complete ? '完整' : '不完整'],
     ['文件数量', fileCount == null ? '未记录' : `${fileCount} 个`],
+    ['包总体积', totalBytes == null ? '未记录' : `${totalBytes} bytes`],
+    ['包指纹', shortHash(packageDigest)],
+    ['全包审计', packageAudit?.status ? statusLabel(packageAudit.status) : '未完成'],
     ['安装资格', statusLabel(listing.install?.status)],
     ['部署方式', listing.install?.method || 'skillops deploy'],
     ['保护机制', '目标检查 · 漂移检测 · lock 台账'],
   ]);
-  elements.package.replaceChildren(status, facts);
+  const manifestSection = document.createElement('section');
+  manifestSection.className = 'package-manifest';
+  manifestSection.append(text('h3', '文件清单'));
+  if (manifest.length) {
+    const list = document.createElement('ul');
+    for (const file of manifest.slice(0, 20)) {
+      const item = document.createElement('li');
+      item.append(
+        text('span', file.path || '未命名文件', 'mono'),
+        text('span', `${file.size ?? '?'} bytes · ${shortHash(file.sha256)}`, 'manifest-meta mono'),
+      );
+      list.append(item);
+    }
+    manifestSection.append(list);
+    if (manifest.length > 20) manifestSection.append(text('p', `另有 ${manifest.length - 20} 个文件未展开`, 'manifest-more'));
+  } else {
+    manifestSection.append(text('p', '当前 listing 尚未提供可验证的完整文件清单。', 'pending-panel'));
+  }
+  elements.package.replaceChildren(status, facts, manifestSection);
 }
 
 function relatedHref(listing) {

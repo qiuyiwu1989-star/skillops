@@ -40,7 +40,7 @@
 - `packageDigest` 由规范排序后的 `path + size + sha256 + executable` 本地计算，禁止直接信任上游总 hash。
 - manifest 路径使用 POSIX 相对路径、Unicode NFC、区分大小写；相同 fold key 视为冲突。
 - `storageRef` 只指向本地内容寻址存储，不进入 listing 的可写路径。
-- 缺完整包时可以继续作为 `source_link_only` listing，但不得标记可安装。
+- 缺完整包时，许可允许的 `SKILL.md` 正文仍可按既有规则分发；许可不清时继续降级为 `source_link_only`。两者都不得标记可安装。
 
 ## 硬门
 
@@ -97,14 +97,14 @@
 
 ## 验收清单
 
-- [ ] manifest 排序与 digest 在不同扫描顺序下稳定。
-- [ ] hash 不匹配、缺文件、额外文件、路径穿越、symlink、大小写冲突和超限全部失败关闭。
-- [ ] scripts/references 中的危险内容能阻断全包批准。
-- [ ] 部分失败不污染 CAS/store；同包重复同步幂等且零重复存储。
-- [ ] 仅修改附件即可使旧 audit、SMS、Eval、review 和 listing 失效。
-- [ ] `source_link_only` 不复制包内容且不显示安装操作。
-- [ ] 可安装 listing 同时满足许可可分发、包完整、package audit 当前有效和批准有效。
-- [ ] 全量既有测试保持通过，并新增端到端包同步验收。
+- [x] manifest 排序与 digest 在不同扫描顺序下稳定。
+- [x] hash 不匹配、缺文件、额外文件、路径穿越、symlink、大小写冲突和超限全部失败关闭。
+- [x] scripts/references 中的危险内容能阻断全包批准。
+- [x] 部分失败不污染 CAS/store；同包重复同步幂等且零重复存储。
+- [x] 仅修改附件即可使旧 audit、SMS、Eval、review 和 listing 失效。
+- [x] `source_link_only` 不复制包内容且不显示安装操作。
+- [x] 可安装 listing 同时满足许可可分发、包完整、package audit 当前有效和批准有效。
+- [x] 全量既有测试保持通过，并新增端到端包同步验收。
 
 ## 不做什么
 
@@ -115,4 +115,4 @@
 
 ## 状态
 
-approved for local parallel implementation; production integration not authorized
+local V3.5 foundation complete; first three external listings remain non-installable pending source package/license availability; production integration not authorized

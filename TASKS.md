@@ -2,8 +2,7 @@
 
 ## Now
 
-- [ ] V3.5：建立完整技能包 manifest、CAS、全包审计和状态失效机制（spec: 007）
-- [ ] V3.5：升级 SkillHub/GitHub SourceAdapter，并诚实复核首批 3 个 listing 的包完整性
+- [ ] 复核首批 3 个 SkillHub listing 的完整包与许可可得性；不可得则保持来源索引
 
 ## Next
 
@@ -15,6 +14,7 @@
 
 ## Done
 
+- [x] 2026-08-13：完成 V3.5 完整技能包可信交付地基：manifest/CAS、双向校验、全包安全审计、状态失效、SkillHub/GitHub 全包采集、CLI 与市场证据链；危险附件不可批准或安装；134/134 自动化测试及 1440px/390px 浏览器验收通过。
 - [x] 2026-08-13：完成 V3.4 独立中文技能详情页；3 个 approved listing 具备稳定深链、静态元信息、SMS/Eval/来源/治理/安装边界，88/88 自动化测试和 1440px/390px 浏览器验收通过。
 - [x] 2026-08-13：完成 V3.3 本地 Go 演示：同步并审计 12 个真实 SkillHub 候选，3 个 SMS v2 完整评分进入 B 段，3 个 listing 经 Agent 辅助复核进入本地市场；68/68 测试和 1440px/390px 浏览器验收通过。
 - [x] 2026-08-13：完成 SMS v2.0 严格数据契约、安全 YAML frontmatter、评估草案/显式确认 CLI 与市场详情证据链。
