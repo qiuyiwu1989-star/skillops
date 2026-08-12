@@ -1,5 +1,7 @@
 # Decisions
 
+- 2026-08-13：全面升级按 `完整技能包 → Eval → 独立人审 → Registry → 内部 HRD → 造物云/组织治理` 排序；V3.5 的审批对象从 `SKILL.md` 单文件升级为不可变 packageRevision。Basis: 三条独立审计均发现附件变化不受当前指纹、SMS 与批准约束，是市场安装和 Eval 的共同前置风险。Confidence: high.
+- 2026-08-13：SkillOps 定位为技能供给与信任中台；造物云能力市场继续承载插件、技能、方法、应用、数字员工等不同对象，彼此通过 relations 关联，不压成单一对象模型。Basis: 用户已明确各能力形态不同且 SkillOps 应先聚焦技能。Confidence: high.
 - 2026-08-13：V3.4 详情 URL 使用 `/skills/<candidate-id>/`，中文标题仅作展示，不进入稳定路由键；构建为每个 approved listing 生成静态 HTML 和独立 JSON，详情数据仍只来自 `CandidateStore.listListings()`。Basis: 用户明确要求每个技能拥有详情页。Confidence: high.
 - 2026-08-13：能力市场默认展示中文主题名和中文说明；优先使用来源自带中文，否则生成可追踪的自动翻译字段。英文原名和原始说明永久保留，自动翻译标记为待人工校对。Basis: 用户明确要求市场不要使用纯英文主题与说明。Confidence: high.
 - 2026-08-13：V3.3 本地 Go 演示允许明确标注 `agent_assisted` 的复核事件，但不能对外宣称为独立人工终审；进入生产前必须补独立人类复核。Basis: 本地研发授权不等于生产发布授权。Confidence: high.

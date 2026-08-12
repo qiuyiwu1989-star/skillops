@@ -2,13 +2,16 @@
 
 ## Now
 
-- [ ] 为首批 3 个 listing 补齐完整技能包同步与固定测试集 Eval
-- [ ] 增加独立人类终审角色，替换本地演示的 Agent 辅助批准
+- [ ] V3.5：建立完整技能包 manifest、CAS、全包审计和状态失效机制（spec: 007）
+- [ ] V3.5：升级 SkillHub/GitHub SourceAdapter，并诚实复核首批 3 个 listing 的包完整性
 
 ## Next
 
-- [ ] 增加抽样 Eval 用例与实证数据（不与 SMS 混分）
-- [ ] 将验证后的 listing 适配协议接入造物云能力市场
+- [ ] V3.6：为首批 3 个技能补固定测试集与隔离 Eval，不与 SMS 混分
+- [ ] V3.7：增加独立人类终审、四眼规则、有效期与持续再认证
+- [ ] V3.8：统一 Skill/Release/Package/Listing 身份与 Registry 发布投影
+- [ ] V3.9：打通市场安装、lock、更新、复评、coach 和 retire 的内部 HRD 闭环
+- [ ] V4.0：实现造物云 adapter staging 与组织治理小规模试点
 
 ## Done
 
