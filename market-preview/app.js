@@ -22,10 +22,14 @@ const elements = {
   dialogClose: document.querySelector('#dialog-close'),
 };
 
+function visibleString(value) {
+  return String(value ?? '').replace(/[—–]/g, '-');
+}
+
 function text(tagName, value, className) {
   const element = document.createElement(tagName);
   if (className) element.className = className;
-  element.textContent = value ?? '';
+  element.textContent = visibleString(value);
   return element;
 }
 
@@ -94,7 +98,7 @@ function detailGroup(title, rows) {
 
 function openEvidence(listing) {
   const review = listing.verification?.lastReview || {};
-  elements.dialogTitle.textContent = listing.name;
+  elements.dialogTitle.textContent = visibleString(listing.name);
   elements.dialogContent.replaceChildren(
     detailGroup('来源与版本', [
       ['仓库', sourceLabel(listing), 'mono'],
@@ -242,4 +246,3 @@ elements.dialog.addEventListener('click', event => {
 });
 
 loadListings();
-

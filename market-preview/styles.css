@@ -16,6 +16,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html { background: var(--bg); }
 
@@ -463,4 +464,3 @@ dialog::backdrop { background: rgb(25 23 20 / 56%); }
     transition-duration: 0.01ms !important;
   }
 }
-

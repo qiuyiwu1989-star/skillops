@@ -36,6 +36,20 @@ node --test trusted-supply/test/*.test.mjs test/*.test.mjs
 
 `trusted-supply` 的抓取结果永远先进入候选池；只有通过格式、来源、许可证、安全门并经人工批准的当前指纹，才能生成市场技能卡。许可证不明确时仅生成来源链接，不复制正文。
 
+## V3.2 白名单试运行与预览
+
+```bash
+# 显式采集 GitHub 白名单，只进入候选池
+node trusted-supply/cli.mjs collect trusted-supply/examples/whitelist.example.json \
+  --store .skillops/trusted-supply.json --report .skillops/collect-report.json
+
+# 从 approved listing 构建只读市场预览
+node market-preview/build.mjs --store .skillops/trusted-supply.json
+node market-preview/serve.mjs
+```
+
+本地示例预览可运行 `node market-preview/demo.mjs` 后打开 `http://127.0.0.1:4173`。采集器不 checkout、不执行仓库代码，远端只允许无凭证的 GitHub HTTPS 来源；本地 git 来源必须显式添加 `--allow-local`。
+
 ## 老平台本地启动
 
 ```bash

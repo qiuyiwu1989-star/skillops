@@ -18,7 +18,7 @@
 ## 现在做到哪
 
 **P1.5 已完成**：CLI（盘点/落户/体检/周报/遥测）+ 小能技能包 + 便携标准包 v1.0.0。
-**V3.1 本地版本已完成**：P2 的 deploy 台账/漂移闭环，以及“候选→信任门→人工准入→市场技能卡”的可信供给 MVP 已通过 23 项自动化测试。下一步是真实 GitHub 白名单与造物云 listing 适配，仍未获准接生产。
+**V3.2 本地版本已完成**：P2 deploy 台账/漂移闭环、可信供给、显式 GitHub 白名单快照器与 approved listing 市场预览已通过 32 项自动化测试及桌面/移动浏览器验收。下一步是 50 个真实候选 Go/No-go 与造物云适配，仍未获准接生产。
 
 ## 当前档位
 
@@ -47,6 +47,7 @@
 | `V3-ARCHITECTURE.md` | **宪法**：七面承重墙 + 四条修正案 + 五层架构 + 路线图 |
 | `specs/` `TASKS.md` `DECISIONS.md` | V3.1 意图、任务、决策与验收 |
 | `trusted-supply/` | V3.1 可信技能供给 MVP（隔离开发，不连生产） |
+| `market-preview/` | V3.2 只读能力市场预览，只消费 approved listing |
 | `谱/` | 进度 · 决定 · 每天记录 |
 | `cli/` | 兼容入口；唯一 CLI 源码在 `dist-src/skillops/scripts/` |
 | `skills/skillops/` | 户主版小能（`~/.claude/skills/skillops` 符号链接到此） |
