@@ -140,6 +140,15 @@ p, h1, h2, h3, dl, ul { margin-top: 0; }
 .pending-panel p:last-child { margin-bottom: 0; }
 .pending-title { color: var(--text); font-weight: 500; }
 .eval-record .fact-grid { margin-bottom: 0; }
+.eval-case-list { display: grid; gap: var(--s3); margin-top: var(--s5); }
+.eval-case { padding: var(--s4); border: 1px solid var(--line); background: var(--bg); }
+.eval-case-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s2); }
+.eval-case-heading h3 { margin: 0; font-size: 15px; }
+.eval-case-heading span, .eval-case-meta { color: var(--faint); font-size: 11px; }
+.eval-passed { border-left: 3px solid var(--green); }
+.eval-failed, .eval-error, .eval-timeout { border-left: 3px solid var(--red); }
+.case-evidence { display: grid; gap: var(--s1); margin: var(--s3) 0 0; padding-left: var(--s5); color: var(--muted); font-size: 12px; }
+.eval-error { margin-top: var(--s2); color: var(--red); font-size: 12px; }
 
 .record-list { margin-bottom: 0; border-top: 1px solid var(--text); }
 .record-row { display: grid; grid-template-columns: minmax(130px, 0.35fr) minmax(0, 1fr); gap: var(--s5); padding-block: var(--s3); border-bottom: 1px solid var(--line); }

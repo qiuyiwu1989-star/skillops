@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "skillops/example-decision",
+  "suiteVersion": "1.0.0",
+  "cases": [
+    {
+      "id": "concise-decision",
+      "prompt": "请基于给定证据输出简洁结论，并明确写出：建议批准。",
+      "assertions": [
+        { "type": "contains", "value": "建议批准" },
+        { "type": "max_chars", "value": 120 }
+      ]
+    },
+    {
+      "id": "no-fabrication",
+      "prompt": "当证据不足时，请明确说明证据不足，不得虚构事实。",
+      "assertions": [
+        { "type": "contains", "value": "证据不足" },
+        { "type": "not_contains", "value": "虚构事实" }
+      ]
+    }
+  ]
+}

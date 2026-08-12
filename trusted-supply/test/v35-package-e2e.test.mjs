@@ -70,13 +70,7 @@ function candidateInput(packageArtifact) {
     license: 'MIT',
     package: packageArtifact,
     sms: { status: 'pending' },
-    eval: {
-      status: 'complete',
-      testSet: 'v35-package-e2e-v1',
-      environment: 'offline fixture runner',
-      successRate: 1,
-      basedOnPackageDigest: packageArtifact.packageDigest,
-    },
+    eval: { status: 'pending' },
     catalog: {
       category: 'dev-programming',
       packageComplete: true,
@@ -125,7 +119,7 @@ test('local package import reaches CAS, full-package audit, SMS, content audit, 
     'LICENSE', 'SKILL.md', 'references/guide.md', 'scripts/run.sh',
   ]);
   assert.equal(listing.package.audit.status, 'pass');
-  assert.equal(listing.eval.basedOnPackageDigest, listing.package.packageDigest);
+  assert.equal(listing.eval.status, 'pending');
   assert.equal(listing.verification.lastReview.reviewerType, 'human');
   assert.equal(Object.hasOwn(listing.package, 'storageRef'), false, 'market listing must not expose writable CAS paths');
 });

@@ -9,6 +9,10 @@ import { collectSkillHub } from './lib/skillhub-collector.mjs';
 import { confirmSmsDraft, createHeuristicSmsDraft } from './lib/assessment-pipeline.mjs';
 import { PackageStore } from './lib/package-store.mjs';
 import { auditPackageFiles } from './lib/package-audit.mjs';
+import { normalizeEvalSuite } from './lib/eval-suite.mjs';
+import { validateEvalResult } from './lib/eval-result.mjs';
+import { createFixtureEvalAdapter } from './lib/eval-fixture-adapter.mjs';
+import { runEvalSuite } from './lib/eval-runner.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
@@ -23,6 +27,10 @@ Usage:
   node trusted-supply/cli.mjs package-import <candidate-id> --from <directory> --package-store <directory>
   node trusted-supply/cli.mjs package-show <candidate-id>
   node trusted-supply/cli.mjs package-audit <candidate-id> --package-store <directory> --auditor <name>
+  node trusted-supply/cli.mjs eval-suite-validate <cases.json>
+  node trusted-supply/cli.mjs eval-run <candidate-id> --suite <cases.json> --adapter fixture --fixture-results <results.json>
+  node trusted-supply/cli.mjs eval-import <candidate-id> --input <result.json> --suite <cases.json>
+  node trusted-supply/cli.mjs eval-show <candidate-id>
   node trusted-supply/cli.mjs audit <candidate-id> [--sms-threshold <score>]
   node trusted-supply/cli.mjs list [--status <status>]
   node trusted-supply/cli.mjs show <candidate-id>
@@ -90,6 +98,26 @@ function skillContentFromPackage(packageStore, packageDigest) {
   } catch (error) {
     throw new Error(`package SKILL.md must be valid UTF-8 text: ${error.message}`);
   }
+}
+
+function readJsonFlag(value, name) {
+  const filePath = path.resolve(String(required(value, name)));
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function evalHistorySummary(result) {
+  return {
+    status: result.status,
+    suiteId: result.suiteId,
+    suiteVersion: result.suiteVersion,
+    suiteDigest: result.suiteDigest,
+    basedOnPackageDigest: result.basedOnPackageDigest,
+    runner: result.runner,
+    passed: result.passed,
+    failed: result.failed,
+    successRate: result.successRate,
+    completedAt: result.completedAt,
+  };
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -230,6 +258,49 @@ export async function main(argv = process.argv.slice(2)) {
       const files = packageStore.readFiles(packageArtifact.packageDigest);
       const result = auditPackageFiles(files, packageArtifact);
       output(store.auditPackage(candidateId, { ...result, auditor }));
+      return 0;
+    }
+    case 'eval-suite-validate':
+      output(normalizeEvalSuite(JSON.parse(fs.readFileSync(path.resolve(required(target, 'suite-file')), 'utf8'))));
+      return 0;
+    case 'eval-run': {
+      const candidateId = required(target, 'candidate-id');
+      const candidate = store.get(candidateId);
+      if (!candidate) throw new Error(`candidate not found: ${candidateId}`);
+      if (flags.adapter !== 'fixture') throw new Error('--adapter must be the literal value fixture');
+      const suite = normalizeEvalSuite(readJsonFlag(flags.suite, 'suite'));
+      const fixtureResults = readJsonFlag(flags['fixture-results'], 'fixture-results');
+      const executor = createFixtureEvalAdapter(fixtureResults);
+      const result = await runEvalSuite({
+        suite,
+        packageDigest: candidate.artifact?.package?.packageDigest,
+        packageAudit: candidate.packageAudit,
+        executor,
+      });
+      output(store.recordEval(candidateId, result));
+      return 0;
+    }
+    case 'eval-import': {
+      const candidateId = required(target, 'candidate-id');
+      const candidate = store.get(candidateId);
+      if (!candidate) throw new Error(`candidate not found: ${candidateId}`);
+      const suite = normalizeEvalSuite(readJsonFlag(flags.suite, 'suite'));
+      const result = validateEvalResult(readJsonFlag(flags.input, 'input'), {
+        suite,
+        packageDigest: candidate.artifact?.package?.packageDigest,
+      });
+      output(store.recordEval(candidateId, result));
+      return 0;
+    }
+    case 'eval-show': {
+      const candidateId = required(target, 'candidate-id');
+      const candidate = store.get(candidateId);
+      if (!candidate) throw new Error(`candidate not found: ${candidateId}`);
+      output({
+        candidateId,
+        current: candidate.eval || { status: 'pending' },
+        history: (candidate.evalEvents || []).map(evalHistorySummary),
+      });
       return 0;
     }
     case 'audit':

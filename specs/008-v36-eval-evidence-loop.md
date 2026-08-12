@@ -21,7 +21,7 @@
 
 - runner 只接受已通过当前全包审计的 package revision 与已校验 suite。
 - executor 是注入式 adapter，核心库不内置 shell、网络或模型密钥。
-- adapter 输入只包含明确 case、只读 package 路径/摘要和超时；输出为文本或 JSON 结果及公开环境元数据。
+- adapter 输入只包含明确 case、package digest 和超时；不会获得技能包路径或文件内容。输出为文本或 JSON 结果，公开环境元数据由 adapter 声明。
 - 每个 case 独立运行，超时、adapter 错误和断言失败只形成失败证据，不修改技能文件。
 - 默认 fixture adapter 完全离线、确定性、无网络、无子进程。
 - 真实模型 adapter 不在本版实现，也不自动发现环境变量。
@@ -64,7 +64,7 @@
 
 - `eval-suite-validate <cases.json>`：输出规范化 suite 与 digest。
 - `eval-run <candidate-id> --suite <cases.json> --adapter fixture --fixture-results <json>`：离线运行并记录结果。
-- `eval-import <candidate-id> --input <result.json>`：只导入完整、当前且可验证的外部结果。
+- `eval-import <candidate-id> --input <result.json> --suite <cases.json>`：只导入完整、当前且可验证的外部结果。
 - `eval-show <candidate-id>`：展示当前结果和历史摘要。
 - CLI 不提供任意 shell 命令参数，不读取模型密钥，不允许 adapter 路径注入。
 
@@ -92,14 +92,14 @@
 
 ## 验收清单
 
-- [ ] 测试集 digest 稳定，非法结构、未知断言和超限失败关闭。
-- [ ] 断言引擎覆盖文本、JSON 路径和输出长度，不执行表达式。
-- [ ] fixture runner 离线、确定性，不启动 shell/网络/第三方技能。
-- [ ] 超时、adapter 错误、断言失败形成逐 case 证据与准确成功率。
-- [ ] Eval 绑定 packageDigest、suiteDigest、runner 和环境，不接受伪造汇总。
-- [ ] package 或 suite 变化使当前 Eval stale，历史事件保持只追加。
-- [ ] SMS 与 Eval 在 listing 和详情中继续分开展示。
-- [ ] 全量自动化测试和桌面/移动浏览器验收通过。
+- [x] 测试集 digest 稳定，非法结构、未知断言和超限失败关闭。
+- [x] 断言引擎覆盖文本、JSON 路径和输出长度，不执行表达式。
+- [x] fixture runner 离线、确定性，不启动 shell/网络/第三方技能。
+- [x] 超时、adapter 错误、断言失败形成逐 case 证据与准确成功率。
+- [x] Eval 绑定 packageDigest、suiteDigest、runner 和环境，不接受伪造汇总。
+- [x] package 变化使当前 Eval 回到 pending，suite/runner policy 变化可判 stale，历史事件保持只追加。
+- [x] SMS 与 Eval 在 listing 和详情中继续分开展示。
+- [x] 全量 161 项自动化测试通过；详情页在 1440px 与 390px 均无横向溢出，新增 Eval 证据由独立结构测试覆盖。
 
 ## 不做什么
 
@@ -110,4 +110,4 @@
 
 ## 状态
 
-approved for local parallel implementation; real-model execution and production integration not authorized
+completed locally on 2026-08-13; real-model execution and production integration remain unauthorized

@@ -271,9 +271,9 @@ function renderSms(listing) {
 
 function renderEval(listing) {
   const evaluation = listing.eval || {};
-  if (!evaluation.status || evaluation.status === 'pending') {
+  if (!evaluation.status || evaluation.status === 'pending' || evaluation.status === 'stale') {
     elements.evalContent.replaceChildren(
-      text('p', 'Eval 等待验证', 'pending-title'),
+      text('p', evaluation.status === 'stale' ? 'Eval 证据已过期' : 'Eval 等待验证', 'pending-title'),
       text('p', '当前没有固定测试集、运行环境或成功率证据。页面不会用 SMS 分数替代实绩。'),
     );
     elements.evalContent.className = 'pending-panel';
@@ -284,13 +284,47 @@ function renderEval(listing) {
   const rate = Number.isFinite(rawRate) ? `${Math.round(rawRate * (rawRate <= 1 ? 100 : 1))}%` : '未记录';
   const facts = document.createElement('dl');
   facts.className = 'fact-grid';
+  const environment = evaluation.environment && typeof evaluation.environment === 'object'
+    ? Object.entries(evaluation.environment).map(([key, value]) => `${key}: ${visibleString(value)}`).join(' · ')
+    : evaluation.environment;
   addFacts(facts, [
     ['状态', statusLabel(evaluation.status)],
     ['成功率', rate],
-    ['测试集', evaluation.testSet || evaluation.dataset || '未记录'],
-    ['运行环境', evaluation.environment || '未记录'],
+    ['通过 / 失败', `${evaluation.passed ?? '-'} / ${evaluation.failed ?? '-'}`],
+    ['测试集', evaluation.suiteId || evaluation.testSet || evaluation.dataset || '未记录'],
+    ['测试集版本', evaluation.suiteVersion || '未记录'],
+    ['测试集指纹', shortHash(evaluation.suiteDigest)],
+    ['Runner', evaluation.runner || '未记录'],
+    ['运行环境', environment || '未记录'],
+    ['绑定包指纹', shortHash(evaluation.basedOnPackageDigest)],
   ]);
-  elements.evalContent.replaceChildren(facts);
+  const cases = Array.isArray(evaluation.cases) ? evaluation.cases : [];
+  const caseList = document.createElement('div');
+  caseList.className = 'eval-case-list';
+  for (const item of cases) {
+    const card = document.createElement('article');
+    card.className = `eval-case eval-${item.status || 'unknown'}`;
+    const heading = document.createElement('div');
+    heading.className = 'eval-case-heading';
+    heading.append(
+      text('h3', item.id || '未命名用例'),
+      text('span', statusLabel(item.status), 'mono'),
+    );
+    const assertions = Array.isArray(item.assertions) ? item.assertions : [];
+    const evidence = document.createElement('ul');
+    evidence.className = 'case-evidence';
+    for (const assertion of assertions) {
+      evidence.append(text('li', `${assertion.passed ? '通过' : '失败'} · ${assertion.type || '断言'} · ${assertion.message || '未记录说明'}`));
+    }
+    card.append(
+      heading,
+      text('p', `耗时 ${item.durationMs ?? '-'} ms · 输出摘要: ${item.outputSummary || '未保留'}`, 'eval-case-meta'),
+      evidence,
+    );
+    if (item.error) card.append(text('p', `错误: ${item.error}`, 'eval-error'));
+    caseList.append(card);
+  }
+  elements.evalContent.replaceChildren(facts, caseList);
 }
 
 function renderProvenance(listing) {

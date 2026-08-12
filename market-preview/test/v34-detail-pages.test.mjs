@@ -170,16 +170,9 @@ test('pending, rejected, and quarantined candidates never leak into detail artif
   assert.doesNotMatch(serializedSite, /stale unpublished candidate|"leaked":true/);
 });
 
-test('detail data preserves Chinese-first metadata, original English, and separate SMS and Eval evidence', t => {
+test('detail data preserves Chinese-first metadata, original English, and separate SMS and pending Eval', t => {
   const site = workspace(t);
-  const approved = ingestApproved(site.store, 'customer-brief', {
-    evalResult: {
-      status: 'complete',
-      testSet: 'fixture-eval-v1',
-      environment: 'isolated fixture runner',
-      successRate: 0.8,
-    },
-  });
+  const approved = ingestApproved(site.store, 'customer-brief');
   buildApprovedListings({ storePath: site.store.filePath, outPath: site.output });
   const { listing } = detailPayload(site.publicRoot, approved.id);
 
@@ -190,7 +183,7 @@ test('detail data preserves Chinese-first metadata, original English, and separa
   assert.equal(listing.sms.rubricVersion, 'SMS-2.0');
   assert.equal(listing.sms.dimensions.length, 10);
   assert.ok(listing.sms.dimensions.every(item => item.reason && item.evidence.length));
-  assert.equal(listing.eval.testSet, 'fixture-eval-v1');
+  assert.equal(listing.eval.status, 'pending');
   assert.notEqual(listing.sms, listing.eval);
 
   const html = fs.readFileSync(detailPaths(site.publicRoot, approved.id).html, 'utf8');

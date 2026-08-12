@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createCandidate, applyAudit, recordPackageAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
+import { createCandidate, applyAudit, recordEval, recordPackageAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
 import { findDuplicateRelations } from './duplicates.mjs';
 import { createSmsAssessment } from './sms.mjs';
 
@@ -73,6 +73,12 @@ export class CandidateStore {
       || oldPackageEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextPackageEvents[eventIndex]))) {
       throw new Error('package audit events are append-only and cannot be changed');
     }
+    const oldEvalEvents = previous.evalEvents || [];
+    const nextEvalEvents = next.evalEvents || [];
+    if (nextEvalEvents.length < oldEvalEvents.length
+      || oldEvalEvents.some((event, eventIndex) => JSON.stringify(event) !== JSON.stringify(nextEvalEvents[eventIndex]))) {
+      throw new Error('eval events are append-only and cannot be changed');
+    }
     data.candidates[index] = next;
     this.write(data);
     return clone(data.candidates[index]);
@@ -84,6 +90,10 @@ export class CandidateStore {
 
   auditPackage(id, audit, options = {}) {
     return this.update(id, candidate => recordPackageAudit(candidate, audit, options));
+  }
+
+  recordEval(id, result) {
+    return this.update(id, candidate => recordEval(candidate, result));
   }
 
   assessSms(id, assessment, options = {}) {

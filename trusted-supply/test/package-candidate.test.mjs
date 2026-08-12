@@ -48,12 +48,7 @@ function input(overrides = {}) {
     content: CONTENT,
     license: 'MIT',
     sms: completeSmsInput(82),
-    eval: {
-      status: 'complete',
-      testSet: 'package-fixture-v1',
-      successRate: 1,
-      basedOnPackageDigest: packageArtifact().packageDigest,
-    },
+    eval: { status: 'pending' },
     package: packageArtifact(),
     catalog: { packageComplete: true, category: 'dev-programming' },
     ...overrides,
@@ -140,7 +135,7 @@ test('re-ingesting the same package digest is idempotent and keeps current appro
   assert.equal(refreshed.packageAudit.status, 'pass');
   assert.equal(refreshed.reviewedPackageDigest, approved.reviewedPackageDigest);
   assert.equal(refreshed.sms.status, 'complete');
-  assert.equal(refreshed.eval.status, 'complete');
+  assert.equal(refreshed.eval.status, 'pending');
 });
 
 test('listing installation requires a complete package and a current passing package audit', () => {

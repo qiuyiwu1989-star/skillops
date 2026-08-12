@@ -16,7 +16,7 @@
 | `trusted-supply/` | V3.1 可信技能供给 MVP：候选池、许可/安全硬门、人工审核、市场技能卡 | 本地验证，尚未接生产 |
 | `dist-src/skillops/` | 便携 CLI 唯一源码：盘点、落户、部署台账、漂移检测 | 可分发标准包 |
 
-V3.4 后的全面升级路线见 `ROADMAP.md`；V3.5 完整技能包 revision 地基见 `specs/007-v35-trusted-skill-packages.md`。下一阶段复核首批真实来源包，再进入 Eval、人类终审和造物云适配。
+V3.4 后的全面升级路线见 `ROADMAP.md`；V3.5 完整技能包 revision 地基见 `specs/007-v35-trusted-skill-packages.md`，V3.6 固定测试集与 Eval 证据闭环见 `specs/008-v36-eval-evidence-loop.md`。下一阶段先复核首批真实来源包，再进入独立人类终审和持续再认证。
 
 ## 核心理念（脊梁）
 
@@ -51,6 +51,23 @@ node market-preview/serve.mjs
 ```
 
 本地示例预览可运行 `node market-preview/demo.mjs` 后打开 `http://127.0.0.1:4173`。采集器不 checkout、不执行仓库代码，远端只允许无凭证的 GitHub HTTPS 来源；本地 git 来源必须显式添加 `--allow-local`。
+
+## V3.6 离线 Eval 质检台架
+
+```bash
+# 校验受限 JSON 测试集并计算 suiteDigest
+node trusted-supply/cli.mjs eval-suite-validate trusted-supply/examples/eval-suite.example.json
+
+# 仅用离线 fixture 结果执行；不会运行技能脚本、Shell 或真实模型
+node trusted-supply/cli.mjs eval-run <candidate-id> \
+  --suite trusted-supply/examples/eval-suite.example.json --adapter fixture \
+  --fixture-results trusted-supply/examples/eval-fixture-results.example.json
+
+# 查看当前 Eval 与只追加历史
+node trusted-supply/cli.mjs eval-show <candidate-id>
+```
+
+Eval 与 SMS 是两条独立证据：SMS 评估静态潜力，Eval 记录固定测试集上的运行实绩。Eval 结果绑定完整包、测试集和 Runner；任一包 revision 变化都会撤销当前结论，但保留历史记录。
 
 ## 老平台本地启动
 

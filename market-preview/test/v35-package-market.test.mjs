@@ -40,10 +40,7 @@ function baseInput({ packageArtifact, packageComplete }) {
     license: 'MIT',
     package: packageArtifact,
     sms: completeSmsInput(82, 'fixture-market-sms'),
-    eval: packageArtifact ? {
-      status: 'complete', testSet: 'market-package-v1', environment: 'offline fixture', successRate: 1,
-      basedOnPackageDigest: packageArtifact.packageDigest,
-    } : { status: 'pending' },
+    eval: { status: 'pending' },
     catalog: { packageComplete, packageFileCount: packageArtifact?.fileCount || 1, category: 'dev-programming' },
   };
 }

@@ -5,6 +5,7 @@ import { auditCandidate } from './audit.mjs';
 import { createSmsAssessment, isSmsCurrent } from './sms.mjs';
 import { localizeCandidateMetadata } from './localization.mjs';
 import { validatePackageArtifact } from './package.mjs';
+import { validateEvalResult } from './eval-result.mjs';
 
 const DECISIONS = new Set(['approve', 'reject', 'quarantine']);
 const REVIEWER_TYPES = new Set(['human', 'agent_assisted']);
@@ -55,6 +56,11 @@ function pendingAssessment() {
   return { status: 'pending' };
 }
 
+function initialEval(input) {
+  if (!input || input.status === 'pending') return pendingAssessment();
+  throw new Error('completed Eval evidence must be added through recordEval');
+}
+
 export function createCandidate(input = {}, { clock } = {}) {
   const sourceInput = input.source || {};
   const source = {
@@ -90,7 +96,8 @@ export function createCandidate(input = {}, { clock } = {}) {
       package: packageArtifact,
     },
     sms,
-    eval: input.eval || { status: 'pending' },
+    eval: initialEval(input.eval),
+    evalEvents: [],
     packageAudit: null,
     packageAuditEvents: [],
     catalog: input.catalog || null,
@@ -102,6 +109,20 @@ export function createCandidate(input = {}, { clock } = {}) {
     reviewEvents: [],
     createdAt,
     updatedAt: createdAt,
+  };
+}
+
+export function recordEval(candidate, result) {
+  const digest = packageDigest(candidate);
+  if (!digest) throw new Error('candidate has no complete package for Eval');
+  const evaluation = validateEvalResult(result, { packageDigest: digest });
+  const previousEvents = candidate.evalEvents || [];
+  const event = Object.freeze(structuredClone(evaluation));
+  return {
+    ...candidate,
+    eval: event,
+    evalEvents: [...previousEvents, event],
+    updatedAt: event.completedAt,
   };
 }
 
@@ -251,6 +272,7 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
     },
     sms: packageRevisionChanged ? pendingAssessment() : candidate.sms,
     eval: packageRevisionChanged ? pendingAssessment() : candidate.eval,
+    evalEvents: candidate.evalEvents || [],
     packageAudit: packageRevisionChanged ? null : candidate.packageAudit || null,
     catalog: input.catalog ?? candidate.catalog ?? null,
     audit: null,
