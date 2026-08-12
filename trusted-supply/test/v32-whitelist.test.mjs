@@ -183,6 +183,32 @@ test('repository failures are isolated: dangerous content is only discovered, wh
   assert.ok(report.errors.some(error => /size|large|limit/i.test(`${error.code} ${error.message}`)));
 });
 
+test('one invalid source is reported without blocking a valid repository or polluting its candidates', async t => {
+  const { root, storePath } = makeWorkspace(t);
+  const fixture = createRepo(root, 'valid-among-invalid', {
+    LICENSE: 'MIT\n',
+    'skills/valid/SKILL.md': skill('valid'),
+  });
+
+  const report = await collectWhitelist({
+    whitelist: whitelist([
+      { url: 'https://example.com/untrusted/repository', ref: 'main' },
+      { localPath: './valid-among-invalid', ref: 'HEAD', paths: ['skills/'] },
+    ]),
+    storePath,
+    baseDir: root,
+    allowLocal: true,
+  });
+  const candidates = new CandidateStore(storePath).list();
+
+  assert.equal(report.stats.repositories.requested, 2);
+  assert.equal(report.stats.repositories.succeeded, 1);
+  assert.equal(report.stats.repositories.failed, 1);
+  assert.equal(candidates.length, 1);
+  assert.equal(candidates[0].source.commit, fixture.commit);
+  assert.ok(report.errors.some(error => error.code === 'invalid_source'));
+});
+
 test('collect CLI runs offline and returns the same persisted report contract', t => {
   const { root, storePath, reportPath } = makeWorkspace(t);
   const fixture = createRepo(root, 'cli-repo', {

@@ -67,7 +67,7 @@ function readWhitelistInput(input, baseDir) {
   return { value, baseDir: path.dirname(filePath), filePath };
 }
 
-export function parseWhitelist(input, { baseDir = process.cwd(), allowLocal = false } = {}) {
+function parseWhitelistStructure(input, { baseDir = process.cwd() } = {}) {
   const loaded = readWhitelistInput(input, path.resolve(baseDir));
   const value = loaded.value;
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('invalid_whitelist', 'whitelist must be a JSON object');
@@ -80,15 +80,25 @@ export function parseWhitelist(input, { baseDir = process.cwd(), allowLocal = fa
   }
   return {
     schemaVersion: 1,
-    repositories: repositories.map((entry, index) => normalizeRepository({
-      entry, index, baseDir: loaded.baseDir, allowLocal,
-    }, { checkLocalExists: false })),
+    repositories,
     limits,
     filePath: loaded.filePath || null,
+    baseDir: loaded.baseDir,
+  };
+}
+
+export function parseWhitelist(input, { baseDir = process.cwd(), allowLocal = false } = {}) {
+  const parsed = parseWhitelistStructure(input, { baseDir });
+  return {
+    ...parsed,
+    repositories: parsed.repositories.map((entry, index) => normalizeRepository({
+      entry, index, baseDir: parsed.baseDir, allowLocal,
+    }, { checkLocalExists: false })),
   };
 }
 
 function normalizePrefix(value) {
+  if (typeof value !== 'string') fail('invalid_path_prefix', 'path prefixes must be strings');
   const raw = String(value ?? '').replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '');
   if (!raw) return '';
   if (raw.startsWith('/') || raw.includes('\0') || raw.split('/').some(part => !part || part === '.' || part === '..')) {
@@ -160,17 +170,22 @@ function normalizeRepository(wrapper, { checkLocalExists = true } = {}) {
 
 function gitEnvironment() {
   const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    if (key.startsWith('GIT_')) delete env[key];
+  }
   env.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
   env.GIT_CONFIG_NOSYSTEM = '1';
   env.GIT_TERMINAL_PROMPT = '0';
-  delete env.GIT_PROXY_COMMAND;
-  delete env.GIT_SSH;
-  delete env.GIT_SSH_COMMAND;
   return env;
 }
 
 function runGit(args, { cwd, maxBuffer = 4 * 1024 * 1024, timeout = 60_000 } = {}) {
-  const result = spawnSync('git', ['-c', 'core.hooksPath=/dev/null', ...args], {
+  const result = spawnSync('git', [
+    '-c', 'core.hooksPath=/dev/null',
+    '-c', 'protocol.allow=never',
+    '-c', 'protocol.https.allow=always',
+    ...args,
+  ], {
     cwd,
     env: gitEnvironment(),
     encoding: null,
@@ -294,7 +309,7 @@ function scanRepository(repository, limits) {
   const snapshot = resolveSnapshot(repository);
   try {
     const entries = listTree(snapshot, limits);
-    const symbolicLink = entries.find(entry => entry.mode === '120000' && matchesPrefix(entry.path, repository.prefixes));
+    const symbolicLink = entries.find(entry => entry.mode === '120000');
     if (symbolicLink) fail('symbolic_link_rejected', `repository contains a symbolic link: ${symbolicLink.path}`);
     const skills = entries.filter(entry => path.posix.basename(entry.path) === 'SKILL.md' && matchesPrefix(entry.path, repository.prefixes));
     if (skills.length === 0) fail('no_skills_found', 'repository snapshot contains no matching SKILL.md');
@@ -341,7 +356,10 @@ export function collectWhitelist({
   clock,
 } = {}) {
   if (!storePath) fail('invalid_store', 'storePath is required');
-  const parsed = parseWhitelist(whitelist, { baseDir, allowLocal });
+  // The JSON envelope is a batch-level contract, while individual source validity is
+  // repository-scoped. Keep strict parseWhitelist() for validation callers, but isolate
+  // source errors here so one bad entry does not suppress valid repositories.
+  const parsed = parseWhitelistStructure(whitelist, { baseDir });
   const limits = limitOverrides ? resolveLimits({ ...parsed.limits, ...limitOverrides }) : parsed.limits;
   const store = new CandidateStore(path.resolve(baseDir, storePath));
   const generatedAt = (clock ? clock() : new Date()).toISOString();
@@ -361,8 +379,10 @@ export function collectWhitelist({
     errors: [],
   };
   const ingestedIds = [];
-  for (const repository of parsed.repositories) {
+  for (const [index, entry] of parsed.repositories.entries()) {
+    let repository;
     try {
+      repository = normalizeRepository({ entry, index, baseDir: parsed.baseDir, allowLocal }, { checkLocalExists: false });
       const scanned = scanRepository(repository, limits);
       const candidates = [];
       // Ingestion starts only after every artifact in this repository has passed snapshot validation.
@@ -407,10 +427,10 @@ export function collectWhitelist({
       });
     } catch (error) {
       report.stats.repositories.failed++;
-      const serialized = serializeError(error, repository, repository.index);
+      const serialized = serializeError(error, repository || entry, index);
       report.errors.push(serialized);
       report.repositories.push({
-        source: repository?.repo || repository?.url || repository?.localPath || `entry:${repository.index + 1}`,
+        source: repository?.repo || repository?.url || repository?.localPath || entry?.url || entry?.localPath || `entry:${index + 1}`,
         status: 'failed',
         error: serialized,
       });
