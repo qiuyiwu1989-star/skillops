@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "repositories": [
+    {
+      "url": "https://github.com/NVIDIA/skills",
+      "ref": "main"
+    },
+    {
+      "url": "https://github.com/huggingface/skills",
+      "ref": "main"
+    },
+    {
+      "url": "https://github.com/agentskills/agentskills",
+      "ref": "main"
+    }
+  ],
+  "limits": {
+    "maxRepositories": 10,
+    "maxSkillFilesPerRepository": 250,
+    "maxSkillBytes": 524288
+  }
+}

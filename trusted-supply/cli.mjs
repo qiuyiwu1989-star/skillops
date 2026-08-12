@@ -4,10 +4,12 @@ import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { CandidateStore } from './lib/store.mjs';
+import { collectWhitelist } from './lib/source-collector.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
 Usage:
+  node trusted-supply/cli.mjs collect <whitelist.json> --store <json-file> [--report <json-file>] [--allow-local]
   node trusted-supply/cli.mjs ingest <SKILL.md> --source-url <url> --repo <owner/repo> --path <path> --commit <sha> [--license <SPDX>] [--sms-total <0-100>]
   node trusted-supply/cli.mjs audit <candidate-id> [--sms-threshold <score>]
   node trusted-supply/cli.mjs list [--status <status>]
@@ -59,6 +61,15 @@ export async function main(argv = process.argv.slice(2)) {
   const store = new CandidateStore(storePath);
 
   switch (command) {
+    case 'collect':
+      output(collectWhitelist({
+        whitelist: path.resolve(required(target, 'whitelist-file')),
+        storePath,
+        reportPath: flags.report ? path.resolve(String(flags.report)) : undefined,
+        baseDir: process.cwd(),
+        allowLocal: Boolean(flags['allow-local']),
+      }));
+      return 0;
     case 'ingest': {
       const skillPath = path.resolve(required(target, 'skill-file'));
       const content = fs.readFileSync(skillPath, 'utf8');
