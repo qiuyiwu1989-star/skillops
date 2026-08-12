@@ -18,6 +18,7 @@ import {
   scanSecurity,
   toListing,
 } from '../lib/index.mjs';
+import { completeSmsInput } from './sms-fixture.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.resolve(HERE, '../fixtures');
@@ -53,7 +54,7 @@ function fixtureInput(repoName, file, overrides = {}) {
     },
     content: fs.readFileSync(file, 'utf8'),
     license: licenseFor(repoName),
-    sms: { status: 'complete', total: 82 },
+    sms: completeSmsInput(82),
     ...overrides,
   };
 }
@@ -189,7 +190,7 @@ test('missing license can only generate a source-link listing without copied con
 
 test('security hard blocks quarantine candidates and cannot be waived by reviewer or high SMS', () => {
   const candidate = createCandidate(fixtureByName('risky-pack', 'remote-bootstrap', {
-    sms: { status: 'complete', total: 100 },
+    sms: completeSmsInput(100),
   }));
   const audited = applyAudit(candidate);
   assert.equal(audited.status, 'quarantined');
@@ -292,10 +293,16 @@ test('CLI performs an offline ingest-audit-review-listing flow with explicit hum
     'ingest', skillPath, '--store', storePath,
     '--source-url', 'https://github.example/acme/skills', '--repo', 'acme/skills',
     '--path', 'skills/customer-brief/SKILL.md', '--commit', 'abc123',
-    '--license', 'MIT', '--sms-total', '80',
+    '--license', 'MIT',
   ]);
   assert.equal(ingested.status, 0, ingested.stderr);
   assert.equal(ingested.json.status, 'discovered');
+
+  const smsPath = path.join(directory, 'sms.json');
+  fs.writeFileSync(smsPath, JSON.stringify(completeSmsInput(80, 'cli-fixture')));
+  const scored = runCli(['sms-import', ingested.json.id, '--store', storePath, '--input', smsPath]);
+  assert.equal(scored.status, 0, scored.stderr);
+  assert.equal(scored.json.sms.total, 80);
 
   const prematureListing = runCli(['listing', ingested.json.id, '--store', storePath]);
   assert.equal(prematureListing.status, 1);

@@ -9,60 +9,84 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Space+Grotesk:wght@400;500&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=design-system-v1">
-    <script src="./app.js?v=design-system-v1" type="module"></script>
+    <link rel="stylesheet" href="./styles.css?v=market-v33">
+    <script src="./app.js?v=market-v33" type="module"></script>
   </head>
   <body>
-    <a class="skip-link btn sm" href="#market">跳到技能列表</a>
+    <a class="skip-link btn sm" href="#market">跳到市场内容</a>
 
     <header class="site-header">
       <div class="wrap nav-inner">
         <a class="brand" href="./" aria-label="SkillOps 能力市场首页">Skill<span>Ops</span></a>
-        <p class="eyebrow preview-label">能力市场 · 本地只读预览</p>
+        <nav class="primary-nav" aria-label="市场导航">
+          <a href="#discover">发现</a>
+          <a href="#shelves">可信货架</a>
+          <a href="#catalog">全部技能</a>
+        </nav>
+        <p class="eyebrow preview-label">本地只读预览</p>
       </div>
     </header>
 
     <main id="market">
-      <section class="intro" aria-labelledby="page-title">
+      <section class="intro" id="discover" aria-labelledby="page-title">
         <div class="wrap intro-grid">
           <div class="intro-copy">
-            <p class="eyebrow">trusted skill registry</p>
-            <h1 id="page-title" class="h-display">可信技能，<br>证据可查</h1>
-            <p class="intro-lead">这里只展示已批准的技能。每项能力都保留来源、版本、许可、安全与人工审核记录。</p>
+            <p class="eyebrow">trusted skill market</p>
+            <h1 id="page-title" class="h-display">从任务出发，<br>找到可信技能</h1>
+            <p class="intro-lead">搜索你要完成的工作。结果只来自已批准技能，并保留来源、静态质量与实绩证据。</p>
+
+            <form id="task-search" class="task-search" role="search">
+              <label for="search">你想完成什么任务？</label>
+              <div class="task-search-row">
+                <input class="field task-field" id="search" type="search" autocomplete="off" placeholder="例如：整理会议决策、发布前检查、市场研究">
+                <button class="btn primary" type="submit">查找技能</button>
+              </div>
+            </form>
           </div>
-          <dl class="summary" aria-label="市场摘要">
-            <div>
-              <dt>已上架</dt>
-              <dd id="total-count">-</dd>
-            </div>
-            <div>
-              <dt>可分发正文</dt>
-              <dd id="content-count">-</dd>
-            </div>
-            <div>
-              <dt>仅来源链接</dt>
-              <dd id="link-count">-</dd>
-            </div>
-          </dl>
+
+          <aside class="trust-note" aria-label="市场可信规则">
+            <p class="trust-number mono" id="total-count">-</p>
+            <p class="trust-title">项已批准能力</p>
+            <p>每项技能先通过来源、许可和安全硬门，再呈现 SMS 静态潜力与 Eval 实绩。</p>
+          </aside>
         </div>
       </section>
 
-      <section class="market-section" aria-labelledby="market-title">
+      <section class="category-section" aria-labelledby="category-title">
+        <div class="wrap">
+          <div class="compact-heading">
+            <h2 id="category-title" class="h-3">按工作类型发现</h2>
+            <button id="category-reset" class="text-button mono" type="button" hidden>清除分类</button>
+          </div>
+          <div id="category-list" class="category-list" aria-label="技能分类"></div>
+        </div>
+      </section>
+
+      <section class="shelves-section" id="shelves" aria-labelledby="shelves-title">
         <div class="wrap">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">approved listings</p>
-              <h2 id="market-title" class="h-2">已审核能力</h2>
+              <p class="eyebrow">curated discovery</p>
+              <h2 id="shelves-title" class="h-2">可信货架</h2>
+            </div>
+            <p class="section-note">同一技能可以出现在多个货架，货架规则公开可解释。</p>
+          </div>
+          <div id="shelf-list" class="shelf-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="market-section" id="catalog" aria-labelledby="market-title">
+        <div class="wrap">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">approved catalog</p>
+              <h2 id="market-title" class="h-2">全部技能</h2>
             </div>
             <p id="result-count" class="result-count mono" aria-live="polite"></p>
           </div>
 
           <div class="market-controls" aria-label="技能筛选">
-            <label class="control-group search-field">
-              <span>搜索能力</span>
-              <input class="field" id="search" type="search" autocomplete="off" placeholder="输入名称、说明或来源">
-            </label>
-            <label class="control-group filter-field">
+            <label class="control-group">
               <span>分发范围</span>
               <select class="field" id="distribution">
                 <option value="all">全部</option>
@@ -70,6 +94,10 @@
                 <option value="source_link_only">仅来源链接</option>
               </select>
             </label>
+            <div class="control-context" aria-live="polite">
+              <span>当前范围</span>
+              <strong id="active-context">全部已批准技能</strong>
+            </div>
           </div>
 
           <section id="state" class="state-panel" aria-live="polite">
@@ -84,7 +112,7 @@
 
     <footer class="site-footer">
       <div class="wrap footer-inner">
-        <p>Skill<span>Ops</span> · 可信能力市场</p>
+        <p>Skill<span>Ops</span> 可信能力市场</p>
         <div class="footer-meta mono">
           <p>CandidateStore.listListings()</p>
           <p id="generated-at">尚未读取构建时间</p>
@@ -95,11 +123,12 @@
     <dialog id="evidence-dialog" aria-labelledby="dialog-title">
       <div class="dialog-header">
         <div>
-          <p class="eyebrow">verification evidence</p>
+          <p class="eyebrow">skill detail</p>
           <h2 id="dialog-title" class="h-2"></h2>
         </div>
         <button id="dialog-close" class="btn ghost sm" type="button">关闭</button>
       </div>
+      <div id="dialog-summary" class="dialog-summary"></div>
       <div id="dialog-content" class="dialog-content"></div>
     </dialog>
   </body>

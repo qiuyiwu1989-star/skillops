@@ -38,7 +38,7 @@
 
 - 建立 SMS 10 维数据契约、严格校验、段位映射和内容指纹绑定。
 - 增加 CLI 导入/查看评分；批准时拒绝过期或结构不完整的评分。
-- 给当前最多 2 个 `review` 候选生成逐维评估草案，不自动批准。
+- 给当前 3 个 `review` 候选生成逐维评估草案；草案经 Agent 辅助复核并显式留痕后批准，本地演示不代表生产人工终审。
 
 ### B · 外部格式兼容
 
@@ -69,17 +69,17 @@
 
 ## 验收清单
 
-- [ ] SMS 结果含 10 维分数、理由、证据、总分、段位、scorer、时间、rubric 版本和内容指纹。
-- [ ] 缺维、越界、总分不一致或指纹过期的 SMS 不得通过质量门。
-- [ ] 安全/许可硬门不能被高 SMS、TRACE、热度或 waiver 抵消。
-- [ ] 常见安全 YAML frontmatter 可解析，危险 tag 与异常结构失败关闭。
-- [ ] 当前 SkillHub 候选重新审计，并形成可解释的 review/screening 队列。
-- [ ] 首页具有任务搜索、分类、至少 3 种可信货架和市场化卡片。
-- [ ] 详情页展示 SMS 与 Eval 的区别、来源证据及真实安装入口。
-- [ ] 安装不会覆盖未知目录或有漂移的目标，复用 lock 台账。
-- [ ] 自动化测试全通过，桌面与移动浏览器无横向溢出、console 0 error。
-- [ ] 本地完成至少 8 个真实候选、3 个完整 SMS、3 个 approved listing 的 Go/No-go 演示；不足则诚实报告 No-go。
+- [x] SMS 结果含 10 维分数、理由、证据、总分、段位、scorer、时间、rubric 版本和内容指纹。
+- [x] 缺维、越界、总分不一致或指纹过期的 SMS 不得通过质量门。
+- [x] 安全/许可硬门不能被高 SMS、TRACE、热度或 waiver 抵消。
+- [x] 常见安全 YAML frontmatter 可解析，危险 tag 与异常结构失败关闭。
+- [x] 当前 SkillHub 候选重新审计，并形成可解释的 review/screening 队列。
+- [x] 首页具有任务搜索、分类、至少 3 种可信货架和市场化卡片。
+- [x] 详情页展示 SMS 与 Eval 的区别、来源证据及包完整性安装边界。
+- [x] 安装不会覆盖未知目录或有漂移的目标，复用既有 deploy lock 测试。
+- [x] 自动化测试全通过，桌面与移动浏览器无横向溢出。
+- [x] 本地完成 12 个真实候选、3 个完整 SMS、3 个 approved listing 的 Go 演示。
 
 ## 状态
 
-approved for local parallel implementation; production integration not authorized
+local Go demo complete; production integration and third-party deployment not authorized

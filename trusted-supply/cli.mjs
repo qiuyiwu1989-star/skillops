@@ -6,17 +6,22 @@ import { pathToFileURL } from 'node:url';
 import { CandidateStore } from './lib/store.mjs';
 import { collectWhitelist } from './lib/source-collector.mjs';
 import { collectSkillHub } from './lib/skillhub-collector.mjs';
+import { confirmSmsDraft, createHeuristicSmsDraft } from './lib/assessment-pipeline.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
 Usage:
   node trusted-supply/cli.mjs collect <whitelist.json> --store <json-file> [--report <json-file>] [--allow-local]
   node trusted-supply/cli.mjs sync-skillhub --store <json-file> [--report <json-file>] [--limit <1-50>] [--shelves <recommended,trending,hot,newest>] [--audit]
-  node trusted-supply/cli.mjs ingest <SKILL.md> --source-url <url> --repo <owner/repo> --path <path> --commit <sha> [--license <SPDX>] [--sms-total <0-100>]
+  node trusted-supply/cli.mjs ingest <SKILL.md> --source-url <url> --repo <owner/repo> --path <path> --commit <sha> [--license <SPDX>]
+  node trusted-supply/cli.mjs sms-import <candidate-id> --input <assessment.json>
+  node trusted-supply/cli.mjs sms-draft <candidate-id> [--out <draft.json>]
+  node trusted-supply/cli.mjs sms-confirm <candidate-id> --input <draft.json> --scorer <name>
+  node trusted-supply/cli.mjs sms-show <candidate-id>
   node trusted-supply/cli.mjs audit <candidate-id> [--sms-threshold <score>]
   node trusted-supply/cli.mjs list [--status <status>]
   node trusted-supply/cli.mjs show <candidate-id>
-  node trusted-supply/cli.mjs review <candidate-id> --decision <approve|reject|quarantine> --reviewer <name> --reason <text> [--waive-sms]
+  node trusted-supply/cli.mjs review <candidate-id> --decision <approve|reject|quarantine> --reviewer <name> --reason <text> [--reviewer-type <human|agent_assisted>] [--waive-sms]
   node trusted-supply/cli.mjs listing <candidate-id>
   node trusted-supply/cli.mjs listings
 
@@ -88,10 +93,7 @@ export async function main(argv = process.argv.slice(2)) {
       const skillPath = path.resolve(required(target, 'skill-file'));
       const content = fs.readFileSync(skillPath, 'utf8');
       const sourceUrl = flags['source-url'] || pathToFileURL(skillPath).href;
-      const smsTotal = flags['sms-total'] === undefined ? null : Number(flags['sms-total']);
-      if (smsTotal !== null && (!Number.isFinite(smsTotal) || smsTotal < 0 || smsTotal > 100)) {
-        throw new Error('--sms-total must be between 0 and 100');
-      }
+      if (flags['sms-total'] !== undefined) throw new Error('--sms-total is no longer supported; import a complete SMS v2 assessment with sms-import');
       output(store.ingest({
         source: {
           kind: flags['source-kind'] || (flags.repo ? 'github' : 'local'),
@@ -103,8 +105,39 @@ export async function main(argv = process.argv.slice(2)) {
         },
         content,
         license: flags.license || null,
-        sms: smsTotal === null ? { status: 'pending' } : { status: 'complete', total: smsTotal },
+        sms: { status: 'pending' },
       }));
+      return 0;
+    }
+    case 'sms-import': {
+      const inputPath = path.resolve(required(flags.input, 'input'));
+      output(store.assessSms(required(target, 'candidate-id'), JSON.parse(fs.readFileSync(inputPath, 'utf8'))));
+      return 0;
+    }
+    case 'sms-draft': {
+      const candidate = store.get(required(target, 'candidate-id'));
+      if (!candidate) throw new Error(`candidate not found: ${target}`);
+      const draft = createHeuristicSmsDraft(candidate);
+      if (flags.out) {
+        const outPath = path.resolve(String(flags.out));
+        fs.mkdirSync(path.dirname(outPath), { recursive: true });
+        fs.writeFileSync(outPath, `${JSON.stringify(draft, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+      }
+      output(draft);
+      return 0;
+    }
+    case 'sms-confirm': {
+      const inputPath = path.resolve(required(flags.input, 'input'));
+      const draft = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+      output(store.assessSms(required(target, 'candidate-id'), confirmSmsDraft(draft, {
+        scorer: required(flags.scorer, 'scorer'),
+      })));
+      return 0;
+    }
+    case 'sms-show': {
+      const candidate = store.get(required(target, 'candidate-id'));
+      if (!candidate) throw new Error(`candidate not found: ${target}`);
+      output(candidate.sms);
       return 0;
     }
     case 'audit':
@@ -127,6 +160,7 @@ export async function main(argv = process.argv.slice(2)) {
       output(store.review(required(target, 'candidate-id'), {
         decision: required(decision, 'decision'),
         reviewer: required(flags.reviewer, 'reviewer'),
+        reviewerType: flags['reviewer-type'] || 'human',
         reason: required(flags.reason, 'reason'),
         smsWaiver: Boolean(flags['waive-sms']),
       }));

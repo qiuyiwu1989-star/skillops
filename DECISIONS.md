@@ -1,5 +1,7 @@
 # Decisions
 
+- 2026-08-13：V3.3 本地 Go 演示允许明确标注 `agent_assisted` 的复核事件，但不能对外宣称为独立人工终审；进入生产前必须补独立人类复核。Basis: 本地研发授权不等于生产发布授权。Confidence: high.
+- 2026-08-13：安装资格同时要求许可可分发与包完整；SkillHub 只同步 `SKILL.md` 的候选即使 approved 也显示安装不可用，不将缺失 references/scripts 的条目伪装成完整技能包。Basis: 浏览器验收时发现外部同步只缓存单文件。Confidence: high.
 - 2026-08-13：V3.3 使用三层评估：硬信任门不可被抵消；SMS v2.0 十维静态评分决定质量段位；Eval 独立记录实绩。B≥64 为公开质量门槛，A≥76 才进入精选候选，S≥86 才标记旗舰候选。SkillHub TRACE 与热度不替代 SMS。Basis: 用户要求确认并使用造物云评估体系。Confidence: high.
 - 2026-08-13：V3.3 本地开发按四个工作包并行：SMS 管线、外部 YAML 兼容、市场发现/详情、主线集成/安装；各 Agent 使用互斥文件边界，主 Agent 负责最终合并与验收。Basis: 用户明确要求拆解子 Agent 分头执行。Confidence: high.
 - 2026-08-12：SkillOps V3.1 聚焦「技能」；插件、方法、应用、数字员工由造物云能力市场分别承载，SkillOps 只记录其与技能的关系。Basis: 用户在当前会话明确认可聚焦技能。Confidence: high.

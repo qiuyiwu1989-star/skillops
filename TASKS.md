@@ -2,18 +2,18 @@
 
 ## Now
 
-- [ ] 建立 SMS v2.0 十维评分数据契约、指纹绑定与 CLI（spec: 005）
-- [ ] 兼容安全 YAML frontmatter 并重审 SkillHub 候选（spec: 005）
-- [ ] 建设市场首页、详情和受保护安装闭环（spec: 005）
+- [ ] 为首批 3 个 listing 补齐完整技能包同步与固定测试集 Eval
+- [ ] 增加独立人类终审角色，替换本地演示的 Agent 辅助批准
 
 ## Next
 
-- [ ] 用 8 个真实候选、3 个完整 SMS、3 个 approved listing 跑 V3.3 Go / No-go
 - [ ] 增加抽样 Eval 用例与实证数据（不与 SMS 混分）
 - [ ] 将验证后的 listing 适配协议接入造物云能力市场
 
 ## Done
 
+- [x] 2026-08-13：完成 V3.3 本地 Go 演示：同步并审计 12 个真实 SkillHub 候选，3 个 SMS v2 完整评分进入 B 段，3 个 listing 经 Agent 辅助复核进入本地市场；68/68 测试和 1440px/390px 浏览器验收通过。
+- [x] 2026-08-13：完成 SMS v2.0 严格数据契约、安全 YAML frontmatter、评估草案/显式确认 CLI 与市场详情证据链。
 - [x] 2026-08-13：完成 SkillHub 外部候选源；首轮发现 138、深检 13、入库 6、2 个进入 review、0 自动批准（commit: 0f64b4c）。
 - [x] 2026-08-12：完成 SkillOps 与造物云 V5 的产品边界分析，确认聚焦技能。
 - [x] 2026-08-12：完成 3 个 fixture 仓库、12 个候选的离线审核演示。

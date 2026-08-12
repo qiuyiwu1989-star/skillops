@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import { CandidateStore } from '../trusted-supply/lib/store.mjs';
 import { buildApprovedListings } from './build.mjs';
+import { completeSmsInput } from '../trusted-supply/test/sms-fixture.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '..');
@@ -32,7 +33,7 @@ function fixtureInput(pack, name, license, smsTotal) {
     },
     content: fs.readFileSync(path.join(FIXTURES, pack, relative), 'utf8'),
     license,
-    sms: { status: 'complete', total: smsTotal },
+    sms: completeSmsInput(smsTotal, 'local-preview'),
     eval: { status: 'pending' },
   };
 }

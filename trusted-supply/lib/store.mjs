@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createCandidate, applyAudit, refreshCandidate, reviewCandidate, toListing } from './candidate.mjs';
 import { findDuplicateRelations } from './duplicates.mjs';
+import { createSmsAssessment } from './sms.mjs';
 
 function clone(value) {
   return structuredClone(value);
@@ -73,6 +74,23 @@ export class CandidateStore {
 
   audit(id, options = {}) {
     return this.update(id, candidate => applyAudit(candidate, options));
+  }
+
+  assessSms(id, assessment, options = {}) {
+    return this.update(id, candidate => {
+      const sms = createSmsAssessment(assessment, {
+        fingerprint: candidate.artifact?.fingerprint,
+        clock: options.clock,
+      });
+      return {
+        ...candidate,
+        status: candidate.status === 'approved' ? 'stale' : 'discovered',
+        sms,
+        audit: null,
+        reviewedFingerprint: candidate.status === 'approved' ? null : candidate.reviewedFingerprint,
+        updatedAt: sms.scoredAt,
+      };
+    });
   }
 
   review(id, review, options = {}) {

@@ -199,6 +199,8 @@ async function inspectSkill(item, options, context) {
     ? await fetchText(`/api/v1/skills/${encodeURIComponent(slug)}/file`, { path: licenseFile.path, version, namespace }, context, options.maxLicenseBytes)
     : licenseFromFrontmatter(content);
   const localSecurity = scanSecurity(content);
+  const packageFiles = files.map(file => safeFilePath(file.path));
+  const packageComplete = packageFiles.every(filePath => filePath === 'SKILL.md' || LICENSE_FILE.test(path.posix.basename(filePath)));
   return {
     namespace,
     slug,
@@ -206,6 +208,8 @@ async function inspectSkill(item, options, context) {
     content,
     license,
     licenseFile: licenseFile?.path || null,
+    packageFiles,
+    packageComplete,
     licenseAssessment: classifyLicense(license),
     localSecurity,
     externalSecurityProviders: providers,
@@ -317,6 +321,9 @@ export async function collectSkillHub({ storePath, reportPath, fetchImpl = globa
             stars: inspected.skill.stats?.stars ?? item.stars ?? null,
           },
           externalSecurity: { status: 'benign', providers: inspected.externalSecurityProviders },
+          packageComplete: inspected.packageComplete,
+          packageFileCount: inspected.packageFiles.length,
+          packageFiles: inspected.packageFiles.slice(0, 100),
         },
       }, { clock });
       const finalCandidate = options.audit ? store.audit(candidate.id) : candidate;

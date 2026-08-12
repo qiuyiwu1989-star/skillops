@@ -7,6 +7,7 @@ import test from 'node:test';
 
 import { collectSkillHub, resolveSkillHubOptions } from '../lib/skillhub-collector.mjs';
 import { CandidateStore } from '../lib/store.mjs';
+import { completeSmsInput } from './sms-fixture.mjs';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
@@ -120,11 +121,13 @@ test('sync ingests signed, externally benign candidates without auto approval', 
   assert.equal(candidates[0].reviewEvents.length, 0);
   assert.equal(JSON.parse(fs.readFileSync(workspace.reportPath, 'utf8')).policy.autoApprove, false);
 
-  const approved = new CandidateStore(workspace.storePath).review(candidates[0].id, {
+  const supply = new CandidateStore(workspace.storePath);
+  supply.assessSms(candidates[0].id, completeSmsInput(78));
+  supply.audit(candidates[0].id);
+  const approved = supply.review(candidates[0].id, {
     decision: 'approve',
     reviewer: 'fixture-reviewer',
     reason: 'Verified signed package, license, and safety evidence.',
-    smsWaiver: true,
   });
   const listing = new CandidateStore(workspace.storePath).listing(approved.id);
   assert.equal(listing.source.version, '1.2.0');

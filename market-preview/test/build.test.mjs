@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import { CandidateStore } from '../../trusted-supply/lib/store.mjs';
 import { buildApprovedListings } from '../build.mjs';
+import { completeSmsInput } from '../../trusted-supply/test/sms-fixture.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.resolve(HERE, '../../trusted-supply/fixtures');
@@ -23,7 +24,7 @@ function input(pack, name, license = 'MIT') {
     },
     content: fs.readFileSync(path.join(FIXTURES, pack, 'skills', name, 'SKILL.md'), 'utf8'),
     license,
-    sms: { status: 'complete', total: 82 },
+    sms: completeSmsInput(82),
     eval: { status: 'pending' },
   };
 }

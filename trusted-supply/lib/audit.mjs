@@ -1,4 +1,6 @@
 import { contentFingerprint } from './fingerprint.mjs';
+import { auditSkillFormat, parseSafeSkillDocument } from './skill-document.mjs';
+import { validateSmsAssessment } from './sms.mjs';
 
 const ALLOWED_LICENSES = new Set([
   '0BSD', 'AFL-3.0', 'Apache-2.0', 'Artistic-2.0', 'BSD-2-Clause',
@@ -10,56 +12,8 @@ const COPYLEFT_LICENSES = new Set([
   'AGPL-3.0', 'EPL-2.0', 'GPL-2.0', 'GPL-3.0', 'LGPL-2.1', 'LGPL-3.0', 'MPL-2.0',
 ]);
 
-function cleanScalar(value) {
-  const text = String(value ?? '').trim();
-  if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
-    return text.slice(1, -1);
-  }
-  return text;
-}
-
-export function parseSkillDocument(content) {
-  const text = String(content ?? '').replace(/\r\n?/g, '\n');
-  const result = { frontmatter: {}, body: text, errors: [] };
-  if (!text.startsWith('---\n')) {
-    result.errors.push('missing_frontmatter');
-    return result;
-  }
-  const end = text.indexOf('\n---\n', 4);
-  if (end < 0) {
-    result.errors.push('unclosed_frontmatter');
-    return result;
-  }
-  const header = text.slice(4, end);
-  result.body = text.slice(end + 5);
-  for (const rawLine of header.split('\n')) {
-    if (!rawLine.trim() || /^\s*#/.test(rawLine)) continue;
-    const match = rawLine.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
-    if (!match) {
-      result.errors.push(`invalid_frontmatter_line:${rawLine.trim().slice(0, 80)}`);
-      continue;
-    }
-    result.frontmatter[match[1]] = cleanScalar(match[2]);
-  }
-  return result;
-}
-
-export function auditFormat(content) {
-  const parsed = parseSkillDocument(content);
-  const issues = [...parsed.errors];
-  const name = cleanScalar(parsed.frontmatter.name);
-  const description = cleanScalar(parsed.frontmatter.description);
-  if (!name) issues.push('missing_name');
-  if (!description) issues.push('missing_description');
-  if (!parsed.body.trim()) issues.push('empty_body');
-  return {
-    status: issues.length ? 'fail' : 'pass',
-    name,
-    description,
-    frontmatter: parsed.frontmatter,
-    issues,
-  };
-}
+export const parseSkillDocument = parseSafeSkillDocument;
+export const auditFormat = auditSkillFormat;
 
 export function classifyLicense(input) {
   const raw = String(input ?? '').trim();
@@ -126,11 +80,18 @@ export function auditProvenance(candidate) {
   return { status: issues.length ? 'fail' : 'pass', issues };
 }
 
-function normalizeSms(sms) {
-  if (!sms || sms.status === 'pending' || sms.total == null) return { status: 'pending' };
-  const total = Number(sms.total);
-  if (!Number.isFinite(total)) return { status: 'pending' };
-  return { ...sms, status: 'complete', total };
+function normalizeSms(candidate) {
+  const sms = candidate?.sms;
+  if (!sms || sms.status === 'pending') return { status: 'pending' };
+  try {
+    return validateSmsAssessment(sms, { fingerprint: candidate?.artifact?.fingerprint });
+  } catch (error) {
+    return {
+      status: 'invalid',
+      rubricVersion: sms.rubricVersion || null,
+      reason: error.message,
+    };
+  }
 }
 
 export function auditCandidate(candidate, { smsThreshold = 64 } = {}) {
@@ -138,7 +99,7 @@ export function auditCandidate(candidate, { smsThreshold = 64 } = {}) {
   const provenance = auditProvenance(candidate);
   const license = classifyLicense(candidate?.artifact?.license ?? candidate?.source?.license);
   const security = scanSecurity(candidate?.artifact?.content || '');
-  const sms = normalizeSms(candidate?.sms);
+  const sms = normalizeSms(candidate);
   const hardBlocks = [];
   if (format.status !== 'pass') hardBlocks.push('format');
   if (provenance.status !== 'pass') hardBlocks.push('provenance');

@@ -1,7 +1,9 @@
 import { candidateId, contentFingerprint, normalizeContent, sourceIdentity, sourceVersionIdentity } from './fingerprint.mjs';
 import { auditCandidate } from './audit.mjs';
+import { createSmsAssessment, isSmsCurrent } from './sms.mjs';
 
 const DECISIONS = new Set(['approve', 'reject', 'quarantine']);
+const REVIEWER_TYPES = new Set(['human', 'agent_assisted']);
 
 function now(clock) {
   return (clock ? clock() : new Date()).toISOString();
@@ -39,6 +41,9 @@ export function createCandidate(input = {}, { clock } = {}) {
   const content = normalizeContent(input.content ?? input.artifact?.content ?? '');
   const fingerprint = contentFingerprint(content);
   const createdAt = now(clock);
+  const sms = input.sms?.dimensions
+    ? createSmsAssessment(input.sms, { fingerprint, clock })
+    : input.sms || { status: 'pending' };
   return {
     schemaVersion: 1,
     id: input.id || candidateId(source),
@@ -50,7 +55,7 @@ export function createCandidate(input = {}, { clock } = {}) {
       versionIdentity: sourceVersionIdentity(source, fingerprint),
       license: input.license ?? input.artifact?.license ?? source.license,
     },
-    sms: input.sms || { status: 'pending' },
+    sms,
     eval: input.eval || { status: 'pending' },
     catalog: input.catalog || null,
     audit: null,
@@ -75,9 +80,11 @@ export function reviewCandidate(candidate, review = {}, { clock } = {}) {
   const decision = String(review.decision || '').toLowerCase();
   if (!DECISIONS.has(decision)) throw new Error(`invalid review decision: ${decision || '(empty)'}`);
   const reviewer = String(review.reviewer || '').trim();
+  const reviewerType = String(review.reviewerType || 'human').trim();
   const reason = String(review.reason || '').trim();
   if (!reviewer) throw new Error('reviewer is required');
   if (!reason) throw new Error('review reason is required');
+  if (!REVIEWER_TYPES.has(reviewerType)) throw new Error(`invalid reviewer type: ${reviewerType}`);
   if (!candidate.audit || candidate.audit.basedOnFingerprint !== candidate.artifact?.fingerprint) {
     throw new Error('candidate must be audited at its current fingerprint');
   }
@@ -95,6 +102,7 @@ export function reviewCandidate(candidate, review = {}, { clock } = {}) {
     id: `review_${candidate.reviewEvents.length + 1}_${candidate.artifact.fingerprint.slice(-12)}`,
     decision,
     reviewer,
+    reviewerType,
     reason,
     smsWaiver: decision === 'approve' ? Boolean(review.smsWaiver ?? review.waiveSms) : false,
     basedOnFingerprint: candidate.artifact.fingerprint,
@@ -165,7 +173,11 @@ export function toListing(candidate) {
   if (!candidate.audit.eligibleForReview || candidate.audit.security.status === 'block' || candidate.audit.license.status === 'blocked') {
     throw new Error('hard trust gate failed');
   }
+  if (!candidate.audit.smsMeetsThreshold || !isSmsCurrent(candidate)) {
+    throw new Error('public listing requires a current complete SMS v2 assessment at B tier or above');
+  }
   const redistributable = candidate.audit.license.redistributable === true;
+  const packageComplete = candidate.catalog?.packageComplete === true;
   const format = candidate.audit.format;
   const listing = {
     schemaVersion: 1,
@@ -188,6 +200,14 @@ export function toListing(candidate) {
       lastReview: candidate.reviewEvents.at(-1) || null,
     },
     distribution: redistributable ? 'content' : 'source_link_only',
+    install: {
+      status: redistributable && packageComplete ? 'eligible' : 'source_required',
+      method: 'skillops deploy',
+      packageComplete,
+      reason: !redistributable
+        ? 'license_allows_source_link_only'
+        : packageComplete ? 'approved_complete_package' : 'collector_snapshot_is_not_a_complete_package',
+    },
   };
   if (candidate.catalog) listing.catalog = candidate.catalog;
   if (redistributable) listing.content = candidate.artifact.content;
