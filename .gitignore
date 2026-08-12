@@ -15,6 +15,7 @@ id_rsa*
 # ── 运行时数据 / 本地镜像（服务器侧权威，不版本化）──
 data/
 .skillops/
+market-preview/skills/
 *.jsonl
 evaluations.jsonl
 *.sqlite

@@ -147,6 +147,10 @@ function createSourceLink(listing) {
   return link;
 }
 
+function detailHref(listing) {
+  return `./skills/${encodeURIComponent(String(listing.id))}/`;
+}
+
 function detailGroup(title, rows, className = '') {
   const section = document.createElement('section');
   section.className = `evidence-group ${className}`.trim();
@@ -281,10 +285,16 @@ function cardFor(listing, { compact = false } = {}) {
 
   const actions = document.createElement('div');
   actions.className = 'card-actions';
-  const button = text('button', '查看技能详情', 'btn');
-  button.type = 'button';
-  button.addEventListener('click', () => openEvidence(listing));
-  actions.append(createSourceLink(listing), button);
+  const links = document.createElement('div');
+  links.className = 'card-links';
+  links.append(createSourceLink(listing));
+  const previewButton = text('button', '快速预览', 'text-button mono');
+  previewButton.type = 'button';
+  previewButton.addEventListener('click', () => openEvidence(listing));
+  links.append(previewButton);
+  const detailLink = text('a', '查看完整详情', 'btn');
+  detailLink.href = detailHref(listing);
+  actions.append(links, detailLink);
   main.append(metrics, actions);
   article.append(main);
   return article;

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="rams">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="SkillOps 可信能力市场技能详情">
+    <title>技能详情 | SkillOps 能力市场</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Space+Grotesk:wght@400;500&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../detail.css?v=market-v34">
+    <script src="../../detail.js?v=market-v34" type="module"></script>
+  </head>
+  <body data-skill-id="" data-listing-src="">
+    <a class="skip-link button small" href="#skill-detail">跳到技能详情</a>
+
+    <header class="site-header">
+      <div class="wrap nav-inner">
+        <a class="brand" id="market-home" href="../../" aria-label="返回 SkillOps 能力市场">Skill<span>Ops</span></a>
+        <a class="back-link" id="market-back" href="../../">返回能力市场</a>
+        <p class="preview-label mono">本地只读预览</p>
+      </div>
+    </header>
+
+    <main id="skill-detail">
+      <section class="loading-state wrap" id="loading-state" role="status" aria-live="polite">
+        <div class="skeleton wide" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+        <p>正在读取已批准技能详情</p>
+      </section>
+
+      <section class="error-state wrap" id="error-state" role="alert" hidden>
+        <p class="status-code mono">DETAIL_UNAVAILABLE</p>
+        <h1>暂时无法读取这个技能</h1>
+        <p id="error-message">请返回能力市场后重新进入。</p>
+        <a class="button" id="error-back" href="../../">返回能力市场</a>
+      </section>
+
+      <article id="detail-content" hidden>
+        <header class="detail-hero">
+          <div class="wrap hero-grid">
+            <div class="hero-copy">
+              <div class="hero-meta">
+                <span class="tag" id="skill-category">其他能力</span>
+                <span class="translation-note mono" id="translation-note" hidden>自动翻译，待人工校对</span>
+              </div>
+              <h1 id="skill-name">技能名称</h1>
+              <p class="original-name mono" id="original-name"></p>
+              <p class="hero-description" id="skill-description"></p>
+              <div class="hero-actions" id="hero-actions"></div>
+            </div>
+
+            <aside class="decision-summary" aria-labelledby="decision-title">
+              <h2 id="decision-title">判断摘要</h2>
+              <dl id="decision-metrics"></dl>
+              <div class="install-boundary" id="install-boundary"></div>
+            </aside>
+          </div>
+        </header>
+
+        <div class="wrap detail-layout">
+          <nav class="section-nav" aria-label="详情页章节">
+            <p class="mono">页面目录</p>
+            <a href="#fit">适用场景</a>
+            <a href="#sms">SMS 静态潜力</a>
+            <a href="#evaluation">Eval 运行实绩</a>
+            <a href="#provenance">来源与版本</a>
+            <a href="#governance">许可与安全</a>
+            <a href="#package">技能包与部署</a>
+          </nav>
+
+          <div class="detail-sections">
+            <section class="detail-section" id="fit" aria-labelledby="fit-title">
+              <div class="section-heading">
+                <span class="section-number mono">01</span>
+                <h2 id="fit-title">适用场景</h2>
+              </div>
+              <p class="section-lead" id="scenario-description"></p>
+              <dl class="fact-grid" id="scenario-facts"></dl>
+              <div class="tag-list" id="skill-tags" aria-label="技能标签"></div>
+            </section>
+
+            <section class="detail-section sms-section" id="sms" aria-labelledby="sms-title">
+              <div class="section-heading">
+                <span class="section-number mono">02</span>
+                <h2 id="sms-title">SMS 静态潜力</h2>
+              </div>
+              <p class="section-lead">SMS 评估技能文档的静态质量潜力，不代表真实运行成功率。</p>
+              <div class="score-summary" id="sms-summary"></div>
+              <div class="dimension-list" id="sms-dimensions"></div>
+            </section>
+
+            <section class="detail-section eval-section" id="evaluation" aria-labelledby="eval-title">
+              <div class="section-heading">
+                <span class="section-number mono">03</span>
+                <h2 id="eval-title">Eval 运行实绩</h2>
+              </div>
+              <p class="section-lead">Eval 只展示固定测试集和运行环境产生的实绩证据，与 SMS 分开判断。</p>
+              <div id="eval-content"></div>
+            </section>
+
+            <section class="detail-section" id="provenance" aria-labelledby="provenance-title">
+              <div class="section-heading">
+                <span class="section-number mono">04</span>
+                <h2 id="provenance-title">来源与版本</h2>
+              </div>
+              <dl class="record-list" id="provenance-records"></dl>
+            </section>
+
+            <section class="detail-section" id="governance" aria-labelledby="governance-title">
+              <div class="section-heading">
+                <span class="section-number mono">05</span>
+                <h2 id="governance-title">许可、安全与审核</h2>
+              </div>
+              <div class="governance-grid" id="governance-content"></div>
+            </section>
+
+            <section class="detail-section" id="package" aria-labelledby="package-title">
+              <div class="section-heading">
+                <span class="section-number mono">06</span>
+                <h2 id="package-title">技能包与受控部署</h2>
+              </div>
+              <div class="package-panel" id="package-content"></div>
+            </section>
+          </div>
+        </div>
+
+        <section class="related-section" id="related" aria-labelledby="related-title" hidden>
+          <div class="wrap">
+            <div class="related-heading">
+              <h2 id="related-title">相关技能</h2>
+              <p>仅依据相同分类或标签关联，不使用虚构推荐指标。</p>
+            </div>
+            <div class="related-list" id="related-list"></div>
+          </div>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <p>Skill<span>Ops</span> 可信能力市场</p>
+        <p class="mono">证据来自 CandidateStore.listListings()</p>
+      </div>
+    </footer>
+  </body>
+</html>

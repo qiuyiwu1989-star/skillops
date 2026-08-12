@@ -227,6 +227,7 @@ p, h1, h2, h3, dl { margin-top: 0; }
 .market-metrics dt { color: var(--faint); font-size: 12px; }
 .market-metrics dd { min-width: 0; margin: 0; color: var(--text); font-family: var(--f-mono); font-size: 11px; overflow-wrap: anywhere; }
 .card-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s4); margin-top: var(--s5); }
+.card-links { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s4); }
 .source-link { font-family: var(--f-mono); font-size: 11px; }
 
 .compact-card { display: block; padding: var(--s4); }
@@ -238,6 +239,7 @@ p, h1, h2, h3, dl { margin-top: 0; }
 .compact-card .market-metrics dt { display: block; }
 .compact-card .market-metrics dd { display: block; margin-top: 2px; }
 .compact-card .card-actions { align-items: stretch; flex-direction: column-reverse; }
+.compact-card .card-links { justify-content: space-between; }
 .compact-card .btn { width: 100%; }
 
 .site-footer { border-top: 1px solid var(--line); background: var(--bg-soft); }

@@ -12,6 +12,14 @@ node market-preview/serve.mjs
 
 打开 `http://127.0.0.1:4173`。
 
+市场首页的“查看完整详情”会进入稳定地址 `/skills/<candidate-id>/`。每次构建会同时输出：
+
+- `data/listings.json`：首页 approved listing 集合；
+- `data/skills/<candidate-id>.json`：单个技能详情数据；
+- `skills/<candidate-id>/index.html`：可直接访问和刷新的静态入口。
+
+详情页默认展示中文主题和中文说明，英文原名作为来源别名保留。SMS 表示静态潜力，Eval 表示运行实绩，两者不会混分。
+
 ## 生成隔离的示例数据
 
 ```bash

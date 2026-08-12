@@ -38,6 +38,9 @@ test('detail supports progressive catalog fields and legacy listings', () => {
   assert.match(JS, /listing\.original\?\.name/);
   assert.match(JS, /自动翻译，待人工校对/);
   assert.match(JS, /history\.replaceState/);
+  assert.match(JS, /查看完整详情/);
+  assert.match(JS, /快速预览/);
+  assert.match(JS, /\.\/skills\/\$\{encodeURIComponent/);
 });
 
 test('installation boundary requires package completeness and controlled deployment', () => {

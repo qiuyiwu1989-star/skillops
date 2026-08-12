@@ -71,14 +71,14 @@
 
 ## 验收清单
 
-- [ ] 3 个 approved listing 各有独立 `/skills/<id>/` 页面和详情 JSON。
-- [ ] 市场主按钮进入详情页，快速预览行为独立。
-- [ ] 详情页默认中文主题和说明，并展示英文原名。
-- [ ] SMS 十维与 Eval 明确分离，证据字段完整。
-- [ ] 来源、版本、签名、许可、安全、审核和安装边界完整。
-- [ ] 未批准候选无法生成页面；过期页面不会残留在新构建产物中。
-- [ ] 直接深链与刷新成功，桌面/移动无横向溢出、console 0 error。
-- [ ] 全量自动化测试通过。
+- [x] 3 个 approved listing 各有独立 `/skills/<id>/` 页面和详情 JSON。
+- [x] 市场主按钮进入详情页，快速预览行为独立。
+- [x] 详情页默认中文主题和说明，并展示英文原名。
+- [x] SMS 十维与 Eval 明确分离，证据字段完整。
+- [x] 来源、版本、签名、许可、安全、审核和安装边界完整。
+- [x] 未批准候选无法生成页面；过期页面不会残留在新构建产物中。
+- [x] 直接深链与刷新成功，桌面/移动无横向溢出、console 0 error。
+- [x] 全量自动化测试通过。
 
 ## 不做什么
 
@@ -88,4 +88,4 @@
 
 ## 状态
 
-approved for local parallel implementation; production integration not authorized
+local implementation complete; production integration not authorized
