@@ -62,7 +62,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 市场安装进入 lock 台账，版本变化进入复评，真实使用遥测进入退化预警。
 - 形成“招聘 → 考核 → 分发 → 绩效 → 培训 → 退役”闭环。
 
-阶段进展：Registry 只读 Client、经摘要验证的快照/Feed 离线缓存、确定性安装/更新计划、operation 幂等冲突、Lock v2、三方状态投影与 CAS 原子安装已实现；安装必须绑定明确 Release 和用户确认的 planDigest，故障恢复旧目标与旧 Lock，全程不联网、不执行技能。下一步实现更新复评、Coach 隔离建议、可逆退役与 CLI，详见 `specs/011-v39-managed-distribution-loop.md`。
+阶段进展：Registry 只读 Client、经摘要验证的快照/Feed 离线缓存、确定性安装/更新计划、operation 幂等冲突、Lock v2、三方状态投影与 CAS 原子安装已实现；更新复评会比较版本、包、许可、安全、兼容、依赖和全套证据，新包不能继承旧 Eval/终审；隐私绩效账本、摘要化 Coach 隔离提案、依赖感知可逆退役与恢复待复评状态也已完成。下一步串联 CLI、人类确认交互与旧 Lock 迁移，详见 `specs/011-v39-managed-distribution-loop.md`。
 
 ## Later
 

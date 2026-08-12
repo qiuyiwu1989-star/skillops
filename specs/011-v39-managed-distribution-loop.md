@@ -215,10 +215,10 @@ SkillOps 仍不当运行时：不替技能执行生产任务，不接管用户�
 - [x] install/update 重试幂等；hash 不符、未知目录、target drift、证据过期和 withdrawn/revoked 全部失败关闭。
 - [x] 安装或更新故障注入验证目标与 lock 要么全旧、要么全新，不存在半安装。
 - [x] Registry/卷/目标三方漂移形成结构化 reason；source 不可达、证据不足和真正漂移不混为一类。
-- [ ] update 已只生成明确计划且必须确认 planDigest；完整复评失败保留旧版本策略待补。
+- [x] update 只生成明确计划；新包 Eval/终审不可继承，复评失败保留旧版本与旧 Lock。
 - [ ] withdraw/revoke 能幂等传播且不远程删除本地文件，retire 可恢复并有依赖/迁移报告。
-- [ ] coach 只写隔离 proposal，接受后产生新 source revision 并重新走 Package/Eval/Review/Registry。
-- [ ] 默认遥测完全本地且不含 prompt、输出、内容、路径或个人身份；未 opt-in 无网络上传。
+- [x] coach 只生成摘要化隔离 proposal，接受后产生新 source revision 请求并重新走 Package/Audit/SMS/Eval/Review/Registry。
+- [x] 默认绩效账本完全本地，只保存结果、错误码、耗时/时间桶与 Release 摘要，不含 prompt、输出、内容、路径或个人身份，且无网络上传能力。
 - [ ] CLI 人类模式全中文、机器模式 envelope 稳定；全量既有测试保持通过并新增端到端安全测试。
 
 ## 不做什么
@@ -231,4 +231,4 @@ SkillOps 仍不当运行时：不替技能执行生产任务，不接管用户�
 
 ## 状态
 
-local Registry client/cache, managed plan, Lock v2 and CAS atomic installer implemented on 2026-08-13; update reassessment, coach/retire, CLI and production integration remain pending and unauthorized
+local Registry client/cache, managed plan, Lock v2, CAS atomic installer, update reassessment, privacy performance ledger, digest-only Coach proposal and reversible retirement implemented on 2026-08-13; CLI, legacy lock migration and production integration remain pending and unauthorized
