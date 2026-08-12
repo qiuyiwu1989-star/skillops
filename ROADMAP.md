@@ -44,7 +44,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 引入四眼规则、批准有效期、复审到期、申诉、撤回与召回事件。
 - 内容、包、许可、SMS、Eval 或策略变化自动转为 `stale`，从精选/可安装货架撤出。
 
-阶段进展：核心 policy、证据快照、可验证身份、四眼计票、有效期、stale/撤回/召回状态机已接入 Candidate/Store；完整包只有当前双人认证才可安装，旧字符串审批只保留历史。下一步接入可信 IdP 回执、CLI、市场详情与运营队列，详见 `specs/009-v37-review-recertification.md`。
+阶段进展：核心 policy、证据快照、可验证身份、四眼计票、有效期、stale/撤回/召回状态机已接入 Candidate/Store；完整包只有当前双人认证才可安装，旧字符串审批只保留历史；本地中文运营队列已能投影待第二人复核、即将到期、证据失效、拒绝、撤回与召回。下一步接入可信 IdP 回执、CLI 与市场详情，详见 `specs/009-v37-review-recertification.md`。
 
 ### V3.8 · 统一 Registry 合约
 
@@ -53,7 +53,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 发布只读 feed/API；任何下游只能消费发布投影，不能读取候选池。
 - 支持 `upsert / withdraw / supersede` 生命周期和幂等回执。
 
-阶段进展：稳定 Skill/Release/Source 身份、不可变 Release、append-only Registry、可重放投影、只读分页 Feed、公共隐私裁剪与 certified Candidate 发布桥已实现。下一步完成造物云 dry-run Adapter，详见 `specs/010-v38-unified-registry.md`。
+阶段进展：稳定 Skill/Release/Source 身份、不可变 Release、append-only Registry、可重放投影、只读分页 Feed、公共隐私裁剪、certified Candidate 发布桥与造物云 `zaowuyun.ability.skill.v1` dry-run/staging mock Adapter 已实现；四类动作与回执均确定性、可重算且不含生产网络能力。下一步补运营 CLI 与 staging 人工验收，详见 `specs/010-v38-unified-registry.md`。
 
 ### V3.9 · 内部 HRD 管理闭环
 
@@ -62,7 +62,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 市场安装进入 lock 台账，版本变化进入复评，真实使用遥测进入退化预警。
 - 形成“招聘 → 考核 → 分发 → 绩效 → 培训 → 退役”闭环。
 
-阶段进展：确定性安装/更新计划、operation 幂等冲突、Lock v2、三方状态投影和 withdrawn/revoked/证据过期/target drift 阻断已实现；当前只规划，不复制、不联网、不执行技能。下一步接 Registry Client、离线缓存与原子执行器，详见 `specs/011-v39-managed-distribution-loop.md`。
+阶段进展：Registry 只读 Client、经摘要验证的快照/Feed 离线缓存、确定性安装/更新计划、operation 幂等冲突、Lock v2、三方状态投影与 CAS 原子安装已实现；安装必须绑定明确 Release 和用户确认的 planDigest，故障恢复旧目标与旧 Lock，全程不联网、不执行技能。下一步实现更新复评、Coach 隔离建议、可逆退役与 CLI，详见 `specs/011-v39-managed-distribution-loop.md`。
 
 ## Later
 

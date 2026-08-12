@@ -119,8 +119,8 @@ Agent 事件必须是 `type: agent_assisted`、`decision: advisory`，只允许�
 - [x] 内容、package、license、SMS、Eval 与 policy 变化返回具体 stale 原因。
 - [x] 到期后必须追加新一轮两人批准才能再认证，历史不变。
 - [x] 人类拒绝、撤回、召回阻断；申诉不自动恢复。
-- [ ] Candidate/Store 接缝与 append-only 投影完成。
-- [ ] CLI、市场详情、待审与到期运营队列完成。
+- [x] Candidate/Store 接缝与 append-only 投影完成。
+- [ ] 待审/到期/召回中文运营队列已完成；CLI、可信 IdP 回执入口与市场详情展示待接。
 - [ ] 全量回归与桌面/移动端浏览器验收通过。
 
 ## 不做什么
@@ -132,4 +132,4 @@ Agent 事件必须是 `type: agent_assisted`、`decision: advisory`，只允许�
 
 ## 状态
 
-core policy implemented locally on 2026-08-13; Candidate/Store/CLI/market integration pending
+core policy, Candidate/Store certification and local operations queue implemented on 2026-08-13; trusted IdP, CLI and market presentation pending

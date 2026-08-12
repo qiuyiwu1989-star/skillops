@@ -4,19 +4,20 @@
 
 - [ ] 复核首批 3 个 SkillHub listing 的完整包与许可可得性；不可得则保持来源索引
 - [x] V3.7-B：把四眼终审 policy 接入 Candidate/Store，旧 reviewer 字符串仅保留为 legacy history
-- [ ] V3.7-C：增加可信 IdP 回执入口、待审/到期队列、市场认证状态与撤回/召回展示
+- [ ] V3.7-C：已完成待审/到期/召回中文运营队列；待接可信 IdP 回执入口、CLI 与市场认证展示
 
 ## Next
 
 - [ ] 为首批 3 个具备完整包的技能补固定测试集与离线 Eval；旧来源包不可得时不伪造实绩
 - [x] V3.8-A/B：实现统一 Skill/Release/Source 身份、append-only Registry、只读 Feed 与投影重放
-- [ ] V3.8-C/D：已完成 certified Candidate → Release 发布接缝；待造物云 dry-run Adapter，不连接生产
-- [ ] V3.9-A/B：已完成 Lock v2、受控安装计划与漂移投影；待接 Registry Client、离线缓存和原子执行器
+- [x] V3.8-C/D：完成 certified Candidate → Release 发布接缝与造物云 dry-run/staging mock Adapter，不连接生产
+- [x] V3.9-A/B：完成 Registry Client、离线缓存、Lock v2、受控安装计划、CAS 原子安装与故障回滚
 - [ ] V3.9-C/D：实现更新复评、coach 隔离建议、可逆 retire 与隐私遥测
 - [ ] V4.0：实现造物云 adapter staging 与组织治理小规模试点
 
 ## Done
 
+- [x] 2026-08-13：完成三阶段第二批开发：V3.7 中文终审运营队列；V3.8 造物云 dry-run/staging mock 四动作投影与幂等回执；V3.9 Registry 快照/Feed 缓存、明确 Release 解析、planDigest 确认、CAS 原子安装和 Lock v2 回滚。237/237 自动化测试通过，仍未连接生产或执行技能。
 - [x] 2026-08-13：完成三阶段第一批核心：V3.7 Candidate/Store 四眼终审与再认证；V3.8 稳定身份、不可变 Release、append-only Registry、只读 Feed；V3.9 确定性安装计划、operation 幂等、Lock v2 与漂移/撤回/过期阻断。旧单人字符串审批不再赋予安装资格。
 - [x] 2026-08-13：启动三阶段全面升级：V3.7 四眼终审核心 policy 与 9 项测试完成；V3.8 统一 Registry、V3.9 托管分发/HRD 闭环规格冻结；市场卡片桌面证据区与操作区对齐，移动端保持自然流。
 - [x] 2026-08-13：完成 V3.6 Eval 实证闭环：受限 JSON 固定测试集、确定性断言、离线 fixture Runner、package/suite/runner 三重绑定、append-only 证据、CLI 与中文详情展示；伪造汇总和过期包失败关闭，161/161 自动化测试及 1440px/390px 浏览器验收通过。

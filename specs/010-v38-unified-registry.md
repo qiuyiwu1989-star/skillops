@@ -197,14 +197,14 @@ V3.8 输出 `zaowuyun.ability.skill.v1` 离线投影文件或 mock transport，�
 
 ## 验收清单
 
-- [ ] `skillId`、`releaseId`、`sourceId`、`candidateId` 边界有单测，市场/lock/造物云投影均不再以 `cand_*` 为长期身份。
-- [ ] 同一发布重复提交零重复事件；同版本换包、同 idempotency key 换载荷均失败关闭。
-- [ ] Release 不可变，Listing 可独立更新，所有投影可由 append-only log 重建且 digest 一致。
-- [ ] feed 支持分页、重放、断档检测、snapshot 对账与未知 schema 失败关闭。
-- [ ] withdraw/supersede/revoke 能传播到所有本地消费者，历史与 tombstone 可审计。
-- [ ] 造物云四类动作在 dry-run/mock 中有确定性 envelope 与幂等回执，未出现任何生产网络写入。
+- [x] `skillId`、`releaseId`、`sourceId`、`candidateId` 边界有单测，市场/lock/造物云投影均不再以 `cand_*` 为长期身份。
+- [x] 同一发布重复提交零重复事件；同版本换包、同 idempotency key 换载荷均失败关闭。
+- [x] Release 不可变，Listing 可独立更新，所有投影可由 append-only log 重建且 digest 一致。
+- [x] feed 支持分页、重放、断档检测、snapshot 对账与未知 schema 失败关闭。
+- [x] withdraw/supersede/revoke 能传播到本地 Registry Client 与造物云 dry-run Adapter，历史与 tombstone 可审计。
+- [x] 造物云四类动作在 dry-run/mock 中有确定性 envelope 与幂等回执，未出现任何生产网络写入。
 - [ ] 公共投影不含候选原文、秘密、个人身份、本地路径和私有来源；中文展示保留原文及翻译状态。
-- [ ] 全量既有测试保持通过，并新增发布、feed、adapter 端到端黑盒测试。
+- [x] 全量既有测试保持通过，并新增发布、feed、adapter 端到端黑盒测试。
 
 ## 不做什么
 
@@ -216,4 +216,4 @@ V3.8 输出 `zaowuyun.ability.skill.v1` 离线投影文件或 mock transport，�
 
 ## 状态
 
-spec proposed; implementation not started; production integration unauthorized
+local Registry contract, feed, Candidate publication bridge and Zaowuyun dry-run/staging mock adapter implemented on 2026-08-13; production integration remains unauthorized

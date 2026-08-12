@@ -211,11 +211,11 @@ SkillOps 仍不当运行时：不替技能执行生产任务，不接管用户�
 
 ## 验收清单
 
-- [ ] 所有安装 lock 绑定 `skillId + releaseId + packageDigest + registrySourceId`，不含 `cand_*`，旧 lock 可安全迁移/回滚。
-- [ ] install/update 重试幂等；hash 不符、未知目录、target drift、证据过期和 withdrawn/revoked 全部失败关闭。
-- [ ] 安装或更新任一步故障后目标与 lock 要么全旧、要么全新，不存在半安装。
-- [ ] Registry/卷/目标三方漂移形成结构化 reason；source 不可达、证据不足和真正漂移不混为一类。
-- [ ] update 只生成明确计划，未经 planDigest 绑定确认不静默切换版本；复评失败保留旧版本。
+- [ ] 新 Lock v2 已绑定 `skillId + releaseId + packageDigest + registrySourceId` 且不含 `cand_*`；旧 lock 迁移协议待补。
+- [x] install/update 重试幂等；hash 不符、未知目录、target drift、证据过期和 withdrawn/revoked 全部失败关闭。
+- [x] 安装或更新故障注入验证目标与 lock 要么全旧、要么全新，不存在半安装。
+- [x] Registry/卷/目标三方漂移形成结构化 reason；source 不可达、证据不足和真正漂移不混为一类。
+- [ ] update 已只生成明确计划且必须确认 planDigest；完整复评失败保留旧版本策略待补。
 - [ ] withdraw/revoke 能幂等传播且不远程删除本地文件，retire 可恢复并有依赖/迁移报告。
 - [ ] coach 只写隔离 proposal，接受后产生新 source revision 并重新走 Package/Eval/Review/Registry。
 - [ ] 默认遥测完全本地且不含 prompt、输出、内容、路径或个人身份；未 opt-in 无网络上传。
@@ -231,4 +231,4 @@ SkillOps 仍不当运行时：不替技能执行生产任务，不接管用户�
 
 ## 状态
 
-spec proposed; implementation not started; runtime and production integration unauthorized
+local Registry client/cache, managed plan, Lock v2 and CAS atomic installer implemented on 2026-08-13; update reassessment, coach/retire, CLI and production integration remain pending and unauthorized
