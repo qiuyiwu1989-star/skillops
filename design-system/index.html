@@ -489,12 +489,15 @@ li{margin-bottom:var(--s2)}
     <div class="sec-head"><span class="sec-num">07</span><h2 class="h-2">审计发现</h2></div>
     <p class="sec-note">对 <code>xiaoneng/hub.css</code>（1723 行）的实测结果。按修复优先级排序。</p>
 
-    <div class="find">
-      <div class="find-h"><span class="find-t">段位色的 fallback 与真实 token 不一致</span><span class="tag hi">高</span></div>
+    <div class="find ok">
+      <div class="find-h"><span class="find-t">段位色的 fallback 与真实 token 不一致</span><span class="tag">已修复</span></div>
       <p><code>.tier-A</code> 写的是 <code>var(--green, #4a9b8a)</code>，但 rams 主题里 <code>--green</code> 实际是 <code>#2f7d6b</code>。
         更糟的是 <code>.tier-B</code> 在两处有<b>两个不同的 fallback</b>（<code>#8a9250</code> 与 <code>#a8b56c</code>），
         而徽章底色 <code>rgba(74,155,138,.1)</code> 是从<b>旧绿色</b>硬编码来的——<b>底色和文字色来自两个不同的绿</b>。</p>
-      <p><b>修</b>：删掉所有 fallback，底色改用 <code>color-mix(in srgb, var(--green) 12%, transparent)</code>，让底与字永远同源。<code>.tier-D</code> 的 <code>#856548</code> 也应换成 <code>--red</code>。</p>
+      <p><b>已改</b>：删除全部 fallback，底/描边/字改用 <code>color-mix</code> 从同一 token 派生；
+        补上缺失的 <code>.tier-D</code> 规则。<b>连带查出一个隐藏缺陷</b>：dark 主题与 <code>:root</code> 从未定义
+        <code>--green/--amber/--red</code>——删掉 fallback 后深色徽章会失色，已一并补齐（深底用更亮的明度）。
+        另加一行降级兜底，老浏览器不支持 <code>color-mix</code> 时得到中性底而非透明。</p>
     </div>
 
     <div class="find">
@@ -504,17 +507,21 @@ li{margin-bottom:var(--s2)}
       <p><b>修</b>：保留 <code>.btn</code> + 修饰类一套，<code>.btn-primary/.btn-outline</code> 标记废弃并迁移。</p>
     </div>
 
-    <div class="find warn">
-      <div class="find-h"><span class="find-t">间距 / 圆角 / 动效三类 token 完全不存在</span><span class="tag md">中</span></div>
+    <div class="find ok">
+      <div class="find-h"><span class="find-t">间距 / 圆角 / 动效三类 token 完全不存在</span><span class="tag">已修复</span></div>
       <p>实测命中 <b>0 处</b> spacing / radius / duration 变量。所有间距是散值，圆角有 7 种，时长有 3 种。
         这意味着任何新页面都在<b>重新发明间距</b>，一致性只能靠人肉记忆维持。</p>
-      <p><b>修</b>：把 §03 §04 提出的 <code>--s1..--s9</code>、<code>--r-*</code>、<code>--dur-*</code> 补进 <code>:root</code>，新代码一律引用。</p>
+      <p><b>已改</b>：<code>--s1..--s9</code>、<code>--r-sm/md/pill/circle</code>、<code>--dur-fast/base/slow</code>、<code>--ease</code>
+        已写进 <code>hub.css</code> 的 <code>:root</code>。<b>纯增量，现有视觉零变化</b>——存量代码不受影响，新代码一律引用。</p>
     </div>
 
     <div class="find warn">
-      <div class="find-h"><span class="find-t"><code>transition: all</code> 出现 5 处</span><span class="tag md">中</span></div>
-      <p>会把 <code>width</code>/<code>height</code>/<code>padding</code> 等布局属性一并动画化，触发重排、造成掉帧。</p>
-      <p><b>修</b>：显式列出要过渡的属性（<code>background</code>、<code>color</code>、<code>border-color</code>、<code>opacity</code>、<code>transform</code>）。</p>
+      <div class="find-h"><span class="find-t"><code>transition: all</code> 出现 10 处</span><span class="tag md">中 · 待办</span></div>
+      <p>会把 <code>width</code>/<code>height</code>/<code>padding</code> 等布局属性一并动画化，触发重排、造成掉帧。
+        分布：<code>.2s</code>×5 · <code>.15s</code>×2 · <code>.12s</code>×3。</p>
+      <p><b>暂不动</b>：把 <code>all</code> 换成显式属性清单，可能<b>误删某处本来依赖的过渡</b>（如已有代码里出现过
+        <code>padding-left</code> 动画）。这需要逐处在浏览器里比对前后效果，属于有视觉风险的改动——
+        待能在线上逐页核对时再做。新代码请直接用 <code>--dur-*</code> + 显式属性。</p>
     </div>
 
     <div class="find ok">
@@ -531,12 +538,15 @@ li{margin-bottom:var(--s2)}
 
     <h3 class="h-3" style="margin-top:var(--s7)">优先行动</h3>
     <ul>
-      <li><b>1 · 补三类 token</b>（间距/圆角/动效）到 <code>:root</code>——一次性，收益最大，不改任何现有视觉。</li>
-      <li><b>2 · 修段位色同源问题</b>——用 <code>color-mix</code> 让底色与文字色从同一 token 派生。</li>
-      <li><b>3 · 合并两套按钮</b>——废弃 <code>.btn-primary/.btn-outline</code>。</li>
-      <li><b>4 · 清 <code>transition: all</code></b>——5 处，逐一显式化。</li>
-      <li><b>5 · 把本页挂到线上</b>作为团队与外部开发者的对接口径。</li>
+      <li><s>1 · 补三类 token 到 <code>:root</code></s> —— <b>✓ 已完成</b>，纯增量零视觉变化。</li>
+      <li><s>2 · 修段位色同源问题</s> —— <b>✓ 已完成</b>，连带补齐 dark 主题缺失的语义色。</li>
+      <li><b>3 · 合并两套按钮</b>——废弃 <code>.btn-primary/.btn-outline</code>，迁移调用点。需逐页视觉核对。</li>
+      <li><b>4 · 清 <code>transition: all</code></b>——10 处，需逐处比对前后效果。</li>
+      <li><b>5 · 存量代码换 token</b>——把散落的间距/圆角值逐步替换成 <code>--s*</code> / <code>--r-*</code>。</li>
+      <li><b>6 · 把本页挂到线上</b> <code>skillops.tech/design-system/</code>，作为团队与外部开发者的对接口径。</li>
     </ul>
+    <p style="margin-top:var(--s4);font-size:13px;color:var(--faint)">
+      1、2 已改在本地 <code>xiaoneng/hub.css</code>（已提交 git）。<b>尚未部署到线上</b>——部署需另行确认。</p>
   </div>
 </section>
 

@@ -15,6 +15,8 @@
   --hairline:  rgba(235, 230, 219, .06);
   --accent:    #d4a574;
   --accent-2:  #c2876b;
+  /* 语义色兜底（:root 是深色底，与 dark 主题同值）—— tier 徽章依赖它们，不能缺 */
+  --green:     #6fbfa5;  --amber: #b9c07a;  --red: #e08d72;
   --aurora-blend: screen;
   --noise-opacity: 0.18;
   --grid-color: rgba(235,230,219,.045);
@@ -26,6 +28,21 @@
   --f-display: "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --f-body:    "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
   --f-mono:    "JetBrains Mono", "Noto Sans SC", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ── 间距尺度（8px 基准）· 设计系统 v1.0，规范见 /design-system/ ──
+     新代码一律引用，不再写散值。 */
+  --s1: 4px;   --s2: 8px;   --s3: 12px;  --s4: 16px;  --s5: 24px;
+  --s6: 32px;  --s7: 48px;  --s8: 64px;  --s9: 96px;
+
+  /* ── 圆角（四档，收敛原先 7 种散值）── */
+  --r-sm: 3px;        /* 输入框、标签、代码 */
+  --r-md: 8px;        /* 卡片、表格、面板 */
+  --r-pill: 999px;    /* 按钮、徽章、段位 */
+  --r-circle: 50%;    /* 头像、色点、图标钮 */
+
+  /* ── 动效（新代码禁止 transition: all，显式列属性）── */
+  --dur-fast: .12s;   --dur-base: .15s;   --dur-slow: .2s;
+  --ease: cubic-bezier(.4, 0, .2, 1);
 }
 
 /* ── DARK (default) ── */
@@ -39,6 +56,8 @@ html[data-theme="dark"] {
   --line:      rgba(235, 230, 219, .12);
   --field-border: rgba(235, 230, 219, .30);  /* WCAG 1.4.11: form-field boundary ~3:1 (dividers keep airy --line) */
   --hairline:  rgba(235, 230, 219, .06);
+  /* 语义色：深底需要更亮的明度（浅色主题那套在 #0b0d0c 上达不到 4.5:1） */
+  --green:     #6fbfa5;  --amber: #b9c07a;  --red: #e08d72;
   --aurora-blend: screen;
   --noise-opacity: 0.18;
   --grid-color: rgba(235,230,219,.045);
@@ -1593,10 +1612,15 @@ html[data-lang="en"] [lang="zh"] { display: none !important; }
   position: relative;
   top: -1px;
 }
-.tier-S { background: rgba(226,82,42,.12); color: var(--accent); border: 1px solid rgba(226,82,42,.3); }
-.tier-A { background: rgba(74,155,138,.1);  color: var(--green,#4a9b8a);  border: 1px solid rgba(74,155,138,.3); }
-.tier-B { background: rgba(168,181,108,.1); color: var(--amber,#8a9250);  border: 1px solid rgba(168,181,108,.3); }
-.tier-C { background: rgba(100,100,100,.08); color: var(--muted); border: 1px solid var(--hairline); }
+/* 段位徽章：底色/描边/文字全部从同一个 token 派生（color-mix），
+   避免旧版「底色用旧绿硬编码、文字用 --green」的不同源问题。随主题自动适配。
+   前一行是降级兜底：不支持 color-mix 的老浏览器会忽略后一行，得到中性底 + 正确文字色。 */
+.tier-S, .tier-A, .tier-B, .tier-C, .tier-D { background: var(--bg-soft); border: 1px solid var(--line); }
+.tier-S { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.tier-A { background: color-mix(in srgb, var(--green) 12%, transparent);  color: var(--green);  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); }
+.tier-B { background: color-mix(in srgb, var(--amber) 12%, transparent);  color: var(--amber);  border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent); }
+.tier-C { background: var(--bg-soft); color: var(--muted); border: 1px solid var(--line); }
+.tier-D { background: color-mix(in srgb, var(--red) 10%, transparent);    color: var(--red);    border: 1px solid color-mix(in srgb, var(--red) 28%, transparent); }
 
 /* ════════════════════════════════════════════════════════════
    api/v1 page — theme toggle script (needs Atlas UI)
@@ -1621,7 +1645,7 @@ html[data-lang="en"] [lang="zh"] { display: none !important; }
 .sk-chip.priv { color: var(--faint); }
 .sk-sms-badge { font-family: var(--f-mono); font-size: 12px; padding: 5px 14px; border-radius: 999px; border: 1px solid currentColor; letter-spacing: 0.04em; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .sk-sms-badge .t { font-weight: 600; }
-.tier-S { color: var(--accent); } .tier-A { color: var(--green,#4a9b8a); } .tier-B { color: var(--amber,#a8b56c); } .tier-C { color: var(--muted); } .tier-D { color: #856548; }
+.tier-S { color: var(--accent); } .tier-A { color: var(--green); } .tier-B { color: var(--amber); } .tier-C { color: var(--muted); } .tier-D { color: var(--red); }
 .sk-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* sticky subnav */
@@ -1648,7 +1672,7 @@ html[data-lang="en"] [lang="zh"] { display: none !important; }
 /* skill identity kept visible in the sticky tab bar */
 .sk-tabs .sk-tab-id { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-display); font-weight: 600; font-size: 15px; letter-spacing: -0.01em; margin-right: 14px; padding-right: 14px; border-right: 1px solid var(--line); }
 .sk-tabs .sk-tab-id .tb-score { font-family: var(--f-mono); font-weight: 600; font-size: 11px; padding: 2px 8px; border: 1px solid currentColor; border-radius: 999px; }
-.sk-tabs .tb-score.tier-S { color: var(--accent); } .sk-tabs .tb-score.tier-A { color: var(--green,#4a9b8a); } .sk-tabs .tb-score.tier-B { color: var(--amber,#a8b56c); } .sk-tabs .tb-score.tier-C { color: var(--muted); } .sk-tabs .tb-score.tier-D { color: #856548; }
+.sk-tabs .tb-score.tier-S { color: var(--accent); } .sk-tabs .tb-score.tier-A { color: var(--green); } .sk-tabs .tb-score.tier-B { color: var(--amber); } .sk-tabs .tb-score.tier-C { color: var(--muted); } .sk-tabs .tb-score.tier-D { color: var(--red); }
 @media (max-width: 600px) { .sk-tabs .sk-tab-id { width: 100%; margin: 0 0 6px; padding: 0 0 6px; border-right: 0; border-bottom: 1px solid var(--line); } }
 
 /* 你可能还想看 — related skills cards */
