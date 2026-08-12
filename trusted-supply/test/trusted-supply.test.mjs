@@ -322,7 +322,9 @@ test('CLI performs an offline ingest-audit-review-listing flow with explicit hum
 
   const listing = runCli(['listing', ingested.json.id, '--store', storePath]);
   assert.equal(listing.status, 0, listing.stderr);
-  assert.equal(listing.json.name, 'customer-brief');
+  assert.equal(listing.json.name, '客户简报');
+  assert.equal(listing.json.original.name, 'customer-brief');
+  assert.equal(listing.json.localization.locale, 'zh-CN');
   assert.equal(listing.json.verification.status, 'approved');
   assert.equal(listing.json.distribution, 'content');
 });

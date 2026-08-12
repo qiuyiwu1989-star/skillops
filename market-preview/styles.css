@@ -217,6 +217,7 @@ p, h1, h2, h3, dl { margin-top: 0; }
 .listing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); padding-top: var(--s5); }
 .skill-card { min-width: 0; padding: var(--s5); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-card); }
 .skill-card h3 { margin-bottom: var(--s3); font-family: var(--f-display); font-size: 26px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.08; overflow-wrap: anywhere; }
+.original-name { margin: calc(var(--s3) * -0.5) 0 var(--s3); color: var(--faint); font-size: 10px; overflow-wrap: anywhere; }
 .description { min-height: 3.2em; margin-bottom: var(--s5); color: var(--muted); }
 .card-topline { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s5); }
 .tag { display: inline-flex; width: fit-content; align-items: center; padding: 3px 8px; border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--muted); font-family: var(--f-mono); font-size: 10px; font-weight: 400; }

@@ -35,6 +35,8 @@ test('detail supports progressive catalog fields and legacy listings', () => {
   assert.match(JS, /listing\.source\?\.integrity\?\.signed/);
   assert.match(JS, /function listingTags/);
   assert.match(JS, /listing\.description/);
+  assert.match(JS, /listing\.original\?\.name/);
+  assert.match(JS, /自动翻译，待人工校对/);
   assert.match(JS, /history\.replaceState/);
 });
 

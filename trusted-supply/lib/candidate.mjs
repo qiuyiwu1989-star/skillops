@@ -1,6 +1,7 @@
 import { candidateId, contentFingerprint, normalizeContent, sourceIdentity, sourceVersionIdentity } from './fingerprint.mjs';
 import { auditCandidate } from './audit.mjs';
 import { createSmsAssessment, isSmsCurrent } from './sms.mjs';
+import { localizeCandidateMetadata } from './localization.mjs';
 
 const DECISIONS = new Set(['approve', 'reject', 'quarantine']);
 const REVIEWER_TYPES = new Set(['human', 'agent_assisted']);
@@ -179,11 +180,17 @@ export function toListing(candidate) {
   const redistributable = candidate.audit.license.redistributable === true;
   const packageComplete = candidate.catalog?.packageComplete === true;
   const format = candidate.audit.format;
+  const localization = localizeCandidateMetadata(candidate);
   const listing = {
     schemaVersion: 1,
     id: candidate.id,
-    name: format.name,
-    description: format.description,
+    name: localization.titleZh,
+    description: localization.descriptionZh,
+    original: {
+      name: localization.originalName,
+      description: localization.originalDescription,
+    },
+    localization,
     source: publicSource(candidate.source),
     version: {
       commit: candidate.source.commit,

@@ -8,3 +8,4 @@ export * from './skillhub-collector.mjs';
 export * from './skill-document.mjs';
 export * from './sms.mjs';
 export * from './assessment-pipeline.mjs';
+export * from './localization.mjs';

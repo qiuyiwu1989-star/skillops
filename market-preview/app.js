@@ -226,6 +226,8 @@ function openEvidence(listing) {
     detailGroup('Eval 运行实绩', evalRows, 'eval-group'),
     detailGroup('来源与版本', [
       ['来源', sourceLabel(listing), 'mono'], ['技能路径', listing.source?.path || '未记录', 'mono'],
+      ['原始名称', listing.original?.name || listing.name, 'mono'],
+      ['中文元数据', listing.localization?.status === 'auto_translated' ? '自动翻译，待人工校对' : '来源已提供中文'],
       ['版本', listing.source?.version || shortHash(listing.version?.commit), 'mono'],
       ['内容指纹', listing.version?.fingerprint || '未记录', 'mono'],
       ['签名', listing.source?.integrity?.signed === true ? '已验证' : '未记录'],
@@ -262,7 +264,11 @@ function cardFor(listing, { compact = false } = {}) {
   const topline = document.createElement('div');
   topline.className = 'card-topline';
   topline.append(text('span', categoryLabel(listingCategory(listing)), 'tag'), text('span', humanDistribution(listing.distribution), 'tag'));
-  main.append(topline, text('h3', listing.name), text('p', listing.description, 'description'));
+  main.append(topline, text('h3', listing.name));
+  if (listing.original?.name && listing.original.name !== listing.name) {
+    main.append(text('p', listing.original.name, 'original-name mono'));
+  }
+  main.append(text('p', listing.description, 'description'));
 
   const evalInfo = evalSummary(listing);
   const metrics = document.createElement('dl');
