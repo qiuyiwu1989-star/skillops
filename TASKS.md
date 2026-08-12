@@ -2,18 +2,19 @@
 
 ## Now
 
-- [x] 实现显式 GitHub 白名单快照器与试运行报告（spec: 003）
-- [x] 实现 approved listing 市场预览与构建命令（spec: 003）
-- [x] 完成离线、浏览器与安全边界验收（spec: 003）
+- [ ] 建立 SMS v2.0 十维评分数据契约、指纹绑定与 CLI（spec: 005）
+- [ ] 兼容安全 YAML frontmatter 并重审 SkillHub 候选（spec: 005）
+- [ ] 建设市场首页、详情和受保护安装闭环（spec: 005）
 
 ## Next
 
-- [ ] 选 50 个真实白名单候选跑 Go / No-go 指标
-- [ ] 接入 SkillOps 真实 SMS 评分与抽样 Eval（当前接口和 pending/waiver 已完成）
-- [ ] 将预览的 listing 适配协议接入造物云能力市场
+- [ ] 用 8 个真实候选、3 个完整 SMS、3 个 approved listing 跑 V3.3 Go / No-go
+- [ ] 增加抽样 Eval 用例与实证数据（不与 SMS 混分）
+- [ ] 将验证后的 listing 适配协议接入造物云能力市场
 
 ## Done
 
+- [x] 2026-08-13：完成 SkillHub 外部候选源；首轮发现 138、深检 13、入库 6、2 个进入 review、0 自动批准（commit: 0f64b4c）。
 - [x] 2026-08-12：完成 SkillOps 与造物云 V5 的产品边界分析，确认聚焦技能。
 - [x] 2026-08-12：完成 3 个 fixture 仓库、12 个候选的离线审核演示。
 - [x] 2026-08-12：完成 README、进度、接力包与安全边界复核；V3.1 自动化测试 23/23 通过。
