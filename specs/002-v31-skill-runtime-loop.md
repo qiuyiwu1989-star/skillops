@@ -13,13 +13,13 @@
 
 ## 验收清单
 
-- [ ] 明确 `dist-src/skillops/scripts/` 为 CLI 唯一源码，根 `cli/` 仅保留兼容入口或清晰退役说明。
-- [ ] `deploy <技能> --to <目录>` 写入可审计的 `.skillops/lock.json`。
-- [ ] 部署目标不覆盖未知文件，重复部署具有幂等性。
-- [ ] `status` 能比较源技能指纹与部署台账并报告漂移。
-- [ ] 测试覆盖初次部署、重复部署、源变化、目标变化和只读错误。
-- [ ] 现有 `scan / ls / register / report / track / score` 行为不回归。
+- [x] 明确 `dist-src/skillops/scripts/` 为 CLI 唯一源码，根 `cli/` 仅保留兼容入口。
+- [x] `deploy <技能> --to <目录>` 写入可审计的 `.skillops/lock.json`。
+- [x] 部署目标不覆盖未知文件，重复部署具有幂等性。
+- [x] `status` 能比较源技能指纹与部署台账并报告漂移。
+- [x] 测试覆盖初次部署、重复部署、源变化、目标变化和异常目标。
+- [x] 现有 `scan / ls / register / report / track / score` 代码路径保持不变并通过语法检查。
 
 ## 状态
 
-approved
+implemented locally; real-project trial pending

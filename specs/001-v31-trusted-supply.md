@@ -58,16 +58,16 @@
 
 ## 验收清单
 
-- [ ] `node --test trusted-supply/test/*.test.mjs` 全部通过。
-- [ ] 可从至少 3 个 fixture 仓库发现不少于 10 个候选。
-- [ ] 同内容不同来源可识别为重复但保留来源血缘。
-- [ ] 缺失/不明确许可证的候选不会携带可再分发内容上架。
-- [ ] 含危险命令、凭证外传或远程执行模式的 fixture 被隔离。
-- [ ] 未审核候选无法生成 listing。
-- [ ] 批准动作记录审核人、时间、理由和基于的内容指纹。
-- [ ] 内容变化后原批准失效并标记 `stale` 或重新进入审核。
-- [ ] listing 含来源、版本、许可证、安全、SMS/Eval 状态与验证范围。
-- [ ] 不需要真实密钥即可在 fixture 上完成端到端演示。
+- [x] `node --test trusted-supply/test/*.test.mjs` 全部通过。
+- [x] 可从至少 3 个 fixture 仓库发现不少于 10 个候选。
+- [x] 同内容不同来源可识别为重复但保留来源血缘。
+- [x] 缺失/不明确许可证的候选不会携带可再分发内容上架。
+- [x] 含危险命令、凭证外传或远程执行模式的 fixture 被隔离。
+- [x] 未审核候选无法生成 listing。
+- [x] 批准动作记录审核人、时间、理由和基于的内容指纹。
+- [x] 内容或许可证变化后原批准失效并标记 `stale`。
+- [x] listing 含来源、版本、许可证、安全、SMS/Eval 状态与验证范围。
+- [x] 不需要真实密钥即可在 fixture 上完成端到端演示。
 
 ## Go / No-go
 
@@ -76,4 +76,4 @@
 
 ## 状态
 
-approved
+implemented locally; production integration pending

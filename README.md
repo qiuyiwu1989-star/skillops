@@ -1,6 +1,6 @@
 # SkillOps
 
-> 你的私人 AI 技能库 —— 「AI 技能的 1Password」。跟着你走、不被任何一家 AI 锁住，任何 AI 里随手调用。
+> AI 技能的人事部（HRD）与可信供给层：对内管理技能全生命周期，对外为造物云能力市场提供可验证的技能卡。
 > 造物云出品 · © 邱懿武
 
 **私有仓库**：版本历史 + 异地备份。生产部署走 rsync（非 git），密钥/数据只在服务器侧，从不进库。
@@ -13,12 +13,30 @@
 | `xiaoneng/` | 前端：管理后台 dashboard · 公开技能页 `/d/` · 接入页 `/connect` · 范例 `/exemplars` · 文档 | `skillops.tech` 静态站 |
 | `extension/` | 浏览器插件 v0.1（ChatGPT + Claude 内随手调用/捕获） | `/connect` 可下载 |
 | `mcp/` | 独立 MCP 服务实现（`node_modules` 不入库，`npm i` 还原） | 远程 MCP `skillops.tech/api/mcp` |
+| `trusted-supply/` | V3.1 可信技能供给 MVP：候选池、许可/安全硬门、人工审核、市场技能卡 | 本地验证，尚未接生产 |
+| `dist-src/skillops/` | 便携 CLI 唯一源码：盘点、落户、部署台账、漂移检测 | 可分发标准包 |
 
 ## 核心理念（脊梁）
 
 运行（引信·调用）→ **管理（核心·护城河）** → 治理（终局）→ 市场（第二幕）。中立/便携是引力中心；评分是钩子。详见 `CLAUDE.md`。
 
-## 上手
+## V3.1 本地验收
+
+```bash
+# 可信供给：离线候选 → 审核 → 市场技能卡
+node trusted-supply/cli.mjs help
+
+# 内部管理：安全部署 + lock 台账 + 漂移检查
+node dist-src/skillops/scripts/skillops.mjs deploy <技能> --to <项目目录>
+node dist-src/skillops/scripts/skillops.mjs status --to <项目目录>
+
+# 全部 V3.1 自动化测试
+node --test trusted-supply/test/*.test.mjs test/*.test.mjs
+```
+
+`trusted-supply` 的抓取结果永远先进入候选池；只有通过格式、来源、许可证、安全门并经人工批准的当前指纹，才能生成市场技能卡。许可证不明确时仅生成来源链接，不复制正文。
+
+## 老平台本地启动
 
 ```bash
 # 后端本地起（file 模式，零依赖、零外部服务）
@@ -36,3 +54,5 @@ cd mcp && npm install && node server.js
 - `xiaoneng/_tools/SKILLOPS-V1-RERANK.md` —— v1 定位重排（脊梁）
 - `xiaoneng/_tools/SKILLOPS-V2-LEARNINGS.md` —— v2 演进总结
 - `api-server/migrations/RUNBOOK.md` —— DB 迁移 / 云库对账 / 部署手册
+- `specs/001-v31-trusted-supply.md` —— V3.1 可信供给规格
+- `specs/002-v31-skill-runtime-loop.md` —— V3.1 内部部署闭环规格

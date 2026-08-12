@@ -18,7 +18,7 @@
 ## 现在做到哪
 
 **P1.5 已完成**：CLI（盘点/落户/体检/周报/遥测）+ 小能技能包 + 便携标准包 v1.0.0。
-**V3.1 开发中**：先完成 P2 的 deploy 台账/漂移闭环，并在独立目录验证“抓取候选→信任门→人工准入→市场技能卡”的可信供给 MVP。详见 `specs/001-v31-trusted-supply.md`、`specs/002-v31-skill-runtime-loop.md` 与 `TASKS.md`。
+**V3.1 本地版本已完成**：P2 的 deploy 台账/漂移闭环，以及“候选→信任门→人工准入→市场技能卡”的可信供给 MVP 已通过 23 项自动化测试。下一步是真实 GitHub 白名单与造物云 listing 适配，仍未获准接生产。
 
 ## 当前档位
 
@@ -48,7 +48,7 @@
 | `specs/` `TASKS.md` `DECISIONS.md` | V3.1 意图、任务、决策与验收 |
 | `trusted-supply/` | V3.1 可信技能供给 MVP（隔离开发，不连生产） |
 | `谱/` | 进度 · 决定 · 每天记录 |
-| `cli/` | 户主版 CLI（零依赖 Node ≥18） |
+| `cli/` | 兼容入口；唯一 CLI 源码在 `dist-src/skillops/scripts/` |
 | `skills/skillops/` | 户主版小能（`~/.claude/skills/skillops` 符号链接到此） |
 | `dist-src/skillops/` | **便携标准包**源码（给第三方 agent 的通用版，含 SMS 标准全文） |
 | `api-server/` `xiaoneng/` `extension/` `mcp/` | 老平台后端/前端/插件/MCP（**冻结中**） |
