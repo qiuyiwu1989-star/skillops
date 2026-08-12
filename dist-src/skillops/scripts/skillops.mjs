@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-/* skillops — AI 技能的人事部（HRD）· 便携标准包 v1.0.0
+/* skillops — AI 技能的人事部（HRD）· V3.1 便携标准包
  *
  * 零依赖（纯 Node 内置模块）。可在任何机器、任何 agent 下运行。
  * file-as-truth：技能真身是你各处的 SKILL.md 文件夹（卷），本 CLI 只做索引与登记，
- * 不搬家、不改写正文；唯一的写动作是「落户」（往 frontmatter 插一行 id）。
+ * 不改写技能正文；落户写入身份，部署写入用户指定目录与可审计台账。
  *
  * 用法：
  *   skillops init [--namespace <你的名>]          初始化：设命名空间 + 自动发现常见卷
@@ -13,6 +13,7 @@
  *   skillops ls [--vault 名]                      花名册
  *   skillops status [--hook]                      警报（--hook：干净则沉默，给 SessionStart 用）
  *   skillops register <技能> [--id ns/name]        落户（省略 --id 用默认命名空间）
+ *   skillops deploy <技能> --to <目录>              部署副本 + lock 台账
  *   skillops report                               人事周报
  *   skillops track                                遥测（hook 从 stdin 灌 payload）
  *   skillops score <技能>                          SMS 评分（需 LLM_* 环境变量）
@@ -26,6 +27,7 @@ import os from 'node:os';
 import { loadConfig, saveConfig, loadIndex, saveIndex, loadEnvFile, loadState, saveState, appendTelemetry, readTelemetry, ROOT } from './lib/store.mjs';
 import { scanVaults, census } from './lib/scan.mjs';
 import { upsertFrontmatterKey } from './lib/fm.mjs';
+import { deploySkill, inspectDeployments, lockPath as deploymentLockPath } from './lib/deploy.mjs';
 
 // ── 小工具：ANSI + 中英文混排对齐 ──
 const C = { dim: s => `\x1b[2m${s}\x1b[0m`, b: s => `\x1b[1m${s}\x1b[0m`, g: s => `\x1b[32m${s}\x1b[0m`, y: s => `\x1b[33m${s}\x1b[0m`, r: s => `\x1b[31m${s}\x1b[0m`, o: s => `\x1b[38;5;208m${s}\x1b[0m` };
@@ -87,6 +89,26 @@ function findSkill(skills, needle) {
     process.exit(1);
   }
   return hits[0];
+}
+
+function printDeploymentStatus(targetRoot, { hook = false } = {}) {
+  const result = inspectDeployments(targetRoot);
+  if (result.missing) {
+    if (!hook) console.log(C.dim(`没有部署台账：${result.lockPath}`));
+    return { total: 0, drifted: 0 };
+  }
+  const drifted = result.deployments.filter(d => d.status !== 'clean');
+  if (hook) {
+    for (const d of drifted) console.log(`✗ 部署漂移「${d.key}」：${d.status}（${d.targetPath}）`);
+    return { total: result.deployments.length, drifted: drifted.length };
+  }
+  console.log(C.b(`▶ 部署台账`) + C.dim(`  ${result.deployments.length} 项 · 漂移 ${drifted.length} · ${result.lockPath}`));
+  for (const d of result.deployments) {
+    const mark = d.status === 'clean' ? C.g('✓') : C.r('✗');
+    console.log(`  ${mark} ${pad(d.key, 40)} ${pad(d.status, 30)} ${C.dim(d.targetPath)}`);
+  }
+  if (!drifted.length) console.log(C.g('\n✓ 已部署技能全部与台账一致'));
+  return { total: result.deployments.length, drifted: drifted.length };
 }
 
 const commands = {
@@ -160,6 +182,13 @@ const commands = {
   },
 
   status() {
+    const requestedTarget = flag('to');
+    if (requestedTarget === true) { console.log(C.r('用法：skillops status --to <部署根目录>')); process.exit(1); }
+    if (requestedTarget) {
+      try { printDeploymentStatus(path.resolve(requestedTarget), { hook: has('hook') }); }
+      catch (err) { console.log(C.r(`部署台账检查失败：${err.message}`)); process.exit(1); }
+      return;
+    }
     // --hook：SessionStart 钩子模式 —— 无 ANSI、无警报则完全沉默
     if (has('hook')) {
       const cfg = loadConfig();
@@ -178,12 +207,22 @@ const commands = {
       const st = loadState();
       if (!st.lastReportAt || Date.now() - Date.parse(st.lastReportAt) > 7 * 864e5)
         lines.push(`📋 技能人事周报到期（上次：${st.lastReportAt ? st.lastReportAt.slice(0, 10) : '从未'}）。请跑 skillops report 并汇报、请主人拍板。`);
+      if (fs.existsSync(deploymentLockPath(process.cwd()))) {
+        const deployment = inspectDeployments(process.cwd());
+        for (const d of deployment.deployments.filter(x => x.status !== 'clean'))
+          lines.push(`✗ 部署漂移「${d.key}」：${d.status}（${d.targetPath}）`);
+      }
       if (lines.length) console.log(`[skillops 技能人事体检 · 花名册 ${report.total} 人]\n` + lines.join('\n'));
       return;
     }
     const { cfg, report } = runScan();
     console.log(C.b('▶ 体检') + C.dim(`  技能 ${report.total} · 有户口 ${report.total - report.unregistered.length} · 分歧 ${report.conflicts.length} · 分身 ${report.clones.length}`));
     printAlerts(report, cfg);
+    if (fs.existsSync(deploymentLockPath(process.cwd()))) {
+      console.log('');
+      try { printDeploymentStatus(process.cwd()); }
+      catch (err) { console.log(C.r(`部署台账检查失败：${err.message}`)); process.exitCode = 1; }
+    }
   },
 
   register() {
@@ -201,6 +240,27 @@ const commands = {
     fs.writeFileSync(file, upsertFrontmatterKey(fs.readFileSync(file, 'utf8'), 'id', id), 'utf8');
     runScan();
     console.log(C.g(`✓ 落户完成：${s.name} → ${C.b(id)}`) + C.dim(`  (${file})`));
+  },
+
+  deploy() {
+    const target = args[1];
+    const to = flag('to');
+    if (!target || !to || to === true) { console.log('用法：skillops deploy <技能名、id 或目录> --to <部署根目录>'); process.exit(1); }
+    const { skills } = runScan();
+    const s = findSkill(skills, target);
+    try {
+      const result = deploySkill(s, String(to));
+      if (result.action === 'unchanged') {
+        console.log(C.g(`✓ 部署已是最新：${result.key}`) + C.dim(` → ${result.targetPath}`));
+      } else {
+        const verb = result.action === 'updated' ? '升级完成' : '部署完成';
+        console.log(C.g(`✓ ${verb}：${result.key}`) + C.dim(` → ${result.targetPath}`));
+      }
+      console.log(C.dim(`  fp=${result.sourceFingerprint.slice(0, 12)} · 台账 ${result.lockPath}`));
+    } catch (err) {
+      console.log(C.r(`部署失败：${err.message}`));
+      process.exit(1);
+    }
   },
 
   // 遥测：hook 从 stdin 灌 payload；永不报错、永不出声
@@ -255,8 +315,8 @@ const commands = {
   },
 
   help() {
-    console.log(`${C.b('skillops')} — AI 技能的人事部（HRD）· 便携标准包 v1.0.0
-${C.dim('真身在你自己的文件里（file-as-truth）；本工具只做登记与体检，唯一写动作 = 落户写入一行 id。')}
+    console.log(`${C.b('skillops')} — AI 技能的人事部（HRD）· V3.1 便携标准包
+${C.dim('真身在你自己的文件里（file-as-truth）；部署是带 lock 台账的受控副本，不会改写技能真身。')}
 
   init [--namespace <名>]                     初始化：设命名空间 + 自动发现卷
   vault add <dir> [--name 名] [--readonly]    注册卷
@@ -265,6 +325,8 @@ ${C.dim('真身在你自己的文件里（file-as-truth）；本工具只做登�
   ls [--vault 名]                             花名册
   status [--hook]                             警报（--hook：干净则沉默）
   register <技能> [--id ns/name]               落户
+  deploy <技能> --to <目录>                    安全部署并写入 .skillops/lock.json
+  status --to <目录>                           检查技能源与部署目标漂移
   report                                      人事周报
   track                                       遥测（hook 用）
   score <技能>                                 SMS 评分（需 LLM_* 环境变量）
