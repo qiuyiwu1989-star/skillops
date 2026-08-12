@@ -3,6 +3,7 @@
 ## Now
 
 - [ ] 复核首批 3 个 SkillHub listing 的完整包与许可可得性；不可得则保持来源索引
+- [ ] V3.6：建立固定测试集、离线隔离 Runner、Eval 证据与市场展示（spec: 008）
 
 ## Next
 
