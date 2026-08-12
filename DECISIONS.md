@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-08-13：V3.4 详情 URL 使用 `/skills/<candidate-id>/`，中文标题仅作展示，不进入稳定路由键；构建为每个 approved listing 生成静态 HTML 和独立 JSON，详情数据仍只来自 `CandidateStore.listListings()`。Basis: 用户明确要求每个技能拥有详情页。Confidence: high.
 - 2026-08-13：能力市场默认展示中文主题名和中文说明；优先使用来源自带中文，否则生成可追踪的自动翻译字段。英文原名和原始说明永久保留，自动翻译标记为待人工校对。Basis: 用户明确要求市场不要使用纯英文主题与说明。Confidence: high.
 - 2026-08-13：V3.3 本地 Go 演示允许明确标注 `agent_assisted` 的复核事件，但不能对外宣称为独立人工终审；进入生产前必须补独立人类复核。Basis: 本地研发授权不等于生产发布授权。Confidence: high.
 - 2026-08-13：安装资格同时要求许可可分发与包完整；SkillHub 只同步 `SKILL.md` 的候选即使 approved 也显示安装不可用，不将缺失 references/scripts 的条目伪装成完整技能包。Basis: 浏览器验收时发现外部同步只缓存单文件。Confidence: high.

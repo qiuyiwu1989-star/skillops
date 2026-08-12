@@ -2,6 +2,7 @@
 
 ## Now
 
+- [ ] 完成 V3.4 每个 approved listing 的独立中文详情页、稳定 URL 和深链验收（spec: 006）
 - [ ] 为首批 3 个 listing 补齐完整技能包同步与固定测试集 Eval
 - [ ] 增加独立人类终审角色，替换本地演示的 Agent 辅助批准
 
