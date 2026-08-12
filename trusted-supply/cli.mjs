@@ -5,11 +5,13 @@ import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { CandidateStore } from './lib/store.mjs';
 import { collectWhitelist } from './lib/source-collector.mjs';
+import { collectSkillHub } from './lib/skillhub-collector.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
 Usage:
   node trusted-supply/cli.mjs collect <whitelist.json> --store <json-file> [--report <json-file>] [--allow-local]
+  node trusted-supply/cli.mjs sync-skillhub --store <json-file> [--report <json-file>] [--limit <1-50>] [--shelves <recommended,trending,hot,newest>] [--audit]
   node trusted-supply/cli.mjs ingest <SKILL.md> --source-url <url> --repo <owner/repo> --path <path> --commit <sha> [--license <SPDX>] [--sms-total <0-100>]
   node trusted-supply/cli.mjs audit <candidate-id> [--sms-threshold <score>]
   node trusted-supply/cli.mjs list [--status <status>]
@@ -68,6 +70,18 @@ export async function main(argv = process.argv.slice(2)) {
         reportPath: flags.report ? path.resolve(String(flags.report)) : undefined,
         baseDir: process.cwd(),
         allowLocal: Boolean(flags['allow-local']),
+      }));
+      return 0;
+    case 'sync-skillhub':
+      output(await collectSkillHub({
+        storePath,
+        reportPath: flags.report ? path.resolve(String(flags.report)) : undefined,
+        limit: flags.limit === undefined ? undefined : Number(flags.limit),
+        scanLimit: flags['scan-limit'] === undefined ? undefined : Number(flags['scan-limit']),
+        maxPerCategory: flags['max-per-category'] === undefined ? undefined : Number(flags['max-per-category']),
+        shelves: flags.shelves ? String(flags.shelves).split(',').map(value => value.trim()).filter(Boolean) : undefined,
+        allowApiKey: Boolean(flags['allow-api-key']),
+        audit: Boolean(flags.audit),
       }));
       return 0;
     case 'ingest': {

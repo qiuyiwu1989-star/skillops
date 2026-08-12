@@ -14,6 +14,7 @@ id_rsa*
 
 # ── 运行时数据 / 本地镜像（服务器侧权威，不版本化）──
 data/
+.skillops/
 *.jsonl
 evaluations.jsonl
 *.sqlite
@@ -39,4 +40,3 @@ Thumbs.db
 
 # ── 打包产物（插件 zip 等，按需保留可删此行）──
 *.zip
-

@@ -11,9 +11,13 @@ function publicSource(source) {
   return {
     kind: source.kind,
     url: source.url || null,
+    marketplaceUrl: source.marketplaceUrl || null,
+    upstreamUrl: source.upstreamUrl || null,
     repo: source.repo || null,
     path: source.path,
     commit: source.commit,
+    version: source.version || null,
+    integrity: source.integrity || null,
   };
 }
 
@@ -26,6 +30,10 @@ export function createCandidate(input = {}, { clock } = {}) {
     path: String(sourceInput.path || input.path || 'SKILL.md').replace(/^\.\//, ''),
     commit: String(sourceInput.commit || input.commit || ''),
     license: sourceInput.license ?? input.license ?? null,
+    upstreamUrl: sourceInput.upstreamUrl || null,
+    marketplaceUrl: sourceInput.marketplaceUrl || null,
+    version: sourceInput.version || null,
+    integrity: sourceInput.integrity || null,
   };
   source.identity = sourceIdentity(source);
   const content = normalizeContent(input.content ?? input.artifact?.content ?? '');
@@ -44,6 +52,7 @@ export function createCandidate(input = {}, { clock } = {}) {
     },
     sms: input.sms || { status: 'pending' },
     eval: input.eval || { status: 'pending' },
+    catalog: input.catalog || null,
     audit: null,
     duplicates: [],
     reviewedFingerprint: null,
@@ -120,6 +129,7 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
       ...candidate,
       source,
       artifact: { ...candidate.artifact, license: nextLicense, versionIdentity: sourceVersionIdentity(source, nextFingerprint) },
+      catalog: input.catalog ?? candidate.catalog ?? null,
       updatedAt,
     };
   }
@@ -134,6 +144,7 @@ export function refreshCandidate(candidate, input = {}, { clock } = {}) {
       versionIdentity: sourceVersionIdentity(source, nextFingerprint),
       license: nextLicense,
     },
+    catalog: input.catalog ?? candidate.catalog ?? null,
     audit: null,
     reviewedFingerprint: null,
     updatedAt,
@@ -178,6 +189,7 @@ export function toListing(candidate) {
     },
     distribution: redistributable ? 'content' : 'source_link_only',
   };
+  if (candidate.catalog) listing.catalog = candidate.catalog;
   if (redistributable) listing.content = candidate.artifact.content;
   return listing;
 }
