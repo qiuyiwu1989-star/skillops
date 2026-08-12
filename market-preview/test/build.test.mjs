@@ -101,3 +101,20 @@ test('tampered approved candidate fails closed instead of entering preview data'
   assert.equal(fs.existsSync(workspace.output), false);
 });
 
+test('preview consumes the published SkillOps design-system contract', () => {
+  const html = fs.readFileSync(path.resolve(HERE, '../index.html'), 'utf8');
+  const css = fs.readFileSync(path.resolve(HERE, '../styles.css'), 'utf8');
+
+  assert.match(html, /<html lang="zh-CN" data-theme="rams">/);
+  assert.match(html, /family=JetBrains\+Mono/);
+  assert.match(html, /family=Noto\+Sans\+SC/);
+  assert.match(html, /family=Space\+Grotesk/);
+  assert.match(css, /--bg:\s*#fbfaf6/);
+  assert.match(css, /--accent:\s*#e2522a/);
+  assert.match(css, /--max:\s*1120px/);
+  assert.match(css, /--r-sm:\s*3px/);
+  assert.match(css, /--r-md:\s*8px/);
+  assert.match(css, /--r-pill:\s*999px/);
+  assert.match(css, /font-weight:\s*500/);
+  assert.doesNotMatch(css, /box-shadow\s*:/);
+});

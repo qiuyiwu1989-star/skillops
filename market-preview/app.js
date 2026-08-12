@@ -138,8 +138,8 @@ function cardFor(listing) {
   const topline = document.createElement('div');
   topline.className = 'card-topline';
   topline.append(
-    text('span', '已批准', 'approval-label'),
-    text('span', humanDistribution(listing.distribution), 'distribution-label'),
+    text('span', '已批准', 'tag tag-approved'),
+    text('span', humanDistribution(listing.distribution), 'tag'),
   );
   main.append(topline, text('h2', listing.name), text('p', listing.description, 'description'));
 
@@ -155,7 +155,7 @@ function cardFor(listing) {
 
   const actions = document.createElement('div');
   actions.className = 'card-actions';
-  const button = text('button', '查看审核证据', 'evidence-button');
+  const button = text('button', '查看审核证据', 'btn');
   button.type = 'button';
   button.addEventListener('click', () => openEvidence(listing));
   actions.append(createSourceLink(listing), button);
