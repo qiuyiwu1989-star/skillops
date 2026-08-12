@@ -1,0 +1,12 @@
+{
+  "name": "@skillops/trusted-supply",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "skillops-supply": "./cli.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
