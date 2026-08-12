@@ -12,7 +12,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 
 ## Now
 
-### V3.5 · 完整技能包可信交付
+### V3.5 · 完整技能包可信交付（已完成）
 
 目标：把审批对象从单个 `SKILL.md` 升级为不可变 `packageRevision`。
 
@@ -25,7 +25,7 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 
 验收结果：首批 3 个 listing 均能明确归类为“完整可安装”或“仅来源索引”，不再存在伪完整包。
 
-### V3.6 · Eval 实证台架
+### V3.6 · Eval 实证台架（基础闭环已完成）
 
 目标：为首批技能建立可重复的真实考核，而不是继续展示 `pending`。
 
@@ -37,12 +37,14 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 
 ## Next
 
-### V3.7 · 人类终审与持续再认证
+### V3.7 · 人类终审与持续再认证（进行中）
 
 - reviewer 使用可验证身份，不再只是任意字符串。
 - Agent 辅助评估与独立人类终审严格区分；精选与安装必须经过人类终审。
 - 引入四眼规则、批准有效期、复审到期、申诉、撤回与召回事件。
 - 内容、包、许可、SMS、Eval 或策略变化自动转为 `stale`，从精选/可安装货架撤出。
+
+阶段进展：核心 policy、证据快照、可验证身份、四眼计票、有效期、stale/撤回/召回状态机与 9 项测试已完成。下一步接入 Candidate/Store、CLI、市场详情与运营队列，详见 `specs/009-v37-review-recertification.md`。
 
 ### V3.8 · 统一 Registry 合约
 
@@ -51,12 +53,16 @@ V3.4 已经证明能力市场的发现与详情体验，但当前市场商品仍
 - 发布只读 feed/API；任何下游只能消费发布投影，不能读取候选池。
 - 支持 `upsert / withdraw / supersede` 生命周期和幂等回执。
 
+实施规格已冻结，新增不可变 Release、append-only 事件、只读 Feed 与造物云 dry-run 投影边界，详见 `specs/010-v38-unified-registry.md`。实现必须等待 V3.7 终审投影稳定。
+
 ### V3.9 · 内部 HRD 管理闭环
 
 - CLI 增加 registry source、install、update、withdraw、eval、coach、retire。
 - 对比源卷、部署台账和 registry release 的三方漂移。
 - 市场安装进入 lock 台账，版本变化进入复评，真实使用遥测进入退化预警。
 - 形成“招聘 → 考核 → 分发 → 绩效 → 培训 → 退役”闭环。
+
+实施规格已冻结，覆盖 Registry Client、Lock v2、更新计划、复评、Coach 隔离建议、可逆退役与隐私遥测，详见 `specs/011-v39-managed-distribution-loop.md`。安装对象只能是明确 Release，不能从 Candidate 或市场卡片直接安装。
 
 ## Later
 

@@ -1,5 +1,7 @@
 # Decisions
 
+- 2026-08-13：下一轮三阶段严格按 `V3.7 四眼终审 → V3.8 统一 Registry → V3.9 受控分发/HRD` 顺序实施；V3.7 可先完成独立 policy，V3.8 只做本地 Registry 与造物云 dry-run，V3.9 只能消费明确 Release。Basis: 用户要求开始三个阶段开发，且三者分别依赖终审投影、Registry 身份和 Release 分发契约。Confidence: high.
+- 2026-08-13：市场目录卡片采用“桌面标题/摘要限行并对齐证据与操作区，移动端自然展开，全文保留在快速预览和详情页”的组件规则。Basis: 用户截图指出卡片因中文说明长度不同而参差不齐。Confidence: high.
 - 2026-08-13：V3.6 的 fixture Eval adapter 只接收 case、package digest 与超时，不接收技能包路径或内容；它验证质检证据链，但绝不执行第三方技能。Basis: 坚守“不当运行时”，同时避免完整包内容通过 runner 接缝泄漏。Confidence: high.
 - 2026-08-13：V3.6 Eval v1 使用受限 JSON 固定测试集和注入式 executor adapter；核心库不内置 shell、网络、模型密钥或真实模型执行器，默认只实现离线 fixture adapter。Basis: Eval 是质检台架而非生产运行时，且用户未授权付费模型调用。Confidence: high.
 - 2026-08-13：全面升级按 `完整技能包 → Eval → 独立人审 → Registry → 内部 HRD → 造物云/组织治理` 排序；V3.5 的审批对象从 `SKILL.md` 单文件升级为不可变 packageRevision。Basis: 三条独立审计均发现附件变化不受当前指纹、SMS 与批准约束，是市场安装和 Eval 的共同前置风险。Confidence: high.

@@ -265,13 +265,17 @@ function cardFor(listing, { compact = false } = {}) {
   article.dataset.skillId = listing.id;
 
   const main = document.createElement('div');
+  main.className = 'card-layout';
   const topline = document.createElement('div');
   topline.className = 'card-topline';
   topline.append(text('span', categoryLabel(listingCategory(listing)), 'tag'), text('span', humanDistribution(listing.distribution), 'tag'));
   main.append(topline, text('h3', listing.name));
-  if (listing.original?.name && listing.original.name !== listing.name) {
-    main.append(text('p', listing.original.name, 'original-name mono'));
-  }
+  const originalName = listing.original?.name && listing.original.name !== listing.name
+    ? listing.original.name
+    : '';
+  const originalNameElement = text('p', originalName, 'original-name mono');
+  if (!originalName) originalNameElement.setAttribute('aria-hidden', 'true');
+  main.append(originalNameElement);
   main.append(text('p', listing.description, 'description'));
 
   const evalInfo = evalSummary(listing);

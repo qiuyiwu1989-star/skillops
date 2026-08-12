@@ -215,14 +215,36 @@ p, h1, h2, h3, dl { margin-top: 0; }
 .skeleton.short { width: min(210px, 48vw); }
 
 .listing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); padding-top: var(--s5); }
-.skill-card { min-width: 0; padding: var(--s5); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-card); }
-.skill-card h3 { margin-bottom: var(--s3); font-family: var(--f-display); font-size: 26px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.08; overflow-wrap: anywhere; }
-.original-name { margin: calc(var(--s3) * -0.5) 0 var(--s3); color: var(--faint); font-size: 10px; overflow-wrap: anywhere; }
-.description { min-height: 3.2em; margin-bottom: var(--s5); color: var(--muted); }
+.skill-card { min-width: 0; display: flex; height: 100%; padding: var(--s5); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-card); }
+.card-layout { min-width: 0; width: 100%; display: flex; flex-direction: column; }
+.skill-card h3 {
+  min-height: 2.16em;
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: var(--s3);
+  font-family: var(--f-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.original-name { min-height: 1.65em; margin: calc(var(--s3) * -0.5) 0 var(--s3); color: var(--faint); font-size: 10px; overflow-wrap: anywhere; }
+.description {
+  min-height: 6.6em;
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: var(--s5);
+  color: var(--muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
 .card-topline { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s5); }
 .tag { display: inline-flex; width: fit-content; align-items: center; padding: 3px 8px; border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--muted); font-family: var(--f-mono); font-size: 10px; font-weight: 400; }
 
-.market-metrics { margin-bottom: 0; border-top: 1px solid var(--text); }
+.market-metrics { margin-top: auto; margin-bottom: 0; border-top: 1px solid var(--text); }
 .market-metrics > div { display: grid; grid-template-columns: minmax(112px, 0.7fr) minmax(0, 1.3fr); gap: var(--s3); padding-block: var(--s2); border-bottom: 1px solid var(--line); }
 .market-metrics dt { color: var(--faint); font-size: 12px; }
 .market-metrics dd { min-width: 0; margin: 0; color: var(--text); font-family: var(--f-mono); font-size: 11px; overflow-wrap: anywhere; }
@@ -232,8 +254,8 @@ p, h1, h2, h3, dl { margin-top: 0; }
 
 .compact-card { display: block; padding: var(--s4); }
 .compact-card .card-topline { margin-bottom: var(--s4); }
-.compact-card h3 { font-size: 19px; }
-.compact-card .description { min-height: 4.8em; margin-bottom: var(--s4); font-size: 13px; }
+.compact-card h3 { min-height: 2.16em; font-size: 19px; }
+.compact-card .description { min-height: 6.6em; margin-bottom: var(--s4); font-size: 13px; }
 .compact-card .market-metrics > div { display: block; }
 .compact-card .market-metrics > div:nth-child(3) { display: none; }
 .compact-card .market-metrics dt { display: block; }
@@ -296,9 +318,14 @@ dialog::backdrop { background: color-mix(in srgb, var(--text), transparent 62%);
   .category-button, .category-button:nth-child(2n), .category-button:nth-child(4n) { border-right: 0; }
   .section-heading { align-items: start; flex-direction: column; gap: var(--s3); }
   .section-note { max-width: none; }
-  .shelf-track { display: flex; gap: var(--s3); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--s2); }
+  .shelf-track { display: flex; align-items: flex-start; gap: var(--s3); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--s2); }
   .compact-card { min-width: min(82vw, 310px); scroll-snap-align: start; }
   .market-controls, .listing-grid { grid-template-columns: 1fr; }
+  .skill-card { height: auto; }
+  .skill-card h3, .compact-card h3 { min-height: 0; display: block; overflow: visible; -webkit-line-clamp: unset; }
+  .original-name { min-height: 0; }
+  .original-name:empty { display: none; }
+  .description, .compact-card .description { min-height: 0; display: block; overflow: visible; -webkit-line-clamp: unset; }
   .control-context { align-items: start; flex-direction: column; }
   .control-context strong { text-align: left; }
   .card-actions { align-items: stretch; flex-direction: column-reverse; }
