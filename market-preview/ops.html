@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="rams">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="SkillOps 组织能力与造物云 Staging 的本地只读运营视图">
+    <title>SkillOps 组织能力运营</title>
+    <link rel="stylesheet" href="./ops.css?v=v40b">
+    <script src="./ops.js?v=v40b" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#ops-main">跳到运营内容</a>
+
+    <header class="site-header">
+      <div class="wrap nav-inner">
+        <a class="brand" href="./" aria-label="返回 SkillOps 能力市场">Skill<span>Ops</span></a>
+        <p class="view-label mono">组织能力运营</p>
+        <p class="readonly-label mono">本地只读</p>
+      </div>
+    </header>
+
+    <main id="ops-main">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="eyebrow">operations projection</p>
+            <h1 id="page-title">组织能力运营</h1>
+            <p class="hero-lead">查看组织编制、技能入编和造物云 Staging 状态。页面只消费公共投影，不执行任何治理操作。</p>
+          </div>
+          <dl class="hero-status" aria-label="运营投影摘要">
+            <div><dt>组织</dt><dd id="hero-organization">尚未读取</dd></div>
+            <div><dt>投影序列</dt><dd id="hero-sequence" class="mono">-</dd></div>
+            <div><dt>更新时间</dt><dd id="hero-generated" class="mono">-</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section id="state" class="state-panel wrap" aria-live="polite">
+        <p class="eyebrow">loading public projection</p>
+        <h2>正在读取公共运营数据</h2>
+        <p>数据仅在本地浏览器中用于只读展示。</p>
+      </section>
+
+      <div id="dashboard" hidden>
+        <section class="overview-section" aria-labelledby="overview-title">
+          <div class="wrap">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">organization overview</p>
+                <h2 id="overview-title">组织与项目</h2>
+              </div>
+              <p id="organization-status" class="status-chip">状态待读取</p>
+            </div>
+            <div id="project-list" class="project-grid"></div>
+          </div>
+        </section>
+
+        <section class="capacity-section" aria-labelledby="capacity-title">
+          <div class="wrap capacity-grid">
+            <div class="capacity-column">
+              <div class="compact-heading">
+                <div><p class="eyebrow">establishment</p><h2 id="capacity-title">能力编制</h2></div>
+                <p id="establishment-count" class="mono count-label">0 项</p>
+              </div>
+              <div id="establishment-list" class="record-list"></div>
+            </div>
+            <div class="capacity-column">
+              <div class="compact-heading">
+                <div><p class="eyebrow">enrollment</p><h2>技能入编</h2></div>
+                <p id="enrollment-count" class="mono count-label">0 项</p>
+              </div>
+              <div id="enrollment-list" class="record-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="role-section" aria-labelledby="role-title">
+          <div class="wrap">
+            <div class="section-heading compact">
+              <div><p class="eyebrow">role summary</p><h2 id="role-title">角色分布</h2></div>
+              <p class="section-note">只显示各角色数量，不显示人员身份。</p>
+            </div>
+            <dl id="role-summary" class="role-grid"></dl>
+          </div>
+        </section>
+
+        <section class="staging-section" aria-labelledby="staging-title">
+          <div class="wrap">
+            <div class="section-heading">
+              <div><p class="eyebrow">staging ledger</p><h2 id="staging-title">造物云 Staging</h2></div>
+              <p id="reconciliation-chip" class="status-chip">待读取</p>
+            </div>
+            <dl class="metric-grid">
+              <div><dt>当前 Cursor</dt><dd id="staging-cursor" class="mono">0</dd></div>
+              <div><dt>已接收</dt><dd id="staging-accepted" class="mono">0</dd></div>
+              <div><dt>待对账</dt><dd id="staging-reconciliation" class="mono">0</dd></div>
+            </dl>
+            <div id="receipt-list" class="receipt-list"></div>
+          </div>
+        </section>
+
+        <section class="audit-section" aria-labelledby="audit-title">
+          <div class="wrap">
+            <div class="section-heading compact">
+              <div><p class="eyebrow">append-only audit</p><h2 id="audit-title">审计时间线</h2></div>
+              <p id="audit-count" class="mono count-label">0 条</p>
+            </div>
+            <ol id="audit-list" class="audit-list"></ol>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <p>Skill<span>Ops</span> 组织能力运营</p>
+        <p class="mono">公共投影 · 裁剪台账 · 只读</p>
+      </div>
+    </footer>
+  </body>
+</html>

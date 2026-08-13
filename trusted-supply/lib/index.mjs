@@ -15,3 +15,6 @@ export * from './package-audit.mjs';
 export * from './pilot-readiness.mjs';
 export * from './organization-governance.mjs';
 export * from './zaowuyun-staging.mjs';
+export * from './idp-receipt.mjs';
+export * from './organization-governance-store.mjs';
+export * from './zaowuyun-staging-store.mjs';

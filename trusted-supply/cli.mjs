@@ -13,6 +13,10 @@ import { normalizeEvalSuite } from './lib/eval-suite.mjs';
 import { validateEvalResult } from './lib/eval-result.mjs';
 import { createFixtureEvalAdapter } from './lib/eval-fixture-adapter.mjs';
 import { runEvalSuite } from './lib/eval-runner.mjs';
+import { OrganizationGovernanceStore } from './lib/organization-governance-store.mjs';
+import { projectOrganizationGovernance } from './lib/organization-governance.mjs';
+import { createZaowuyunStagingPlan } from './lib/zaowuyun-staging.mjs';
+import { ZaowuyunStagingStore } from './lib/zaowuyun-staging-store.mjs';
 
 const HELP = `SkillOps trusted supply (local MVP)
 
@@ -37,6 +41,10 @@ Usage:
   node trusted-supply/cli.mjs review <candidate-id> --decision <approve|reject|quarantine> --reviewer <name> --reason <text> [--reviewer-type <human|agent_assisted>] [--waive-sms]
   node trusted-supply/cli.mjs listing <candidate-id>
   node trusted-supply/cli.mjs listings
+  node trusted-supply/cli.mjs organization-status --ledger <organization.json> --organization <id> [--principal <ref>]
+  node trusted-supply/cli.mjs organization-apply --ledger <organization.json> --input <event.json> --expected-revision <digest> [--now <ISO>]
+  node trusted-supply/cli.mjs staging-plan --input <public-envelope.json> --operation <id> --after-cursor <cursor> [--previous <public-envelope.json>]
+  node trusted-supply/cli.mjs staging-status --ledger <staging.json>
 
 All commands accept --store <json-file>. Output is JSON. Candidates never publish automatically.`;
 
@@ -62,7 +70,11 @@ function parseArgs(argv) {
 }
 
 function required(value, name) {
-  if (value === undefined || value === null || value === '') throw new Error(`--${name} is required`);
+  if (value === undefined || value === null || value === '') {
+    const error = new Error(`缺少必填参数 --${name}`);
+    error.code = 'CLI_ARGUMENT_REQUIRED';
+    throw error;
+  }
   return value;
 }
 
@@ -335,14 +347,58 @@ export async function main(argv = process.argv.slice(2)) {
     case 'listings':
       output(store.listListings());
       return 0;
+    case 'organization-status': {
+      const governance = new OrganizationGovernanceStore(path.resolve(String(required(flags.ledger, 'ledger'))));
+      const organizationId = String(required(flags.organization, 'organization'));
+      const principalId = flags.principal === undefined ? null : String(flags.principal);
+      const state = governance.read();
+      output({
+        ...projectOrganizationGovernance(state.events, {
+          organizationId,
+          ...(principalId ? { principalId } : { public: true }),
+        }),
+        ledgerRevision: state.revision,
+      });
+      return 0;
+    }
+    case 'organization-apply': {
+      const governance = new OrganizationGovernanceStore(path.resolve(String(required(flags.ledger, 'ledger'))));
+      const input = readJsonFlag(flags.input, 'input');
+      if (['enrollment.created', 'enrollment.updated', 'enrollment.restored'].includes(input?.type)) {
+        const error = new Error('技能入编必须由受信 Registry Resolver 提供当前证据，CLI 不接受自填 Release 证明');
+        error.code = 'CLI_TRUSTED_REGISTRY_REQUIRED';
+        throw error;
+      }
+      output(governance.append(input, {
+        expectedRevision: String(required(flags['expected-revision'], 'expected-revision')),
+        ...(flags.now === undefined ? {} : { now: String(flags.now) }),
+      }));
+      return 0;
+    }
+    case 'staging-plan': {
+      const envelope = readJsonFlag(flags.input, 'input');
+      output(createZaowuyunStagingPlan(envelope, {
+        operationId: String(required(flags.operation, 'operation')),
+        afterCursor: String(required(flags['after-cursor'], 'after-cursor')),
+        ...(flags.previous === undefined ? {} : { previousEnvelope: readJsonFlag(flags.previous, 'previous') }),
+      }));
+      return 0;
+    }
+    case 'staging-status':
+      output(new ZaowuyunStagingStore(path.resolve(String(required(flags.ledger, 'ledger')))).status());
+      return 0;
     default:
-      throw new Error(`unknown command: ${command}`);
+      {
+        const error = new Error(`未知命令：${command || '(空)'}`);
+        error.code = 'CLI_UNKNOWN_COMMAND';
+        throw error;
+      }
   }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().then(code => { process.exitCode = code; }).catch(error => {
-    process.stderr.write(`${JSON.stringify({ error: error.message })}\n`);
+    process.stderr.write(`${JSON.stringify({ error: error.message, ...(error?.code ? { code: error.code } : {}) })}\n`);
     process.exitCode = 1;
   });
 }
