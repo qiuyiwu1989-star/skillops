@@ -70,7 +70,33 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .state-panel h2 { margin-bottom: var(--s2); font-size: 25px; }
 .state-panel p:last-child { max-width: 520px; margin-bottom: 0; color: var(--muted); }
 .state-panel.error { min-height: 240px; margin-block: var(--s6); border: 1px solid var(--red); border-radius: var(--r-md); background: color-mix(in srgb, var(--red), var(--bg) 95%); }
-.overview-section, .capacity-section, .role-section, .staging-section, .audit-section { padding-block: var(--s8); border-bottom: 1px solid var(--line); }
+.intelligence-section, .overview-section, .capacity-section, .role-section, .staging-section, .audit-section { padding-block: var(--s8); border-bottom: 1px solid var(--line); }
+.intelligence-note { max-width: 680px; margin: calc(var(--s5) * -1) 0 var(--s6); }
+.operations-list { display: grid; gap: var(--s7); }
+.operations-record { padding-top: var(--s5); border-top: 1px solid var(--text); }
+.operations-record-header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .55fr); gap: var(--s6); align-items: start; }
+.operations-record-header h3 { font-size: 24px; }
+.operations-identity { color: var(--faint); font-size: 11px; overflow-wrap: anywhere; }
+.health-judgement { padding-left: var(--s4); border-left: 3px solid var(--green); }
+.health-judgement p { margin: var(--s1) 0 0; color: var(--muted); font-size: 13px; }
+.health-degrading, .health-high_usage_low_utility { border-left-color: var(--red); }
+.health-zero_usage, .health-insufficient_data { border-left-color: var(--amber); }
+.operations-funnel { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: var(--s5) 0 0; border-top: 1px solid var(--line); }
+.operations-funnel > div { min-width: 0; padding: var(--s4); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.operations-funnel > div:first-child { padding-left: 0; }
+.operations-funnel > div:last-child { border-right: 0; }
+.operations-funnel dt { color: var(--muted); }
+.operations-funnel dd { margin: var(--s2) 0; color: var(--accent); font-size: 31px; line-height: 1; }
+.operations-funnel p { margin: 0; color: var(--faint); font-size: 10px; }
+.operations-evidence { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: var(--s4) 0 0; }
+.operations-evidence > div { min-width: 0; padding: var(--s3) var(--s4); border-left: 1px solid var(--line); }
+.operations-evidence > div:first-child { padding-left: 0; border-left: 0; }
+.operations-evidence dt { color: var(--faint); font-size: 11px; }
+.operations-evidence dd { margin: var(--s1) 0 0; overflow-wrap: anywhere; }
+.coach-review { margin-top: var(--s5); padding: var(--s4); border: 1px solid var(--line); background: var(--bg-soft); }
+.coach-review strong { color: var(--accent); }
+.coach-review p { margin: var(--s1) 0; color: var(--muted); }
+.coach-review small { color: var(--faint); }
 .section-heading, .compact-heading { display: flex; align-items: end; justify-content: space-between; gap: var(--s5); margin-bottom: var(--s6); }
 .section-heading.compact { margin-bottom: var(--s5); }
 .section-note, .count-label { margin: 0; color: var(--muted); }
@@ -114,6 +140,8 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .project-card:nth-child(3n) { border-right: 1px solid var(--line); }
   .project-card:nth-child(2n) { border-right: 0; }
   .role-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .operations-evidence { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .operations-evidence > div:nth-child(4) { padding-left: 0; border-left: 0; }
   .role-grid div:nth-child(3n) { border-right: 0; }
 }
 
@@ -123,7 +151,8 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .hero-grid { padding-top: var(--s7); padding-bottom: var(--s7); }
   h1 { font-size: clamp(44px, 14vw, 62px); }
   .section-heading, .compact-heading { align-items: start; flex-direction: column; gap: var(--s3); }
-  .project-grid, .role-grid, .metric-grid { grid-template-columns: 1fr; }
+  .project-grid, .role-grid, .metric-grid, .operations-record-header, .operations-funnel, .operations-evidence { grid-template-columns: 1fr; }
+  .operations-funnel > div, .operations-funnel > div:first-child, .operations-evidence > div, .operations-evidence > div:nth-child(4) { padding: var(--s3) 0; border-right: 0; border-left: 0; border-bottom: 1px solid var(--line); }
   .project-card, .project-card:nth-child(2n), .project-card:nth-child(3n), .role-grid div, .role-grid div:nth-child(3n), .metric-grid div { border-right: 0; }
   .record-row, .receipt-row, .audit-item { grid-template-columns: 1fr; gap: var(--s2); }
   .record-meta { text-align: left; }

@@ -97,6 +97,42 @@ function listingTags(listing) {
   return tags ? [String(tags)] : [];
 }
 
+function operationsProjection(listing) {
+  const value = listing.operationsProjection || listing.skillOperations || listing.v41;
+  return value && typeof value === 'object' ? value : null;
+}
+
+function intentTags(listing) {
+  const projected = operationsProjection(listing)?.skill?.intentTags;
+  if (Array.isArray(projected)) return projected.map(String);
+  const catalog = listing.catalog?.intentTags;
+  return Array.isArray(catalog) ? catalog.map(String) : [];
+}
+
+function queryTerms(value) {
+  return String(value || '').normalize('NFKC').toLocaleLowerCase('zh-CN').split(/[^\p{L}\p{N}._-]+/u).filter(Boolean);
+}
+
+function recommendationFor(listing, query = state.query) {
+  const terms = queryTerms(query);
+  const projection = operationsProjection(listing);
+  const tags = intentTags(listing);
+  const whenToUse = projection?.routing?.whenToUse || [];
+  const searchable = [...tags, ...whenToUse].map(value => String(value).toLocaleLowerCase('zh-CN'));
+  const matchedTags = tags.filter(tag => terms.some(term => tag.toLocaleLowerCase('zh-CN').includes(term) || term.includes(tag.toLocaleLowerCase('zh-CN'))));
+  const matchedScenarios = whenToUse.filter(value => terms.some(term => String(value).toLocaleLowerCase('zh-CN').includes(term)));
+  const matched = terms.length === 0 ? [] : searchable.filter(value => terms.some(term => value.includes(term)));
+  if (matchedTags.length) return { matched: true, label: `任务意图匹配：${matchedTags.slice(0, 2).join('、')}` };
+  if (matchedScenarios.length) return { matched: true, label: `适用场景匹配：${matchedScenarios[0]}` };
+  if (matched.length) return { matched: true, label: '结构化路由条件与任务相符' };
+  return { matched: false, label: projection ? '当前未命中结构化任务意图' : '沿用目录文本匹配，待补路由档案' };
+}
+
+function compositionSkills(listing) {
+  const skills = operationsProjection(listing)?.composition?.relatedSkills;
+  return Array.isArray(skills) ? skills.filter(item => item && item.skillId).slice(0, 3) : [];
+}
+
 function listingCategory(listing) {
   if (listing.catalog?.category) return String(listing.catalog.category);
   const haystack = [listing.name, listing.description, ...listingTags(listing)]
@@ -383,6 +419,14 @@ function cardFor(listing, { compact = false } = {}) {
   main.append(originalNameElement);
   main.append(text('p', listing.description, 'description'));
 
+  const recommendation = recommendationFor(listing);
+  const recommendationPanel = document.createElement('div');
+  recommendationPanel.className = `recommendation-basis${recommendation.matched ? ' matched' : ''}`;
+  recommendationPanel.append(text('strong', '推荐依据'), text('p', recommendation.label));
+  const related = compositionSkills(listing);
+  if (related.length) recommendationPanel.append(text('p', `可组合：${related.map(item => item.titleZh || item.skillId).join('、')}`, 'composition-inline'));
+  main.append(recommendationPanel);
+
   const evalInfo = evalSummary(listing);
   const installation = installationDecision(listing);
   const metrics = document.createElement('dl');
@@ -416,10 +460,13 @@ function filteredListings() {
   return state.listings.filter(listing => {
     const distributionMatches = state.distribution === 'all' || listing.distribution === state.distribution;
     const categoryMatches = state.category === 'all' || listingCategory(listing) === state.category;
+    const projection = operationsProjection(listing);
     const haystack = [listing.name, listing.description, listing.source?.repo, listing.source?.path,
-      listing.catalog?.coordinate, listing.catalog?.category, ...listingTags(listing)]
+      listing.catalog?.coordinate, listing.catalog?.category, ...listingTags(listing), ...intentTags(listing),
+      ...(projection?.routing?.whenToUse || []), ...(projection?.routing?.whenNotToUse || [])]
       .filter(Boolean).join(' ').toLocaleLowerCase('zh-CN');
-    return distributionMatches && categoryMatches && (!needle || haystack.includes(needle));
+    const structuredMatch = recommendationFor(listing, state.query).matched;
+    return distributionMatches && categoryMatches && (!needle || haystack.includes(needle) || structuredMatch);
   });
 }
 

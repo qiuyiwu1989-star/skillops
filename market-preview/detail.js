@@ -219,6 +219,127 @@ function listingTags(listing) {
   return tags ? [String(tags)] : [];
 }
 
+function operationsProjection(payload) {
+  const listing = payload?.listing || payload?.skill || payload;
+  return payload?.operationsProjection || listing?.operationsProjection || listing?.skillOperations || listing?.v41 || null;
+}
+
+const ROUTING_FINDING_LABELS = {
+  missing_when_to_use: '缺少“何时使用”说明', missing_when_not_to_use: '缺少“何时不要使用”说明',
+  missing_positive_example: '缺少正向任务示例', missing_negative_example: '缺少反向任务示例',
+  no_confusion_comparison: '尚未说明易混淆技能', positive_negative_boundary_duplicate: '正反边界存在重复',
+  positive_negative_boundary_ambiguous: '正反边界仍有歧义', confusion_conflict_not_declared: '易混淆技能未声明冲突',
+  declared_conflict_not_explained: '已声明冲突但缺少区分说明', inputs_not_described: '输入未说明', outputs_not_described: '输出未说明',
+  single_compatibility_target: '仅验证一个兼容目标', release_pinned_dependency: '依赖固定到特定发行版',
+};
+
+function listBlock(title, values, emptyCopy) {
+  const block = document.createElement('section');
+  block.className = 'routing-boundary-block';
+  block.append(text('h3', title));
+  const items = Array.isArray(values) ? values.filter(Boolean) : [];
+  if (!items.length) block.append(text('p', emptyCopy, 'pending-copy'));
+  else {
+    const list = document.createElement('ul');
+    for (const item of items) list.append(text('li', item));
+    block.append(list);
+  }
+  return block;
+}
+
+function renderRouting(listing, projection) {
+  let section = document.querySelector('#routing');
+  if (!section) {
+    section = document.createElement('section');
+    section.className = 'detail-section';
+    section.id = 'routing';
+    section.setAttribute('aria-labelledby', 'routing-title');
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.append(text('span', '路由', 'section-number mono'), text('h2', '何时用，何时不要用'));
+    heading.querySelector('h2').id = 'routing-title';
+    const content = document.createElement('div'); content.id = 'routing-content';
+    section.append(heading, text('p', 'Routing 只判断静态路由质量，与 Eval 运行实绩分开呈现。', 'section-lead'), content);
+    document.querySelector('#sms')?.before(section);
+  }
+  const content = section.querySelector('#routing-content');
+  if (!content) return;
+  const routing = projection?.routing;
+  const skill = projection?.skill;
+  if (!routing || !skill) {
+    content.replaceChildren(text('p', '这个技能尚未形成 Skill Record 2.0 路由档案。当前只能依据目录说明判断。', 'pending-panel'));
+    return;
+  }
+  const summary = document.createElement('div');
+  summary.className = 'routing-assessment-summary';
+  const score = document.createElement('div');
+  score.append(text('strong', `${routing.total}/${routing.maxTotal}`, 'routing-score mono'), text('span', '静态 Routing 质量'));
+  const explanation = document.createElement('div');
+  explanation.append(
+    text('h3', 'Routing 与 Eval 分开判断'),
+    text('p', 'Routing 评估元数据是否足以让 Agent 正确选择技能。它不是运行成功率，也不能替代 Eval。'),
+  );
+  summary.append(score, explanation);
+  const findings = routing.dimensions.flatMap(item => item.reasons || []).map(code => ROUTING_FINDING_LABELS[code] || code);
+  const boundaries = document.createElement('div');
+  boundaries.className = 'routing-boundaries';
+  boundaries.append(
+    listBlock('何时使用', routing.whenToUse, '尚未提供正向路由条件。'),
+    listBlock('何时不要使用', routing.whenNotToUse, '尚未提供反向路由条件。'),
+  );
+  const technical = document.createElement('dl');
+  technical.className = 'fact-grid routing-facts';
+  addFacts(technical, [
+    ['任务意图', skill.intentTags.join('，') || '未记录'],
+    ['必需权限', skill.permissions.required.join('，') || '无需额外权限'],
+    ['禁止权限', skill.permissions.prohibited.join('，') || '未声明'],
+    ['兼容环境', `${skill.compatibility.contract}：${skill.compatibility.targets.join('，')}`],
+    ['静态发现', findings.join('；') || '未发现静态路由缺口'],
+    ['评估限制', '只描述静态路由质量，不代表运行实绩'],
+  ]);
+  content.replaceChildren(summary, boundaries, technical);
+}
+
+function renderComposition(projection) {
+  let section = document.querySelector('#composition');
+  if (!section) {
+    section = document.createElement('section');
+    section.className = 'detail-section';
+    section.id = 'composition';
+    section.setAttribute('aria-labelledby', 'composition-title');
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.append(text('span', '组合', 'section-number mono'), text('h2', '可组合技能与顺序'));
+    heading.querySelector('h2').id = 'composition-title';
+    const content = document.createElement('div'); content.id = 'composition-content';
+    section.append(heading, text('p', '组合计划只展示公开理由、顺序与阻断，不执行技能。', 'section-lead'), content);
+    document.querySelector('#sms')?.before(section);
+  }
+  const content = section.querySelector('#composition-content');
+  if (!content) return;
+  const composition = projection?.composition;
+  if (!composition) {
+    content.replaceChildren(text('p', '尚无经过权限与兼容门禁的组合计划。', 'pending-panel'));
+    return;
+  }
+  const status = text('p', composition.status === 'ready' ? '组合计划可用' : composition.status === 'blocked' ? '组合计划被阻断' : '当前任务没有匹配组合', `composition-status ${composition.status}`);
+  const list = document.createElement('ol');
+  list.className = 'composition-steps';
+  for (const step of composition.steps || []) {
+    const item = document.createElement('li');
+    item.append(text('span', String(step.position).padStart(2, '0'), 'mono'), text('strong', step.titleZh || step.skillId), text('p', step.reasonZh));
+    list.append(item);
+  }
+  const related = document.createElement('div');
+  related.className = 'composition-related';
+  related.append(text('h3', '可组合技能'));
+  const skills = composition.relatedSkills || [];
+  related.append(text('p', skills.length ? skills.map(item => `${item.titleZh || item.skillId}（${item.reasonZh}）`).join('；') : '当前计划没有其他组合技能。'));
+  const blockers = (composition.blockers || []).map(item => item.messageZh);
+  if (blockers.length) related.append(text('p', `阻断原因：${blockers.join('；')}`, 'composition-blocker'));
+  content.replaceChildren(status, list, related);
+}
+
 function sourceLabel(listing) {
   return listing.catalog?.coordinate || listing.source?.repo || listing.source?.url || '本地来源';
 }
@@ -561,6 +682,9 @@ function render(payload) {
   if (!listing?.id) throw new Error('详情数据缺少已批准 listing');
   renderHero(listing);
   renderFit(listing);
+  const projection = operationsProjection(payload);
+  renderRouting(listing, projection);
+  renderComposition(projection);
   renderSms(listing);
   renderEval(listing);
   renderProvenance(listing);

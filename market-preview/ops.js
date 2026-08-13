@@ -11,6 +11,19 @@ const EVENT_LABELS = {
   'enrollment.retired': '技能退出编制', 'enrollment.restored': '恢复技能入编',
   'policy.changed': '更新组织策略', 'role.bound': '绑定角色', 'role.unbound': '解除角色',
 };
+const HEALTH_LABELS = {
+  healthy: '运行健康', degrading: '表现退化', high_usage_low_utility: '高使用低效用',
+  zero_usage: '零使用', insufficient_data: '证据不足',
+};
+const HEALTH_REASONS = {
+  OPERATIONS_WITHIN_THRESHOLDS: '当前样本达到阈值，运营指标处于策略范围内。',
+  SUCCESS_RATE_DEGRADED: '相邻可比窗口的成功率出现显著下降。',
+  SUCCESS_RATE_BELOW_UTILITY_THRESHOLD: '调用量较高，但成功率低于效用阈值。',
+  NO_INVOCATIONS_OBSERVED: '当前观察窗口内没有技能调用。',
+  MINIMUM_INVOCATIONS_NOT_MET: '当前调用样本不足，不能作强判断。',
+  OUTCOME_COVERAGE_INSUFFICIENT: '运行结果覆盖不足，不能作强判断。',
+  TREND_CONTEXT_CONFOUNDED: '环境或策略变化，趋势暂不可比。',
+};
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -63,6 +76,9 @@ export function normalizePublicOps(payload) {
     ? stagingStatus.receipts.filter(isObject)
     : operations.filter(operation => operation.state === 'accepted').map(operation => operation.receipt).filter(isObject);
   const reconciliation = reconciliationRows(stagingStatus);
+  const operationItems = Array.isArray(payload.skillOperations)
+    ? payload.skillOperations
+    : Array.isArray(payload.operationsIntelligence?.items) ? payload.operationsIntelligence.items : [];
   return Object.freeze({
     generatedAt: typeof payload.generatedAt === 'string' ? payload.generatedAt : null,
     throughSequence: safeNumber(organizationProjection.throughSequence),
@@ -72,6 +88,16 @@ export function normalizePublicOps(payload) {
     enrollments: entries(organizationProjection.enrollments),
     roles: Object.fromEntries(Object.keys(ROLE_LABELS).map(role => [role, safeNumber(organizationProjection.roleSummary?.[role])])),
     auditEvents: Array.isArray(organizationProjection.auditEvents) ? organizationProjection.auditEvents.filter(isObject) : [],
+    skillOperations: operationItems.map((item, index) => {
+      const projection = item.operationsProjection || item.projection || item;
+      const skill = projection.skill;
+      const operations = projection.operations;
+      if (!isObject(skill) || !isObject(operations) || !isObject(operations.funnel)) throw new Error('PUBLIC_DATA_REQUIRED');
+      return {
+        skillId: String(skill.skillId || ''), titleZh: String(skill.titleZh || skill.skillId || `技能 ${index + 1}`),
+        releaseId: String(skill.releaseId || ''), version: String(skill.version || ''), operations: structuredClone(operations),
+      };
+    }),
     staging: {
       cursor: String(stagingStatus.cursor ?? '0'),
       accepted: safeNumber(stagingStatus.receiptCount ?? receipts.filter(row => row.status === 'accepted').length),
@@ -101,6 +127,63 @@ function statusLabel(value) {
 
 function empty(target, copy) {
   target.replaceChildren(node('p', copy, 'empty-row'));
+}
+
+function percent(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? `${Math.round(value * 100)}%` : '-';
+}
+
+function money(micros) {
+  return typeof micros === 'number' && Number.isFinite(micros) ? `¥${(micros / 1_000_000).toFixed(4)}` : '-';
+}
+
+function metricValue(value, suffix = '') {
+  return typeof value === 'number' && Number.isFinite(value) ? `${value}${suffix}` : '-';
+}
+
+function renderSkillOperations(data, elements) {
+  elements.operationsCount.textContent = `${data.skillOperations.length} 项`;
+  elements.operationsList.replaceChildren();
+  if (!data.skillOperations.length) return empty(elements.operationsList, '尚无技能运营公共投影。只有完成隐私事件聚合后才会显示指标。');
+  const stages = [['impression', '曝光'], ['selected', '被选择'], ['invoked', '被调用'], ['succeeded', '成功'], ['reused', '复用']];
+  for (const item of data.skillOperations) {
+    const operations = item.operations;
+    const article = node('article', '', 'operations-record');
+    const header = node('header', '', 'operations-record-header');
+    const copy = node('div');
+    copy.append(node('h3', item.titleZh), node('p', `${item.skillId} · ${item.version || '版本未记录'}`, 'mono operations-identity'));
+    const health = node('div', '', `health-judgement health-${operations.status}`);
+    health.append(node('strong', operations.healthLabelZh || HEALTH_LABELS[operations.status] || '状态未记录'), node('p', operations.healthReasonZh || HEALTH_REASONS[operations.reasonCode] || operations.reasonCode));
+    header.append(copy, health);
+
+    const funnel = node('dl', '', 'operations-funnel');
+    for (const [key, label] of stages) {
+      const stage = operations.funnel[key] || {};
+      const cell = node('div');
+      cell.append(node('dt', label), node('dd', String(safeNumber(stage.observed)), 'mono'), node('p', `${safeNumber(stage.numerator)} / ${safeNumber(stage.denominator)} · ${percent(stage.rate)}`, 'mono'));
+      funnel.append(cell);
+    }
+
+    const evidence = node('dl', '', 'operations-evidence');
+    const outcome = operations.outcomes || {};
+    const cost = operations.cost || {};
+    const latency = operations.latency || {};
+    const rows = [
+      ['观察样本', `${safeNumber(operations.sample?.observedOperations)} 次操作 / ${safeNumber(operations.sample?.observedEvents)} 条事件`],
+      ['结果样本', `${safeNumber(outcome.samples)} / ${safeNumber(outcome.denominator)}，成功率 ${percent(outcome.successRate)}`],
+      ['人工接管', `${safeNumber(outcome.handoffs)} 次，接管率 ${percent(outcome.handoffRate)}`],
+      ['平均成本', `${money(cost.averageMicros)}，样本 ${safeNumber(cost.samples)}`],
+      ['运行时延', `P50 ${metricValue(latency.p50Ms, ' ms')}，P95 ${metricValue(latency.p95Ms, ' ms')}，样本 ${safeNumber(latency.samples)}`],
+    ];
+    for (const [label, value] of rows) {
+      const row = node('div'); row.append(node('dt', label), node('dd', value)); evidence.append(row);
+    }
+    const coach = node('div', '', 'coach-review');
+    coach.append(node('strong', operations.suggestedAction === 'review_for_coach' ? '待 Coach 复核' : '无需 Coach 介入'), node('p', operations.coachReasonZh || '当前没有触发 Coach 复核条件。'));
+    coach.append(node('small', '只读建议，不自动发布、撤回或退役。'));
+    article.append(header, funnel, evidence, coach);
+    elements.operationsList.append(article);
+  }
 }
 
 function renderProjects(data, elements) {
@@ -200,6 +283,7 @@ function render(data) {
     stagingCursor: document.querySelector('#staging-cursor'), stagingAccepted: document.querySelector('#staging-accepted'), stagingReconciliation: document.querySelector('#staging-reconciliation'),
     reconciliationChip: document.querySelector('#reconciliation-chip'), receiptList: document.querySelector('#receipt-list'),
     auditCount: document.querySelector('#audit-count'), auditList: document.querySelector('#audit-list'),
+    operationsCount: document.querySelector('#operations-count'), operationsList: document.querySelector('#operations-list'),
   };
   elements.heroOrganization.textContent = data.organization.name || '未命名组织';
   elements.heroSequence.textContent = String(data.throughSequence);
@@ -207,6 +291,7 @@ function render(data) {
   elements.organizationStatus.textContent = statusLabel(data.organization.status);
   elements.organizationStatus.className = `status-chip ${data.organization.status === 'active' ? 'positive' : 'caution'}`;
   renderProjects(data, elements);
+  renderSkillOperations(data, elements);
   renderEstablishments(data, elements);
   renderEnrollments(data, elements);
   renderRoles(data, elements);
