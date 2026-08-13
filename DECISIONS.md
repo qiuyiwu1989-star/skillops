@@ -1,5 +1,8 @@
 # Decisions
 
+- 2026-08-14：内容寻址摘要只证明对象完整性，不证明发行权。Publisher/Product/Application Release 必须经追加式可信市场注册台账登记；Order、AccessDecision 与二创血缘必须通过受信 Resolver 读取当前 Offer、发布状态、Entitlement、用量、席位和时间，拒绝调用方自证。Basis: V4.3 独立审查复现自签 Publisher/Entitlement、Release 范围并集和 BOM 商品错配可绕过授权。Confidence: high.
+- 2026-08-14：当前最高优先级调整为双边能力市场。市场商品是“不可变能力版本 + 调用契约 + Offer + LicensePolicy”，不是文件下载或可打开页面；免费获取也必须签发 Entitlement。Skill 与 Application 共享商业父模型但保持独立类型契约；企业可在授权范围内二创，私有能力默认不公开。实施按 V4.3 市场内核 → V4.4 创作者中心 → V4.5 需求方授权 → V4.6 企业二创 → V4.7 真实商业 → V4.8 调用运营排序。Basis: 用户连续确认双边、定价、授权、二创、创作者中心和企业私有开发定位，三路独立审查确认现有可信栈可复用约 70%，主要缺口是商业授权域。Confidence: high.
+- 2026-08-14：Registry、商业授权、组织治理和运营计量保持四域分离。Registry callable 不代表企业有权调用；组织入编不代替 Entitlement；运营事件不直接作为计费账单。新市场必须从 `cand_*` 迁移到稳定 `productId/skillId/releaseId`，Candidate 只留在审核域。Basis: V3.8 已建立稳定 Release，但旧 market-preview 仍以 Candidate 作为路由身份，进入交易前必须消除身份错层。Confidence: high.
 - 2026-08-13：V4.1 定位为“技能运营智能”，按 Skill Record/路由质量、组合规划、隐私运营指标三个核心工作包并行，再统一接入市场和运营页；运营数据只提供判断和 Coach 提案，不自动发布、撤回或退役。Basis: 近期研究表明动态技能库的瓶颈已从内容生成转向准入、路由、组合、使用—效用差距和生命周期治理，且用户明确授权制定计划并交由子 Agent 执行。Confidence: high.
 - 2026-08-13：V4.0-B 使用可验证 IdP 回执、原子 append-only 台账和只读中文运营视图；真实 IdP 与造物云生产仍不接入。staging 若远端已接收但本地提交失败，必须进入 reconciliation_required，禁止盲重发。Basis: V4.0-A 已证明内存闭环，下一步核心风险是重启恢复、身份可信边界和远端/本地双写不确定性。Confidence: high.
 - 2026-08-13：V4.0 先做单组织、最多 3 个真实技能的 staging 试点；组织治理、首批技能 readiness 与造物云确认发送核心可并行，随后再接可信 IdP、CLI 和跨模块 E2E。生产连接必须另行授权。Basis: 用户明确要求继续开发，现有 V3.7–V3.9 主链已完成，下一步应验证真实小闭环而非继续扩张市场功能。Confidence: high.

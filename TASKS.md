@@ -2,10 +2,15 @@
 
 ## Now
 
-- [ ] V4.0-C：训练营/永乐教育单组织 staging 演练和 go/no-go 报告；生产连接另行授权 (spec: 012)
+- [ ] V4.4：创作者中心与可信发布闭环
 
 ## Next
 
+- [ ] V4.5：需求方市场、免费获取与企业授权库
+- [ ] V4.6：企业私有能力、自研技能与授权二创
+- [ ] V4.7：付费订单、计量、退款和应用依赖授权
+- [ ] V4.8：技能管家、Code/企业工作台适配与运营飞轮
+- [ ] V4.0-C：训练营/永乐教育单组织 staging 演练和 go/no-go 报告；生产连接另行授权 (spec: 012)
 - [ ] 为首批 3 个具备完整包的技能补固定测试集与离线 Eval；旧来源包不可得时不伪造实绩
 - [x] V3.8-A/B：实现统一 Skill/Release/Source 身份、append-only Registry、只读 Feed 与投影重放
 - [x] V3.8-C/D：完成 certified Candidate → Release 发布接缝与造物云 dry-run/staging mock Adapter，不连接生产
@@ -15,6 +20,10 @@
 
 ## Done
 
+- [x] 2026-08-14：完成 V4.3 双边能力市场内核：可信 Publisher/Product/Application Registry、canonical Skill Release 与 BOM、LicensePolicy、当前 Offer 的免费 Order、内容寻址 Entitlement、受信 resolver 调用门禁、二创血缘、撤销/退款追加式账本和稳定公共目录；独立审查修复自签授权、Release 范围并集、BOM 商品错配、Product↔Release 归属与公共投影可变等问题，可信供给全量 327/327 通过，未接真实支付或生产网络。
+- [x] V4.3-A：Publisher、AbilityProduct、ApplicationRelease 与可信市场注册台账 (spec: 016)
+- [x] V4.3-B：LicensePolicy、Offer、Order、Entitlement、AccessDecision 与二创血缘 (spec: 016)
+- [x] V4.3-C：商业追加式账本、联合公共投影与跨域 E2E (spec: 016)
 - [x] 2026-08-13：完成 V4.1 技能运营智能：Skill Record 2.0、Routing 静态评估、Release/证据/权限绑定的确定性组合计划、隐私运营账本与漏斗/趋势/退化判断、可信公共投影及中文市场/详情/运营体验；3 Release E2E 和独立审查修复伪造汇总、版本混合、事件超限与权限契约接缝，全仓 407/407 通过，仍不执行技能或连接生产。
 - [x] 2026-08-13：完成 V4.0-B 可信身份与运营产品化：HMAC IdP 回执接入双人终审；组织与 Staging 原子台账支持重启、CAS、故障恢复和待对账；可信供给 CLI 提供组织治理与离线 staging 计划/状态；新增不请求公网资源的中文只读运营页，350/350 自动化测试通过，便携 HRD CLI 保持独立。
 - [x] 2026-08-13：完成 V4.0-A 三条核心及离线 E2E：最多 3 个技能的 source_only/evidence_pending/release_ready 报告；稳定 Release 入编、五级角色、组织隔离与追加式审计；造物云 staging dry-run、精确确认、幂等回执和失败游标保护。修复自填信任、过期回放与并发双发边界，313/313 自动化测试通过，生产保持关闭。

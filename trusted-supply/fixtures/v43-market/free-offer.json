@@ -1,0 +1,21 @@
+{
+  "offerId": "offer_free_enterprise",
+  "pricing": {
+    "model": "free",
+    "currency": "CNY",
+    "amountMinor": 0
+  },
+  "licensePolicy": {
+    "rights": ["invoke", "organization_use", "derive"],
+    "constraints": {
+      "organizationIds": ["org_acme"],
+      "projectIds": ["project_alpha"],
+      "environments": ["production"],
+      "seatLimit": 3,
+      "invocationLimit": 2,
+      "validFrom": "2026-08-14T09:00:00.000Z",
+      "validUntil": "2026-09-14T09:00:00.000Z"
+    }
+  },
+  "effectiveAt": "2026-08-14T09:00:00.000Z"
+}
