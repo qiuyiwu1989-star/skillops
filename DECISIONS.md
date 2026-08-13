@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-08-13：V4.0 先做单组织、最多 3 个真实技能的 staging 试点；组织治理、首批技能 readiness 与造物云确认发送核心可并行，随后再接可信 IdP、CLI 和跨模块 E2E。生产连接必须另行授权。Basis: 用户明确要求继续开发，现有 V3.7–V3.9 主链已完成，下一步应验证真实小闭环而非继续扩张市场功能。Confidence: high.
 - 2026-08-13：下一轮三阶段严格按 `V3.7 四眼终审 → V3.8 统一 Registry → V3.9 受控分发/HRD` 顺序实施；V3.7 可先完成独立 policy，V3.8 只做本地 Registry 与造物云 dry-run，V3.9 只能消费明确 Release。Basis: 用户要求开始三个阶段开发，且三者分别依赖终审投影、Registry 身份和 Release 分发契约。Confidence: high.
 - 2026-08-13：市场目录卡片采用“桌面标题/摘要限行并对齐证据与操作区，移动端自然展开，全文保留在快速预览和详情页”的组件规则。Basis: 用户截图指出卡片因中文说明长度不同而参差不齐。Confidence: high.
 - 2026-08-13：V3.6 的 fixture Eval adapter 只接收 case、package digest 与超时，不接收技能包路径或内容；它验证质检证据链，但绝不执行第三方技能。Basis: 坚守“不当运行时”，同时避免完整包内容通过 runner 接缝泄漏。Confidence: high.

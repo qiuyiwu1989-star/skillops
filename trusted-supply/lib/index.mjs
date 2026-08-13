@@ -12,3 +12,6 @@ export * from './localization.mjs';
 export * from './package.mjs';
 export * from './package-store.mjs';
 export * from './package-audit.mjs';
+export * from './pilot-readiness.mjs';
+export * from './organization-governance.mjs';
+export * from './zaowuyun-staging.mjs';
