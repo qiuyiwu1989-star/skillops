@@ -16,7 +16,7 @@
 | `trusted-supply/` | V3.1 可信技能供给 MVP：候选池、许可/安全硬门、人工审核、市场技能卡 | 本地验证，尚未接生产 |
 | `dist-src/skillops/` | 便携 CLI 唯一源码：盘点、落户、部署台账、漂移检测 | 可分发标准包 |
 
-V3.4 后的全面升级路线见 `ROADMAP.md`。当前三阶段开发入口为：V3.7 `specs/009-v37-review-recertification.md`，V3.8 `specs/010-v38-unified-registry.md`，V3.9 `specs/011-v39-managed-distribution-loop.md`。生产接入仍需单独授权。
+V3.4 后的全面升级路线见 `ROADMAP.md`。当前市场主线入口为 V4.3 `specs/016-v43-market-core.md` 与 V4.4 `specs/017-v44-creator-publication.md`。生产接入仍需单独授权。
 
 ## 核心理念（脊梁）
 
@@ -51,6 +51,8 @@ node market-preview/serve.mjs
 ```
 
 本地示例预览可运行 `node market-preview/demo.mjs` 后打开 `http://127.0.0.1:4173`。采集器不 checkout、不执行仓库代码，远端只允许无凭证的 GitHub HTTPS 来源；本地 git 来源必须显式添加 `--allow-local`。
+
+V4.4 另提供 `market-preview/creator.html` 中文只读创作者中心。页面只消费经过隐私裁剪的创作者投影，不上传草稿或技能正文，也不提供生产发布按钮。
 
 ## V3.6 离线 Eval 质检台架
 

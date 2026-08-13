@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-14T10:00:00.000Z",
+  "publisher": {
+    "publisherId": "pub_demo_public",
+    "displayName": "造物云能力实验室",
+    "kind": "organization",
+    "status": "active"
+  },
+  "works": [
+    {
+      "workId": "work_research_skill",
+      "abilityType": "skill",
+      "productId": "prod_research_skill",
+      "titleZh": "研究综合技能",
+      "summaryZh": "把多份公开资料整理成有来源的研究结论。",
+      "version": "1.0.0",
+      "status": "published",
+      "nextAction": "monitor_release",
+      "reviewGaps": [],
+      "rightsSummary": ["商业输出", "组织内调用"],
+      "updatedAt": "2026-08-14T09:40:00.000Z",
+      "timeline": [
+        { "eventId": "event_publish", "type": "publication.published", "labelZh": "正式发布", "reasonZh": "权利与市场复核均已通过。", "occurredAt": "2026-08-14T09:40:00.000Z" },
+        { "eventId": "event_submit", "type": "publication.submitted", "labelZh": "提交复核", "reasonZh": "绑定不可变草稿与 Registry 版本。", "occurredAt": "2026-08-14T09:10:00.000Z" }
+      ],
+      "appeals": []
+    },
+    {
+      "workId": "work_report_app",
+      "abilityType": "application",
+      "productId": "prod_report_app",
+      "titleZh": "企业研究报告应用",
+      "summaryZh": "组合研究、写作和复核技能形成报告。",
+      "version": "0.3.0",
+      "status": "in_review",
+      "nextAction": "await_review",
+      "reviewGaps": ["等待市场复核"],
+      "rightsSummary": ["组合使用", "企业内分发"],
+      "updatedAt": "2026-08-14T09:30:00.000Z",
+      "timeline": [{ "eventId": "event_review", "type": "publication.submitted", "labelZh": "等待复核", "reasonZh": "权利复核已经完成，市场复核尚未完成。", "occurredAt": "2026-08-14T09:30:00.000Z" }],
+      "appeals": []
+    },
+    {
+      "workId": "work_copy_skill",
+      "abilityType": "skill",
+      "productId": "prod_copy_skill",
+      "titleZh": "品牌文案技能",
+      "summaryZh": "根据品牌约束生成中文文案。",
+      "version": "0.2.0",
+      "status": "changes_required",
+      "nextAction": "revise_and_resubmit",
+      "reviewGaps": ["补充商业使用权声明", "更新测试证据"],
+      "rightsSummary": ["组织内调用"],
+      "updatedAt": "2026-08-14T09:20:00.000Z",
+      "timeline": [{ "eventId": "event_changes", "type": "review.request_changes", "labelZh": "请求修改", "reasonZh": "商业使用权依据不足。", "occurredAt": "2026-08-14T09:20:00.000Z" }],
+      "appeals": []
+    },
+    {
+      "workId": "work_draft_skill",
+      "abilityType": "skill",
+      "productId": "",
+      "titleZh": "访谈洞察技能",
+      "summaryZh": "从访谈记录中提取证据与主题。",
+      "version": "草稿 2",
+      "status": "draft",
+      "nextAction": "submit_for_review",
+      "reviewGaps": ["绑定稳定商品身份"],
+      "rightsSummary": ["权利声明待确认"],
+      "updatedAt": "2026-08-14T09:00:00.000Z",
+      "timeline": [{ "eventId": "event_draft", "type": "draft.saved", "labelZh": "保存草稿版本 2", "reasonZh": "上一版仍可追溯。", "occurredAt": "2026-08-14T09:00:00.000Z" }],
+      "appeals": []
+    },
+    {
+      "workId": "work_policy_skill",
+      "abilityType": "skill",
+      "productId": "prod_policy_skill",
+      "titleZh": "政策分析技能",
+      "summaryZh": "将政策文本转为结构化影响分析。",
+      "version": "1.1.0",
+      "status": "published",
+      "nextAction": "monitor_release",
+      "reviewGaps": [],
+      "rightsSummary": ["组织内调用"],
+      "updatedAt": "2026-08-13T18:00:00.000Z",
+      "timeline": [{ "eventId": "event_policy_publish", "type": "publication.published", "labelZh": "正式发布", "reasonZh": "复核证据保持有效。", "occurredAt": "2026-08-13T18:00:00.000Z" }],
+      "appeals": []
+    },
+    {
+      "workId": "work_withdrawn",
+      "abilityType": "skill",
+      "productId": "prod_withdrawn",
+      "titleZh": "旧版排版技能",
+      "summaryZh": "已由新版本替代，停止新授权。",
+      "version": "0.9.0",
+      "status": "withdrawn",
+      "nextAction": "appeal_or_republish",
+      "reviewGaps": [],
+      "rightsSummary": ["既有授权保留"],
+      "updatedAt": "2026-08-13T16:00:00.000Z",
+      "timeline": [{ "eventId": "event_withdraw", "type": "publication.withdrawn", "labelZh": "普通下架", "reasonZh": "停止新订单，既有合法授权继续有效。", "occurredAt": "2026-08-13T16:00:00.000Z" }],
+      "appeals": []
+    },
+    {
+      "workId": "work_recalled",
+      "abilityType": "skill",
+      "productId": "prod_recalled",
+      "titleZh": "旧版文件转换技能",
+      "summaryZh": "因高风险问题召回，等待安全复核。",
+      "version": "1.0.1",
+      "status": "recalled",
+      "nextAction": "security_response",
+      "reviewGaps": ["提交修复版本", "补充替代方案"],
+      "rightsSummary": ["既有调用已停止"],
+      "updatedAt": "2026-08-13T15:00:00.000Z",
+      "timeline": [{ "eventId": "event_recall", "type": "publication.recalled", "labelZh": "高危召回", "reasonZh": "安全证据发生变化，既有调用已停止。", "occurredAt": "2026-08-13T15:00:00.000Z" }],
+      "appeals": [{ "appealId": "appeal_recall", "status": "submitted", "reasonZh": "已提交修复证据，等待独立复核。", "submittedAt": "2026-08-13T17:00:00.000Z" }]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="rams">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="SkillOps 创作者作品、版本与可信发布状态的本地只读视图">
+    <meta name="skillops:creator-url" content="./data/creator.json">
+    <title>SkillOps 创作者中心</title>
+    <link rel="stylesheet" href="./creator.css?v=v44">
+    <script src="./creator.js?v=v44" type="module"></script>
+  </head>
+  <body data-creator-url="">
+    <a class="skip-link" href="#creator-main">跳到创作者内容</a>
+
+    <header class="site-header">
+      <div class="wrap nav-inner">
+        <a class="brand" href="./" aria-label="返回 SkillOps 能力市场">Skill<span>Ops</span></a>
+        <p class="view-label mono">创作者中心</p>
+        <p class="readonly-label mono">本地只读</p>
+      </div>
+    </header>
+
+    <main id="creator-main">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">creator workspace</p>
+            <h1 id="page-title">创作有据，<br>发布有序。</h1>
+            <p class="hero-lead">查看技能与应用的草稿、版本、权利声明和发布证据。此处不编辑技能正文，也不接入远程系统。</p>
+          </div>
+          <dl class="identity-panel" aria-label="创作者摘要">
+            <div><dt>发布主体</dt><dd id="publisher-name">尚未读取</dd></div>
+            <div><dt>主体类型</dt><dd id="publisher-kind">-</dd></div>
+            <div><dt>更新时间</dt><dd id="generated-at" class="mono">-</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section id="state" class="state-panel wrap" aria-live="polite">
+        <p class="eyebrow">loading creator projection</p>
+        <h2>正在读取创作者投影</h2>
+        <p>只读取经过裁剪的本地数据。</p>
+      </section>
+
+      <div id="workspace" hidden>
+        <section class="summary-section" aria-labelledby="summary-title">
+          <div class="wrap">
+            <div class="section-heading">
+              <h2 id="summary-title">发布概况</h2>
+              <p id="work-count" class="mono count-label">0 个作品</p>
+            </div>
+            <dl id="summary-grid" class="summary-grid"></dl>
+          </div>
+        </section>
+
+        <section class="works-section" aria-labelledby="works-title">
+          <div class="wrap works-layout">
+            <div class="works-intro">
+              <h2 id="works-title">作品与下一动作</h2>
+              <p>审核缺口直接显示，不用虚构进度。已下架和召回作品仍保留生命周期证据。</p>
+              <p class="readonly-note">只读视图不会提交、批准、发布、上传、执行或收款。</p>
+            </div>
+            <div id="works-list" class="works-list"></div>
+          </div>
+        </section>
+
+        <section class="evidence-section" aria-labelledby="evidence-title">
+          <div class="wrap">
+            <div class="section-heading evidence-heading">
+              <h2 id="evidence-title">版本与发布证据</h2>
+              <p>每条记录都应绑定不可变版本；请求修改后，旧批准不能沿用。</p>
+            </div>
+            <div id="evidence-list" class="evidence-list"></div>
+          </div>
+        </section>
+
+        <section class="appeals-section" aria-labelledby="appeals-title">
+          <div class="wrap appeals-layout">
+            <div>
+              <h2 id="appeals-title">申诉记录</h2>
+              <p>申诉只进入复核队列，不会自动恢复发布。</p>
+            </div>
+            <div id="appeals-list" class="appeals-list"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <p>Skill<span>Ops</span> 创作者中心</p>
+        <p class="mono">公开投影 · 版本证据 · 只读</p>
+      </div>
+    </footer>
+  </body>
+</html>

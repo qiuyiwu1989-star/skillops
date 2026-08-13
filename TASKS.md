@@ -2,7 +2,9 @@
 
 ## Now
 
-- [ ] V4.4：创作者中心与可信发布闭环
+- [ ] V4.5-A：需求方市场公共投影、中文发现与获取状态
+- [ ] V4.5-B：免费获取服务、发布状态门禁与企业授权库
+- [ ] V4.5-C：技能管家授权感知推荐的离线计划接口，不执行技能
 
 ## Next
 
@@ -20,6 +22,10 @@
 
 ## Done
 
+- [x] 2026-08-14：完成 V4.4 创作者中心与可信发布：Skill/Application 私有创作项目、不可变 Draft、可信 IdP 提交、权利/市场双角色独立人审、发布/下架/召回/申诉状态机、发布状态驱动的 Order/Access 解析以及中文只读创作者中心；独立审查关闭 8 个身份、隐私与生命周期边界，可信供给 358/358、市场前端 60/60 通过，未接生产 IdP、真实支付或上传技能正文。
+- [x] V4.4-A：Creator Workspace、不可变 Draft 与原子 Store (spec: 017)
+- [x] V4.4-B：双角色发布复核、生命周期与 Registry/商业接缝 (spec: 017)
+- [x] V4.4-C：中文创作者中心和跨域 E2E/安全验收 (spec: 017)
 - [x] 2026-08-14：完成 V4.3 双边能力市场内核：可信 Publisher/Product/Application Registry、canonical Skill Release 与 BOM、LicensePolicy、当前 Offer 的免费 Order、内容寻址 Entitlement、受信 resolver 调用门禁、二创血缘、撤销/退款追加式账本和稳定公共目录；独立审查修复自签授权、Release 范围并集、BOM 商品错配、Product↔Release 归属与公共投影可变等问题，可信供给全量 327/327 通过，未接真实支付或生产网络。
 - [x] V4.3-A：Publisher、AbilityProduct、ApplicationRelease 与可信市场注册台账 (spec: 016)
 - [x] V4.3-B：LicensePolicy、Offer、Order、Entitlement、AccessDecision 与二创血缘 (spec: 016)

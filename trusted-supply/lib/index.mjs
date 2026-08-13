@@ -29,3 +29,7 @@ export * from './commerce/access-decision.mjs';
 export * from './commerce/derivative-lineage.mjs';
 export * from './commerce/lifecycle.mjs';
 export * from './commerce/market-ledger.mjs';
+export * from './creator/creator-workspace.mjs';
+export * from './creator/creator-workspace-store.mjs';
+export * from './creator/publication-workflow.mjs';
+export * from './creator/publication-store.mjs';
