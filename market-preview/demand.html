@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="skillops:demand-url" content="./demand.fixture.json">
+  <title>技能管家 · 造物云能力市场</title>
+  <link rel="stylesheet" href="./demand.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="topbar">
+    <a class="brand" href="./index.html" aria-label="返回能力市场"><span class="brand-mark">Z</span><span>造物云能力市场</span></a>
+    <div class="trust"><span class="pulse" aria-hidden="true"></span>本地只读演示</div>
+  </header>
+  <main id="main" class="shell">
+    <section class="intro">
+      <p class="eyebrow">Skill Steward Agent</p>
+      <h1>技能管家</h1>
+      <p>描述任务后，管家只依据当前发布、企业授权与调用前判断解释推荐。不会发送业务材料，也不会自动获取、采购或执行技能。</p>
+    </section>
+    <section id="state" class="state-panel" aria-live="polite"><p class="eyebrow">读取中</p><h2>正在核验本地需求方投影</h2></section>
+    <div id="workspace" hidden>
+      <section class="agent-panel" aria-labelledby="agent-title">
+        <div class="agent-copy">
+          <p class="section-label">受限任务摘要示例</p>
+          <h2 id="agent-title">需要起草并校对一份正式的项目通知</h2>
+          <div id="intent-tags" class="chips"></div>
+          <p class="privacy-note">示例只包含任务摘要与标签，不包含正文、Prompt、输出、密钥或本地路径。</p>
+        </div>
+        <div class="agent-result">
+          <p class="section-label">推荐结论</p><p id="plan-status" class="big-status"></p><p id="plan-action"></p>
+        </div>
+      </section>
+      <div class="layout">
+        <section class="main-column" aria-labelledby="result-title">
+          <header class="section-head"><div><p class="section-label">可信能力结果</p><h2 id="result-title">为何推荐，下一步是什么</h2></div><span id="result-count" class="count"></span></header>
+          <div id="results" class="results"></div>
+        </section>
+        <aside class="library" aria-labelledby="library-title">
+          <p class="section-label">企业能力资产</p><h2 id="library-title">企业授权库</h2>
+          <dl id="library-summary" class="summary"></dl>
+          <div id="library-list" class="library-list"></div>
+        </aside>
+      </div>
+      <section class="work-order" aria-labelledby="work-title">
+        <div><p class="section-label">未来工作台接缝</p><h2 id="work-title">非执行型 WorkOrder 草案</h2></div>
+        <div id="work-order"></div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="./demand.js"></script>
+</body>
+</html>

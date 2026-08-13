@@ -33,3 +33,7 @@ export * from './creator/creator-workspace.mjs';
 export * from './creator/creator-workspace-store.mjs';
 export * from './creator/publication-workflow.mjs';
 export * from './creator/publication-store.mjs';
+export * from './demand/demand-catalog.mjs';
+export * from './demand/free-acquisition.mjs';
+export * from './demand/enterprise-library.mjs';
+export * from './demand/skill-steward.mjs';

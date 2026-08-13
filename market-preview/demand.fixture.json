@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-14T05:01:00.000Z",
+  "taskExample": { "summaryZh": "需要起草并校对一份正式的项目通知", "intentTags": ["公文", "写作", "校对"] },
+  "plan": {
+    "status": "ready",
+    "nextActions": ["核对离线 WorkOrder 草案后，由企业工作台显式接入"],
+    "recommendations": [
+      { "productId": "prod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "releaseId": "rel_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "abilityType": "skill", "titleZh": "中文公文写作", "status": "ready", "code": "ACCESS_ALLOWED", "reasonZh": "匹配正式公文写作任务，企业授权有效且已通过调用前检查。", "matchReasons": ["公文", "写作"], "acquisitionState": "entitled", "entitlementId": "ent_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "grantedRights": ["invoke"] },
+      { "productId": "prod_dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "releaseId": "rel_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "abilityType": "skill", "titleZh": "材料事实校验", "status": "acquisition_required", "code": "FREE_CONFIRMATION_REQUIRED", "reasonZh": "当前版本可免费获取，但必须由企业人员确认，技能管家不会自动获取。", "matchReasons": ["校对"], "acquisitionState": "free_available", "entitlementId": null, "grantedRights": [] },
+      { "productId": "prod_1111111111111111111111111111111111111111111111111111111111111111", "releaseId": "rel_2222222222222222222222222222222222222222222222222222222222222222", "abilityType": "application", "titleZh": "企业报告工作台", "status": "acquisition_required", "code": "PURCHASE_CONFIRMATION_REQUIRED", "reasonZh": "需要完成企业采购授权，技能管家不会生成已支付订单。", "matchReasons": ["写作"], "acquisitionState": "purchase_required", "entitlementId": null, "grantedRights": [] },
+      { "productId": "prod_3333333333333333333333333333333333333333333333333333333333333333", "releaseId": "rel_4444444444444444444444444444444444444444444444444444444444444444", "abilityType": "skill", "titleZh": "旧版敏感信息扫描", "status": "blocked", "code": "RELEASE_RECALLED", "reasonZh": "该版本已安全召回，不可形成调用计划。", "matchReasons": ["校对"], "acquisitionState": "unavailable", "entitlementId": null, "grantedRights": [] }
+    ],
+    "workOrderDraft": { "nonExecutable": true, "adapter": "code.zaowuyun.future.v1", "steps": [{ "position": 1, "productId": "prod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "releaseId": "rel_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "entitlementId": "ent_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "rights": ["invoke"], "environment": "staging", "dependencyOf": null }] }
+  },
+  "library": {
+    "summary": { "total": 2, "callable": 1, "blocked": 1, "withdrawn": 0 },
+    "items": [
+      { "entitlementId": "ent_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "productId": "prod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "titleZh": "中文公文写作", "abilityType": "skill", "releaseIds": ["rel_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"], "rights": ["invoke"], "status": "callable", "callable": true, "blockReason": null },
+      { "entitlementId": "ent_5555555555555555555555555555555555555555555555555555555555555555", "productId": "prod_3333333333333333333333333333333333333333333333333333333333333333", "titleZh": "旧版敏感信息扫描", "abilityType": "skill", "releaseIds": ["rel_4444444444444444444444444444444444444444444444444444444444444444"], "rights": ["invoke"], "status": "recalled", "callable": false, "blockReason": "RELEASE_RECALLED" }
+    ]
+  }
+}

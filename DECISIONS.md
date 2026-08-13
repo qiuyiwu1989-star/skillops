@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-08-14：需求方市场把“是否可信发布”“企业是否有授权”“当前是否可调用”拆成三层判断。目录状态固定为 `entitled | free_available | purchase_required | unavailable`；免费也必须经当前 Offer 生成 Order 与 Entitlement，技能管家只能输出需人工确认的获取动作或绑定 Product/Release/Entitlement 的不可执行 WorkOrder 草案，不自动获取、采购或调用。Basis: V4.5 需求方市场与技能管家闭环，延续 SkillOps 将技能作为可治理员工而非普通下载商品的定位。Confidence: high.
 - 2026-08-14：MarketRegistry 登记只证明商品身份和发布权来源，不等于商品已经上架。新订单必须消费 Publication 投影的 `published` 状态；`withdrawn` 阻止新订单但保留已有合法 Entitlement，`recalled` 同时阻断既有调用；申诉只记录请求，不自动恢复发布。Basis: V4.4 创作者发布闭环与跨域 E2E。Confidence: high.
 - 2026-08-14：创作者 Draft 默认私有且只保存商品元数据、稳定 Release 引用和权利声明摘要，不保存或在线编辑技能包正文。发布必须由权利与市场两个不同可信 human 复核；Agent、提交者及同一 subject 的身份别名不能形成批准。Basis: 用户要求创作者中心，同时坚持 SkillOps 是技能管理与可信供给层而非运行时。Confidence: high.
 - 2026-08-14：内容寻址摘要只证明对象完整性，不证明发行权。Publisher/Product/Application Release 必须经追加式可信市场注册台账登记；Order、AccessDecision 与二创血缘必须通过受信 Resolver 读取当前 Offer、发布状态、Entitlement、用量、席位和时间，拒绝调用方自证。Basis: V4.3 独立审查复现自签 Publisher/Entitlement、Release 范围并集和 BOM 商品错配可绕过授权。Confidence: high.
