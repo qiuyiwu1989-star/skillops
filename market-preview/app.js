@@ -1,4 +1,14 @@
 const DATA_URL = './data/listings.json';
+const EXPERIENCE_API_URL = './api/v1/preview/acquisitions';
+const FREE_ACQUISITION_API_URL = './api/v1/preview/acquisitions/free';
+const EXPERIENCE_FIXTURE_URL = './market-experience.fixture.json';
+const PRODUCT_ID = /^prod_[a-f0-9]{64}$/;
+const RELEASE_ID = /^rel_[a-f0-9]{64}$/;
+const OFFER_REVISION_ID = /^offrev_[a-f0-9]{64}$/;
+const ENTITLEMENT_ID = /^ent_[a-f0-9]{64}$/;
+const ACQUISITION_STATES = new Set(['entitled', 'free_available', 'purchase_required', 'unavailable']);
+const FORBIDDEN_PUBLIC_KEY = /(?:principal|subject|storageRef|filePath|prompt|output|token|secret|password|credential|apiKey)/i;
+const FORBIDDEN_PUBLIC_VALUE = /(?:file:\/\/|(?:^|[\s:："'(])\/(?:Users|home|etc|opt|srv|var|tmp)\/|(?:^|[\s:："'(])[A-Za-z]:\\|\\\\[^\\]+\\)/i;
 
 const CATEGORY_LABELS = {
   'content-creation': '内容创作',
@@ -24,6 +34,9 @@ const TASK_RULES = [
 
 const state = {
   listings: [],
+  experience: null,
+  experienceServiceAvailable: false,
+  acquisitionBusy: null,
   query: '',
   category: 'all',
   distribution: 'all',
@@ -42,6 +55,10 @@ const elements = {
   categoryReset: document.querySelector('#category-reset'),
   shelfList: document.querySelector('#shelf-list'),
   activeContext: document.querySelector('#active-context'),
+  acquisitionSummary: document.querySelector('#acquisition-summary'),
+  acquisitionContext: document.querySelector('#acquisition-context'),
+  acquisitionState: document.querySelector('#acquisition-state'),
+  productGrid: document.querySelector('#product-grid'),
   dialog: document.querySelector('#evidence-dialog'),
   dialogTitle: document.querySelector('#dialog-title'),
   dialogSummary: document.querySelector('#dialog-summary'),
@@ -58,6 +75,236 @@ function text(tagName, value, className) {
   if (className) element.className = className;
   element.textContent = visibleString(value);
   return element;
+}
+
+function assertPublicValue(value, path = 'marketExperience') {
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => assertPublicValue(entry, `${path}[${index}]`));
+    return;
+  }
+  if (!value || typeof value !== 'object') {
+    if (typeof value === 'string' && FORBIDDEN_PUBLIC_VALUE.test(value)) throw new Error(`${path} 包含本地路径或敏感值`);
+    return;
+  }
+  for (const [key, entry] of Object.entries(value)) {
+    if (FORBIDDEN_PUBLIC_KEY.test(key)) throw new Error(`${path}.${key} 不是公共市场字段`);
+    assertPublicValue(entry, `${path}.${key}`);
+  }
+}
+
+function requiredString(value, label, maximum = 220) {
+  if (typeof value !== 'string' || !value.trim() || [...value].length > maximum) throw new Error(`${label} 无效`);
+  return visibleString(value.normalize('NFC').trim());
+}
+
+function normalizeMarketExperience(input) {
+  assertPublicValue(input);
+  if (!input || input.schemaVersion !== 1 || !Array.isArray(input.products) || input.products.length > 24) {
+    throw new Error('市场商品投影格式不受支持');
+  }
+  const products = input.products.map((item, index) => {
+    if (!item || typeof item !== 'object') throw new Error(`products[${index}] 无效`);
+    const productId = requiredString(item.productId, `products[${index}].productId`, 69);
+    const releaseId = requiredString(item.releaseId, `products[${index}].releaseId`, 69);
+    if (!PRODUCT_ID.test(productId) || !RELEASE_ID.test(releaseId)) throw new Error(`products[${index}] 身份无效`);
+    const acquisitionState = requiredString(item.acquisition?.state, `products[${index}].acquisition.state`, 32);
+    if (!ACQUISITION_STATES.has(acquisitionState)) throw new Error(`products[${index}] 获取状态无效`);
+    const offerRevisionId = item.acquisition?.offerRevisionId == null ? null : requiredString(item.acquisition.offerRevisionId, `products[${index}].offerRevisionId`, 71);
+    const entitlementId = item.acquisition?.entitlementId == null ? null : requiredString(item.acquisition.entitlementId, `products[${index}].entitlementId`, 69);
+    if (offerRevisionId && !OFFER_REVISION_ID.test(offerRevisionId)) throw new Error(`products[${index}] Offer 身份无效`);
+    if (entitlementId && !ENTITLEMENT_ID.test(entitlementId)) throw new Error(`products[${index}] Entitlement 身份无效`);
+    const pricing = item.pricing || {};
+    if (!Number.isSafeInteger(pricing.amountMinor) || pricing.amountMinor < 0) throw new Error(`products[${index}] 价格无效`);
+    return {
+      productId,
+      releaseId,
+      abilityType: item.abilityType === 'application' ? 'application' : 'skill',
+      titleZh: requiredString(item.titleZh, `products[${index}].titleZh`, 100),
+      summaryZh: requiredString(item.summaryZh, `products[${index}].summaryZh`, 280),
+      categoryZh: requiredString(item.categoryZh, `products[${index}].categoryZh`, 64),
+      trustLabelZh: requiredString(item.trustLabelZh, `products[${index}].trustLabelZh`, 100),
+      pricing: {
+        model: requiredString(pricing.model, `products[${index}].pricing.model`, 32),
+        currency: requiredString(pricing.currency, `products[${index}].pricing.currency`, 3),
+        amountMinor: pricing.amountMinor,
+        labelZh: requiredString(pricing.labelZh, `products[${index}].pricing.labelZh`, 64),
+      },
+      acquisition: {
+        state: acquisitionState,
+        code: requiredString(item.acquisition?.code, `products[${index}].acquisition.code`, 80),
+        reasonZh: requiredString(item.acquisition?.reasonZh, `products[${index}].acquisition.reasonZh`, 180),
+        nextActionZh: requiredString(item.acquisition?.nextActionZh, `products[${index}].acquisition.nextActionZh`, 40),
+        entitlementId,
+        offerRevisionId,
+      },
+      publication: { status: requiredString(item.publication?.status, `products[${index}].publication.status`, 32) },
+    };
+  });
+  if (new Set(products.map(item => `${item.productId}\0${item.releaseId}`)).size !== products.length) throw new Error('市场商品投影包含重复发行版本');
+  const computed = {
+    total: products.length,
+    entitled: products.filter(item => item.acquisition.state === 'entitled').length,
+    freeAvailable: products.filter(item => item.acquisition.state === 'free_available').length,
+    purchaseRequired: products.filter(item => item.acquisition.state === 'purchase_required').length,
+    unavailable: products.filter(item => item.acquisition.state === 'unavailable').length,
+  };
+  for (const key of Object.keys(computed)) {
+    if (Number(input.summary?.[key]) !== computed[key]) throw new Error('市场商品汇总与商品状态不一致');
+  }
+  return {
+    schemaVersion: 1,
+    generatedAt: requiredString(input.generatedAt, 'generatedAt', 128),
+    mode: input.mode === 'local_service' ? 'local_service' : 'static_fixture',
+    organization: {
+      organizationId: requiredString(input.organization?.organizationId, 'organization.organizationId', 99),
+      labelZh: requiredString(input.organization?.labelZh, 'organization.labelZh', 80),
+    },
+    summary: computed,
+    products,
+  };
+}
+
+const ACQUISITION_LABELS = {
+  entitled: { label: '企业已授权', tone: 'positive' },
+  free_available: { label: '可免费获取', tone: 'accent' },
+  purchase_required: { label: '需要采购', tone: 'caution' },
+  unavailable: { label: '暂不可用', tone: 'critical' },
+};
+
+function showAcquisitionState(title, message, kind = '') {
+  elements.productGrid.hidden = true;
+  elements.acquisitionState.hidden = false;
+  elements.acquisitionState.className = `acquisition-state ${kind}`.trim();
+  elements.acquisitionState.replaceChildren(text('h3', title), text('p', message));
+}
+
+function setSummary(summary) {
+  const values = [summary.entitled, summary.freeAvailable, summary.purchaseRequired, summary.unavailable];
+  elements.acquisitionSummary.querySelectorAll('dd').forEach((element, index) => { element.textContent = String(values[index]); });
+}
+
+function shortIdentity(value) {
+  const source = String(value || '');
+  return source ? `${source.slice(0, 10)}...${source.slice(-6)}` : '未生成';
+}
+
+async function acquireFreeProduct(product) {
+  if (!state.experienceServiceAvailable || !product.acquisition.offerRevisionId || state.acquisitionBusy) return;
+  state.acquisitionBusy = product.productId;
+  renderExperience();
+  elements.acquisitionContext.textContent = `正在为 ${product.titleZh} 生成 Order 与 Entitlement`;
+  let finalMessage = '';
+  try {
+    const response = await fetch(FREE_ACQUISITION_API_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        productId: product.productId,
+        releaseId: product.releaseId,
+        offerRevisionId: product.acquisition.offerRevisionId,
+        idempotencyKey: `market_preview_${product.productId.slice(5, 17)}_${product.releaseId.slice(4, 16)}`,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok || result.ok !== true) throw new Error(result.error?.messageZh || '免费获取未完成');
+    state.experience = normalizeMarketExperience(result.data.projection);
+    finalMessage = `${product.titleZh} 已进入企业授权库，授权 ${shortIdentity(result.data.grant.entitlementId)}`;
+  } catch (error) {
+    finalMessage = visibleString(error.message || '免费获取未完成，请稍后重试');
+  } finally {
+    state.acquisitionBusy = null;
+    renderExperience();
+    elements.acquisitionContext.textContent = finalMessage;
+  }
+}
+
+function productCard(product) {
+  const article = document.createElement('article');
+  article.className = `product-card product-${product.acquisition.state}`;
+  article.dataset.productId = product.productId;
+  const label = ACQUISITION_LABELS[product.acquisition.state];
+  const top = document.createElement('div');
+  top.className = 'product-card-top';
+  top.append(text('span', product.abilityType === 'application' ? '企业应用' : product.categoryZh, 'product-category mono'));
+  top.append(text('span', label.label, `product-state product-state-${label.tone}`));
+  const identity = document.createElement('dl');
+  identity.className = 'product-identity';
+  identity.append(
+    evidenceRow('发行版本', shortIdentity(product.releaseId)),
+    evidenceRow('可信状态', product.trustLabelZh),
+  );
+  const action = document.createElement('div');
+  action.className = 'product-action';
+  if (product.acquisition.state === 'entitled') {
+    const link = text('a', '交给技能管家', 'btn primary');
+    link.href = `./demand.html#product=${encodeURIComponent(product.productId)}`;
+    action.append(link);
+  } else if (product.acquisition.state === 'free_available') {
+    const button = text('button', state.acquisitionBusy === product.productId ? '正在生成授权' : product.acquisition.nextActionZh, 'btn primary');
+    button.type = 'button';
+    button.disabled = !state.experienceServiceAvailable || !product.acquisition.offerRevisionId || Boolean(state.acquisitionBusy);
+    button.addEventListener('click', () => acquireFreeProduct(product));
+    action.append(button);
+  } else if (product.acquisition.state === 'purchase_required') {
+    const button = text('button', '联系企业采购', 'btn');
+    button.type = 'button';
+    const note = text('p', '', 'product-action-feedback');
+    note.setAttribute('role', 'status');
+    note.hidden = true;
+    button.addEventListener('click', () => {
+      note.textContent = '当前预览不接真实支付，请通过企业采购流程取得授权。';
+      note.hidden = false;
+    });
+    action.append(button, note);
+  } else {
+    const button = text('button', product.acquisition.nextActionZh, 'btn ghost');
+    button.type = 'button';
+    button.disabled = true;
+    action.append(button);
+  }
+  article.append(
+    top,
+    text('h3', product.titleZh),
+    text('p', product.summaryZh, 'product-summary'),
+    text('p', product.pricing.labelZh, 'product-price'),
+    identity,
+    text('p', product.acquisition.reasonZh, 'product-reason'),
+    action,
+  );
+  return article;
+}
+
+function renderExperience() {
+  if (!state.experience) return;
+  setSummary(state.experience.summary);
+  elements.acquisitionContext.textContent = state.experienceServiceAvailable
+    ? `${state.experience.organization.labelZh}，本地授权账本已连接`
+    : '静态演示模式，启动本地预览服务后才能生成授权';
+  elements.acquisitionState.hidden = true;
+  elements.productGrid.hidden = false;
+  elements.productGrid.replaceChildren(...state.experience.products.map(productCard));
+}
+
+async function loadExperience() {
+  try {
+    const response = await fetch(`${EXPERIENCE_API_URL}?at=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('local service unavailable');
+    const value = await response.json();
+    if (value.ok !== true) throw new Error('local service rejected request');
+    state.experience = normalizeMarketExperience(value.data);
+    state.experienceServiceAvailable = true;
+    renderExperience();
+    return;
+  } catch {}
+  try {
+    const response = await fetch(EXPERIENCE_FIXTURE_URL, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    state.experience = normalizeMarketExperience(await response.json());
+    state.experienceServiceAvailable = false;
+    renderExperience();
+  } catch {
+    showAcquisitionState('无法读取市场商品', '请通过本地预览服务打开页面，并确认商品演示数据可用。', 'error');
+  }
 }
 
 function safeExternalUrl(value) {
@@ -622,3 +869,4 @@ elements.dialog.addEventListener('close', () => {
 });
 
 loadListings();
+loadExperience();

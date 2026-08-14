@@ -7,9 +7,9 @@
     <meta name="description" content="造物云技能市场，发现、评估并获取可信的 AI 技能">
     <title>造物云技能市场｜发现可信的 AI 技能</title>
     <link rel="stylesheet" href="./zaowuyun-tokens.css?v=v1">
-    <link rel="stylesheet" href="./styles.css?v=market-v47">
+    <link rel="stylesheet" href="./styles.css?v=market-v47-acquisition-3">
     <link rel="stylesheet" href="./zaowuyun-shell.css?v=v1">
-    <script src="./app.js?v=market-v47" type="module"></script>
+    <script src="./app.js?v=market-v47-acquisition-2" type="module"></script>
   </head>
   <body>
     <a class="zy-skip-link" href="#market">跳到市场内容</a>
@@ -25,7 +25,7 @@
         </nav>
         <span class="zy-context">本地可信预览</span>
       </div>
-      <nav class="zy-subnav" aria-label="市场内容导航"><a href="#discover" aria-current="location">发现技能</a><a href="#shelves">可信推荐</a><a href="#catalog">全部技能</a><a href="./creator.html">发布能力</a></nav>
+      <nav class="zy-subnav" aria-label="市场内容导航"><a href="#discover" aria-current="location">发现技能</a><a href="#acquisition">企业获取</a><a href="#shelves">可信推荐</a><a href="#catalog">全部技能</a><a href="./creator.html">发布能力</a></nav>
     </header>
 
     <main id="market">
@@ -60,6 +60,31 @@
             <button id="category-reset" class="text-button mono" type="button" hidden>清除分类</button>
           </div>
           <div id="category-list" class="category-list" aria-label="技能分类"></div>
+        </div>
+      </section>
+
+      <section class="acquisition-section" id="acquisition" aria-labelledby="acquisition-title">
+        <div class="wrap acquisition-layout">
+          <div class="acquisition-copy">
+            <p class="eyebrow">企业获取入口</p>
+            <h2 id="acquisition-title" class="h-2">看懂授权，再把技能交给 Agent</h2>
+            <p>技能不是必须打开的应用。企业获得对应发行版本的调用权后，技能管家才能把它纳入推荐和工作单。</p>
+            <dl id="acquisition-summary" class="acquisition-summary" aria-label="企业授权概览">
+              <div><dt>已授权</dt><dd>-</dd></div>
+              <div><dt>可免费获取</dt><dd>-</dd></div>
+              <div><dt>需采购</dt><dd>-</dd></div>
+              <div><dt>不可用</dt><dd>-</dd></div>
+            </dl>
+            <p id="acquisition-context" class="acquisition-context mono">正在确认当前组织的授权状态</p>
+          </div>
+
+          <div class="acquisition-products">
+            <section id="acquisition-state" class="acquisition-state" aria-live="polite">
+              <div class="skeleton" aria-hidden="true"></div>
+              <p>正在读取市场商品与企业授权</p>
+            </section>
+            <section id="product-grid" class="product-grid" aria-label="市场商品" aria-live="polite" hidden></section>
+          </div>
         </div>
       </section>
 

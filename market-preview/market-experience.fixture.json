@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-14T00:00:00.000Z",
+  "mode": "static_fixture",
+  "organization": {
+    "organizationId": "org_zaowuyun_preview",
+    "labelZh": "造物云演示企业"
+  },
+  "summary": {
+    "total": 4,
+    "entitled": 1,
+    "freeAvailable": 1,
+    "purchaseRequired": 1,
+    "unavailable": 1
+  },
+  "products": [
+    {
+      "productId": "prod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "releaseId": "rel_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "abilityType": "skill",
+      "titleZh": "中文公文写作",
+      "summaryZh": "面向通知、请示、报告与纪要的企业写作能力，已进入演示企业能力库。",
+      "categoryZh": "办公效率",
+      "trustLabelZh": "已通过发布审核",
+      "pricing": { "model": "free", "currency": "CNY", "amountMinor": 0, "labelZh": "企业已获取" },
+      "acquisition": { "state": "entitled", "code": "ENTITLEMENT_ACTIVE", "reasonZh": "演示企业已有有效调用授权", "nextActionZh": "交给技能管家", "entitlementId": "ent_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "offerRevisionId": null, "source": "trusted_fixture" },
+      "publication": { "status": "published" }
+    },
+    {
+      "productId": "prod_dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "releaseId": "rel_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "abilityType": "skill",
+      "titleZh": "材料事实校验",
+      "summaryZh": "检查材料中的事实、口径和引用风险，免费获取后进入企业能力库。",
+      "categoryZh": "研究洞察",
+      "trustLabelZh": "已通过发布审核",
+      "pricing": { "model": "free", "currency": "CNY", "amountMinor": 0, "labelZh": "免费" },
+      "acquisition": { "state": "free_available", "code": "LOCAL_SERVICE_REQUIRED", "reasonZh": "启动本地预览服务后可生成真实授权", "nextActionZh": "启动服务后获取", "entitlementId": null, "offerRevisionId": null, "source": "static_fixture" },
+      "publication": { "status": "published" }
+    },
+    {
+      "productId": "prod_1111111111111111111111111111111111111111111111111111111111111111",
+      "releaseId": "rel_2222222222222222222222222222222222222222222222222222222222222222",
+      "abilityType": "application",
+      "titleZh": "企业报告工作台",
+      "summaryZh": "组合研究、写作和复核技能的企业报告应用，需要完成组织采购。",
+      "categoryZh": "企业应用",
+      "trustLabelZh": "已发布，等待采购授权",
+      "pricing": { "model": "one_time", "currency": "CNY", "amountMinor": 29900, "labelZh": "¥299 / 组织" },
+      "acquisition": { "state": "purchase_required", "code": "PURCHASE_REQUIRED", "reasonZh": "当前组织尚未取得付费授权", "nextActionZh": "查看采购方式", "entitlementId": null, "offerRevisionId": null, "source": "trusted_fixture" },
+      "publication": { "status": "published" }
+    },
+    {
+      "productId": "prod_3333333333333333333333333333333333333333333333333333333333333333",
+      "releaseId": "rel_4444444444444444444444444444444444444444444444444444444444444444",
+      "abilityType": "skill",
+      "titleZh": "旧版敏感信息扫描",
+      "summaryZh": "该发行版本已召回，市场保留状态说明但不允许获取或调用。",
+      "categoryZh": "安全治理",
+      "trustLabelZh": "安全召回",
+      "pricing": { "model": "free", "currency": "CNY", "amountMinor": 0, "labelZh": "不可获取" },
+      "acquisition": { "state": "unavailable", "code": "RELEASE_RECALLED", "reasonZh": "当前发行版本已召回", "nextActionZh": "等待替代版本", "entitlementId": null, "offerRevisionId": null, "source": "trusted_fixture" },
+      "publication": { "status": "recalled" }
+    }
+  ],
+  "projectionDigest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}
