@@ -530,6 +530,23 @@ function detailHref(listing) {
   return `./skills/${encodeURIComponent(String(listing.id))}/`;
 }
 
+function invocationText(listing) {
+  return `请调用「${listing.name}」技能完成任务。请先确认适用场景与使用边界，再根据我的具体需求执行。`;
+}
+
+async function copyInvocation(listing, button) {
+  const value = invocationText(listing);
+  const initialLabel = button.textContent;
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+    await navigator.clipboard.writeText(value);
+    button.textContent = '调用词已复制';
+  } catch {
+    button.textContent = '复制失败，请查看详情';
+  }
+  window.setTimeout(() => { button.textContent = initialLabel; }, 1800);
+}
+
 function detailGroup(title, rows, className = '') {
   const section = document.createElement('section');
   section.className = `evidence-group ${className}`.trim();
@@ -655,7 +672,7 @@ function cardFor(listing, { compact = false } = {}) {
   topline.className = 'card-topline';
   const tags = document.createElement('div');
   tags.className = 'card-topline-tags';
-  tags.append(text('span', categoryLabel(listingCategory(listing)), 'tag'), text('span', humanDistribution(listing.distribution), 'tag'));
+  tags.append(text('span', categoryLabel(listingCategory(listing)), 'tag'));
   topline.append(tags, trustBadge(listing));
   main.append(topline, text('h3', listing.name));
   const originalName = listing.original?.name && listing.original.name !== listing.name
@@ -672,7 +689,7 @@ function cardFor(listing, { compact = false } = {}) {
   recommendationPanel.append(text('strong', '推荐依据'), text('p', recommendation.label));
   const related = compositionSkills(listing);
   if (related.length) recommendationPanel.append(text('p', `可组合：${related.map(item => item.titleZh || item.skillId).join('、')}`, 'composition-inline'));
-  main.append(recommendationPanel);
+  if (recommendation.matched || related.length) main.append(recommendationPanel);
 
   const evalInfo = evalSummary(listing);
   const installation = installationDecision(listing);
@@ -681,12 +698,20 @@ function cardFor(listing, { compact = false } = {}) {
   metrics.append(
     evidenceRow('SMS 静态潜力', listing.sms?.total == null ? '待评分' : `${listing.sms.total} 分 · ${smsBand(Number(listing.sms.total))} 段`),
     evidenceRow('Eval 运行实绩', evalInfo.detail),
-    evidenceRow('安装状态', installation.eligible ? '可进入受控部署' : `不可安装：${installation.reasons[0] || '可信证据不完整'}`),
-    evidenceRow('安全与许可', `${humanStatus(listing.security?.status)} · ${listing.license?.spdx || humanStatus(listing.license?.status)}`),
+    evidenceRow('使用边界', installation.eligible ? '可受控部署' : humanDistribution(listing.distribution)),
   );
 
   const actions = document.createElement('div');
   actions.className = 'card-actions';
+  const primaryActions = document.createElement('div');
+  primaryActions.className = 'card-primary-actions';
+  const copyButton = text('button', '复制调用词', 'btn primary invocation-copy');
+  copyButton.type = 'button';
+  copyButton.setAttribute('aria-live', 'polite');
+  copyButton.addEventListener('click', () => copyInvocation(listing, copyButton));
+  const detailLink = text('a', '查看完整详情', 'btn');
+  detailLink.href = detailHref(listing);
+  primaryActions.append(copyButton, detailLink);
   const links = document.createElement('div');
   links.className = 'card-links';
   links.append(createSourceLink(listing));
@@ -694,9 +719,7 @@ function cardFor(listing, { compact = false } = {}) {
   previewButton.type = 'button';
   previewButton.addEventListener('click', () => openEvidence(listing));
   links.append(previewButton);
-  const detailLink = text('a', '查看完整详情', 'btn');
-  detailLink.href = detailHref(listing);
-  actions.append(links, detailLink);
+  actions.append(primaryActions, links);
   main.append(metrics, actions);
   article.append(main);
   return article;

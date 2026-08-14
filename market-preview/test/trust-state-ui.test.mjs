@@ -46,7 +46,7 @@ test('detail presents package, SMS, Eval and review digest bindings without raw 
 });
 
 test('trust feedback preserves card rhythm and the accessible Zaowuyun motion system', () => {
-  assert.match(CSS, /\.card-topline\s*\{[^}]*min-height:\s*28px/s);
+  assert.match(CSS, /\.card-topline\s*\{[^}]*min-height:\s*34px/s);
   assert.match(CSS, /\.trust-badge/);
   assert.match(DETAIL_CSS, /\.trust-badge/);
   assert.match(CSS + DETAIL_CSS, /\.trust-positive/);
