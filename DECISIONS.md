@@ -1,5 +1,9 @@
 # Decisions
 
+- 2026-08-15：首批技能发布采用“公开成熟度泳道”而不是批量改成可调用。6 个造物云自有技能统一经过完整包、全包审计、SMS B 段、真实 Eval、双人终审和第一方授权政策 7 道门；静态 SMS 草案和已准备 Eval 测试集只能显示为准备证据，不能冒充正式评分或实绩。Basis: 用户要求先把市场做成比较成型的版本并继续扩充技能，但项目定位要求可调用能力必须有真实证据和授权。Confidence: high.
+- 2026-08-15：市场供给采用 file-as-truth 目录管线。外部与本机技能卷可以先进入 `indexed` 来源索引，但不得复制正文、伪造 SMS/Eval 或绕过安全/许可/人审；第一方技能另进入发布培育队列。Basis: 用户要求市场至少加载很多技能并建立管线，同时明确 SkillOps 仍是技能 HRD。Confidence: high.
+- 2026-08-14：市场技能卡固定为“创作者 + Offer + 权利说明 + 可信证据 + 在线体验”的商品结构。价格不等于许可证，许可证不等于 Entitlement；没有受信 Offer 时必须显示“价格待发布”，本地演示报价必须标明不形成授权。Basis: 用户指出现有目录缺少创作者和定价信息，不像双边技能市场。Confidence: high.
+- 2026-08-14：技能市场主操作从“复制调用词”升级为“在线体验 → 工作台交接”。市场可收集受限任务摘要并生成有时效、内容寻址、固定技能版本和可信边界的 `skillops.workbench-handoff.v1`；交接单不是授权凭证，也不代表技能已运行。当前只接 `skillops.steward.local.v1`，正式目标契约冻结为 `code.zaowuyun.workbench.v1`，工作台执行前必须重新核验 Publication、Entitlement、权限、项目、环境和版本。Basis: 用户明确要求复用提示词应能在线直接体验，或加载到已经存在的 Vibe Coding 工作台，而不是停留在复制文本。Confidence: high.
 - 2026-08-14：市场首页的商业状态固定分为 `entitled | free_available | purchase_required | unavailable`，并与 SMS/Eval/发布可信状态分层展示。免费获取在本地预览中必须由用户明确点击，并经正式 AcquisitionLedger 原子生成 Order 与 Entitlement；浏览器状态、静态 fixture 和付费按钮都不能自行形成授权。Basis: 用户要求继续下一阶段并坚持技能是可调用能力而非必须打开的 App，V4.5 已有可信授权内核但公开市场尚未形成可见获取闭环。Confidence: high.
 - 2026-08-14：市场产品体验以线上 `skill.zaowuyun.com` 为公开主版本，路由关系固定为能力市场、技能详情、技能管家、创作者中心和企业技能人事部；企业私有开发与组织运营是市场后的管理面，不再承担公开市场首页。各页面共享造物云 V1 Token、晶体品牌标、64px 产品导航与中文企业任务语言，业务数据和可信门禁保持原有边界。Basis: 用户指出本地 enterprise 页面与此前线上市场版本不一致，并明确启动“第一阶段：统一市场产品体验”。Confidence: high.
 - 2026-08-14：造物云能力市场、技能管家、创作者中心和企业工作台的唯一视觉标准改为 `https://www.zaowuyun.com/design-system.html`。业务页面必须消费官方设计 Token 与品牌资源，采用紫蓝主色、深空/冷灰双主题、Noto Sans SC + Space Grotesk、玻璃层级、1280px 栅格和 4px 间距阶梯；旧 SkillOps Rams/Braun 奶油橙只作为历史样式，不再扩展。Basis: 用户明确纠正企业开发台未按造物云设计风格执行。Confidence: high.

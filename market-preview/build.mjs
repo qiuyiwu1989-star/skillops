@@ -61,6 +61,26 @@ function assertSafeListingId(id) {
   return id;
 }
 
+function assertPublishableListing(listing) {
+  const id = assertSafeListingId(listing?.id);
+  const status = listing?.verification?.status;
+  if (status === 'approved') return id;
+  if (status !== 'indexed') throw new Error(`unsupported market listing status: ${String(status)}`);
+  if (listing.distribution !== 'source_link_only'
+    || listing.install?.status !== 'source_required'
+    || listing.catalog?.indexed !== true
+    || listing.sms?.status !== 'pending'
+    || listing.eval?.status !== 'pending'
+    || Object.hasOwn(listing, 'content')) {
+    throw new Error(`indexed listing violates source-only boundary: ${id}`);
+  }
+  const sourcePath = String(listing.source?.path || '');
+  if (!sourcePath || path.isAbsolute(sourcePath) || sourcePath.split('/').includes('..') || sourcePath.includes('\\')) {
+    throw new Error(`indexed listing has unsafe source path: ${id}`);
+  }
+  return id;
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -96,8 +116,8 @@ function relatedListingsFor(listing, listings) {
 
 function renderDetailEntry(template, listing) {
   const id = listing.id;
-  const title = listing.localization?.titleZh || listing.name || '技能详情';
-  const description = listing.localization?.descriptionZh || listing.description || 'SkillOps 可信能力市场技能详情';
+  const title = listing.catalog?.titleZh || listing.localization?.titleZh || listing.name || '技能详情';
+  const description = listing.catalog?.summaryZh || listing.localization?.descriptionZh || listing.description || 'SkillOps 可信能力市场技能详情';
   const configuration = JSON.stringify({
     skillId: id,
     listingUrl: `/data/skills/${id}.json`,
@@ -145,15 +165,10 @@ function cleanStaleDetails({ previewRoot, detailDataRoot, previousIds, currentId
   }
 }
 
-export function buildApprovedListings({ storePath, outPath = DEFAULT_OUTPUT, rootPath, clock } = {}) {
-  if (!storePath) throw new Error('candidate store path is required');
-  const store = new CandidateStore(storePath);
-
-  // This is the trust boundary. Never read store.read() or store.list() here.
-  const listings = store.listListings();
-  const ids = listings.map(listing => assertSafeListingId(listing.id));
-  if (new Set(ids).size !== ids.length) throw new Error('approved listing ids must be unique');
-
+export function buildMarketListings({ listings, outPath = DEFAULT_OUTPUT, rootPath, clock, source = 'SkillOps.marketCatalog' } = {}) {
+  if (!Array.isArray(listings)) throw new Error('market listings are required');
+  const ids = listings.map(assertPublishableListing);
+  if (new Set(ids).size !== ids.length) throw new Error('market listing ids must be unique');
   const previewRoot = previewRootFor(outPath, rootPath);
   const detailDataRoot = path.join(previewRoot, 'data', 'skills');
   const detailPagesRoot = path.join(previewRoot, 'skills');
@@ -162,7 +177,7 @@ export function buildApprovedListings({ storePath, outPath = DEFAULT_OUTPUT, roo
   const artifact = {
     schemaVersion: 1,
     generatedAt,
-    source: 'CandidateStore.listListings',
+    source,
     count: listings.length,
     listings,
   };
@@ -175,7 +190,7 @@ export function buildApprovedListings({ storePath, outPath = DEFAULT_OUTPUT, roo
     json: {
       schemaVersion: 1,
       generatedAt,
-      source: 'CandidateStore.listListings',
+      source,
       listing,
       relatedListings: relatedListingsFor(listing, listings),
     },
@@ -206,6 +221,21 @@ export function buildApprovedListings({ storePath, outPath = DEFAULT_OUTPUT, roo
     })),
   });
   return artifact;
+}
+
+export function buildApprovedListings({ storePath, outPath = DEFAULT_OUTPUT, rootPath, clock } = {}) {
+  if (!storePath) throw new Error('candidate store path is required');
+  const store = new CandidateStore(storePath);
+
+  // This is the trust boundary. Never read store.read() or store.list() here.
+  const listings = store.listListings();
+  return buildMarketListings({
+    listings,
+    outPath,
+    rootPath,
+    clock,
+    source: 'CandidateStore.listListings',
+  });
 }
 
 async function main() {

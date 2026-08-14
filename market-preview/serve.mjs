@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createPreviewAcquisitionService, PreviewAcquisitionError } from './preview-acquisition.mjs';
+import { createPreviewWorkbenchService, PreviewWorkbenchError } from './preview-workbench.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MAX_JSON_BODY_BYTES = 16 * 1024;
@@ -15,6 +16,7 @@ const TYPES = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.html', 'text/html; charset=utf-8'],
   ['.js', 'text/javascript; charset=utf-8'],
+  ['.mjs', 'text/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
   ['.svg', 'image/svg+xml; charset=utf-8'],
 ]);
@@ -104,10 +106,40 @@ async function handleAcquisitionApi(request, response, acquisitionService) {
   }
 }
 
-export function createPreviewServer({ root = process.env.SKILLOPS_PREVIEW_ROOT || HERE, acquisitionService = null } = {}) {
+async function handleWorkbenchApi(request, response, workbenchService) {
+  let pathname;
+  try { pathname = new URL(request.url || '/', 'http://localhost').pathname; } catch { return false; }
+  const match = pathname.match(/^\/api\/v1\/preview\/workbench\/handoffs(?:\/(wbh_[a-f0-9]{64}))?$/);
+  if (!match) return false;
+  if (!workbenchService) {
+    writeJson(response, 503, { ok: false, error: { code: 'LOCAL_SERVICE_DISABLED', messageZh: '本地工作台服务未启用' } });
+    return true;
+  }
+  try {
+    if (request.method === 'POST' && !match[1]) {
+      writeJson(response, 201, { ok: true, data: workbenchService.create(await readJsonBody(request)) });
+      return true;
+    }
+    if (request.method === 'GET' && match[1]) {
+      writeJson(response, 200, { ok: true, data: workbenchService.get(match[1]) });
+      return true;
+    }
+    writeJson(response, 405, { ok: false, error: { code: 'METHOD_NOT_ALLOWED', messageZh: '该接口不支持当前请求方法' } });
+    return true;
+  } catch (cause) {
+    const statusCode = cause instanceof PreviewWorkbenchError ? cause.statusCode : 500;
+    const code = cause instanceof PreviewWorkbenchError ? cause.code : 'WORKBENCH_SERVICE_FAILED';
+    const messageZh = cause instanceof PreviewWorkbenchError ? cause.messageZh : '本地工作台服务暂时不可用';
+    writeJson(response, statusCode, { ok: false, error: { code, messageZh } });
+    return true;
+  }
+}
+
+export function createPreviewServer({ root = process.env.SKILLOPS_PREVIEW_ROOT || HERE, acquisitionService = null, workbenchService = null } = {}) {
   const resolvedRoot = path.resolve(root);
   return http.createServer(async (request, response) => {
     if (await handleAcquisitionApi(request, response, acquisitionService)) return;
+    if (await handleWorkbenchApi(request, response, workbenchService)) return;
     if (!['GET', 'HEAD'].includes(request.method || 'GET')) {
       response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
       response.end('Method not allowed');
@@ -134,7 +166,13 @@ function main() {
   const ledgerPath = process.env.SKILLOPS_PREVIEW_ACQUISITION_LEDGER
     || path.join(os.tmpdir(), 'skillops-market-preview-acquisitions.json');
   const acquisitionService = createPreviewAcquisitionService({ ledgerPath });
-  const server = createPreviewServer({ acquisitionService });
+  const workbenchLedgerPath = process.env.SKILLOPS_PREVIEW_WORKBENCH_LEDGER
+    || path.join(os.tmpdir(), 'skillops-market-preview-workbench.json');
+  const workbenchService = createPreviewWorkbenchService({
+    listingsPath: path.join(HERE, 'data', 'listings.json'),
+    ledgerPath: workbenchLedgerPath,
+  });
+  const server = createPreviewServer({ acquisitionService, workbenchService });
   server.listen(port, '127.0.0.1', () => {
     process.stdout.write(`SkillOps market preview: http://127.0.0.1:${port}\n`);
   });

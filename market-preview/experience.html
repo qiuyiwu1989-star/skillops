@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="skillops:listings-url" content="./data/listings.json">
+  <title>在线体验 · 造物云技能市场</title>
+  <link rel="stylesheet" href="./zaowuyun-tokens.css?v=v1">
+  <link rel="stylesheet" href="./zaowuyun-shell.css?v=v1">
+  <link rel="stylesheet" href="./experience.css?v=v1">
+</head>
+<body>
+  <a class="zy-skip-link" href="#main">跳到体验区</a>
+  <header class="zy-header">
+    <div class="zy-nav">
+      <a class="zy-brand" href="./index.html" aria-label="返回造物云技能市场"><img src="./zaowuyun-mark-color.svg" alt=""><span>造物云</span><span class="zy-brand-product">技能市场</span></a>
+      <nav class="zy-product-nav" aria-label="市场产品导航"><a href="./index.html">能力市场</a><a href="./experience.html" aria-current="page">在线体验</a><a href="./demand.html">技能管家</a><a href="./creator.html">创作者中心</a><a href="./enterprise.html">企业技能人事部</a></nav>
+      <span class="zy-context">本地受控体验</span>
+    </div>
+  </header>
+
+  <main id="main" class="experience-shell">
+    <header class="experience-heading">
+      <div><p class="eyebrow">Market → Workbench</p><h1>先在线体验，<br>再加载到工作台</h1></div>
+      <p>这里会把任务、技能版本与可信边界固定成工作单。不会上传业务正文，也不会在市场页执行第三方脚本。</p>
+    </header>
+
+    <section id="experience-state" class="state-card" aria-live="polite"><p class="eyebrow">准备中</p><h2>正在读取技能与版本证据</h2></section>
+
+    <div id="experience-workspace" class="experience-grid" hidden>
+      <aside class="skill-context" aria-labelledby="skill-title">
+        <p class="panel-label">当前技能</p>
+        <span id="skill-category" class="context-chip"></span>
+        <h2 id="skill-title"></h2>
+        <p id="skill-original" class="mono muted"></p>
+        <p id="skill-description" class="skill-description"></p>
+        <dl class="trust-list"><div><dt>SMS</dt><dd id="skill-sms"></dd></div><div><dt>Eval</dt><dd id="skill-eval"></dd></div><div><dt>使用边界</dt><dd id="skill-boundary"></dd></div></dl>
+        <a id="skill-detail" class="text-link" href="./index.html">查看完整证据</a>
+      </aside>
+
+      <section class="task-canvas" aria-labelledby="task-title">
+        <p class="panel-label">在线体验</p>
+        <h2 id="task-title">描述这次要完成的工作</h2>
+        <p class="task-help">只写任务目标与交付物，不粘贴合同、客户资料、账号、密钥或完整业务正文。</p>
+        <form id="experience-form">
+          <label for="task-summary">任务摘要</label>
+          <textarea id="task-summary" name="taskSummaryZh" rows="8" maxlength="240" required placeholder="例如：把 5 条客户访谈证据整理成一页机会简报，列出问题、影响、约束和待确认项。"></textarea>
+          <div class="field-footer"><span id="form-error" role="alert"></span><span><output id="task-count">0</output>/240</span></div>
+          <button id="create-handoff" class="primary-action" type="submit">生成体验工作单</button>
+        </form>
+        <div class="privacy-strip"><strong>受控边界</strong><span>本阶段只生成工作单；模型运行与技能脚本执行由工作台再次核验后负责。</span></div>
+      </section>
+
+      <aside class="handoff-panel" aria-labelledby="handoff-title">
+        <p class="panel-label">工作台交接</p>
+        <h2 id="handoff-title">等待任务</h2>
+        <p id="handoff-copy" class="muted">提交任务摘要后，这里会显示固定技能版本、交接摘要和下一步。</p>
+        <dl id="handoff-meta" class="handoff-meta" hidden></dl>
+        <a id="open-workbench" class="workbench-action" href="./demand.html" hidden>加载到技能管家工作台</a>
+        <p class="future-note">正式接入目标：<span class="mono">code.zaowuyun.workbench.v1</span></p>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="./experience.js?v=catalog-pipeline-1"></script>
+</body>
+</html>

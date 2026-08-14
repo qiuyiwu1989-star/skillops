@@ -15,7 +15,7 @@
   <header class="zy-header">
     <div class="zy-nav">
       <a class="zy-brand" href="./index.html" aria-label="返回造物云技能市场"><img src="./zaowuyun-mark-color.svg" alt=""><span>造物云</span><span class="zy-brand-product">技能市场</span></a>
-      <nav class="zy-product-nav" aria-label="市场产品导航"><a href="./index.html">能力市场</a><a href="./demand.html" aria-current="page">技能管家</a><a href="./creator.html">创作者中心</a><a href="./enterprise.html">企业技能人事部</a></nav>
+      <nav class="zy-product-nav" aria-label="市场产品导航"><a href="./index.html">能力市场</a><a href="./experience.html">在线体验</a><a href="./demand.html" aria-current="page">技能管家</a><a href="./creator.html">创作者中心</a><a href="./enterprise.html">企业技能人事部</a></nav>
       <span class="zy-context">本地只读演示</span>
     </div>
   </header>
@@ -23,7 +23,7 @@
     <section class="intro">
       <p class="eyebrow">Skill Steward Agent</p>
       <h1>技能管家</h1>
-      <p>描述任务后，管家只依据当前发布、企业授权与调用前判断解释推荐。不会发送业务材料，也不会自动获取、采购或执行技能。</p>
+      <p>描述任务后，管家依据当前发布、企业授权与调用前判断解释推荐；也可以接收市场在线体验生成的固定版本工作单。</p>
     </section>
     <section id="state" class="state-panel" aria-live="polite"><p class="eyebrow">读取中</p><h2>正在核验本地需求方投影</h2></section>
     <div id="workspace" hidden>
@@ -50,11 +50,11 @@
         </aside>
       </div>
       <section class="work-order" aria-labelledby="work-title">
-        <div><p class="section-label">未来工作台接缝</p><h2 id="work-title">非执行型 WorkOrder 草案</h2></div>
+        <div><p class="section-label">工作台接缝</p><h2 id="work-title">固定版本 WorkOrder</h2></div>
         <div id="work-order"></div>
       </section>
     </div>
   </main>
-  <script type="module" src="./demand.js"></script>
+  <script type="module" src="./demand.js?v=v2"></script>
 </body>
 </html>

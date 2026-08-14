@@ -1,3 +1,5 @@
+import { merchandisingForListing } from './market-merchandising.mjs';
+
 const CATEGORY_LABELS = {
   'content-creation': '内容创作',
   'data-analysis': '数据分析',
@@ -34,6 +36,7 @@ const STATUS_LABELS = {
   pending: '等待验证',
   complete: '已完成',
   approved: '旧版批准，待双人终审',
+  indexed: '已收录，待评估',
   verified: '已有实绩',
   eligible: '符合受控部署条件',
   source_required: '需要补齐来源包',
@@ -50,7 +53,15 @@ const STATUS_LABELS = {
   active_pending_revalidation: '已恢复，待重新验证',
 };
 
+const LAUNCH_LANE_LABELS = {
+  package_preparation_required: '待完整包', security_review_required: '待安全复核',
+  sms_confirmation_required: '待确认 SMS', sms_improvement_required: 'SMS 待提升',
+  eval_execution_required: '待运行 Eval', human_review_required: '待双人终审',
+  rights_policy_required: '待授权政策', release_ready: '可正式发布',
+};
+
 const INSTALL_REASON_LABELS = {
+  catalog_index_only: '当前仅完成目录收录，尚未进入完整包审核',
   license_allows_source_link_only: '许可仅允许来源索引',
   complete_package_missing: '缺少完整技能包',
   collector_snapshot_is_not_a_complete_package: '采集快照不是完整技能包',
@@ -381,12 +392,22 @@ function renderHero(listing) {
   elements.actions.replaceChildren(...[source, back].filter(Boolean));
 
   const evalState = listing.eval?.status === 'pending' || !listing.eval?.status ? '等待实绩验证' : statusLabel(listing.eval.status);
+  const marketplace = merchandisingForListing(listing);
+  const launch = listing.catalog?.launchReadiness;
+  const smsTotal = listing.sms?.total ?? (launch?.evidence?.smsStatus === 'complete' ? launch.evidence.smsTotal : null);
   addFacts(elements.decisionMetrics, [
-    ['SMS 静态潜力', listing.sms?.total == null ? '待评分' : `${listing.sms.total}/100 · ${smsTier(listing.sms.total)} 段`],
+    ['创作者', `${marketplace.publisher.displayNameZh}（${marketplace.publisher.verificationLabelZh}）`],
+    ['当前价格', marketplace.offer.pricing.labelZh],
+    ['授权方式', marketplace.offer.rightsLabelZh],
+    ['SMS 静态潜力', smsTotal == null ? '待评分' : `${smsTotal}/100 · ${smsTier(smsTotal)} 段`],
     ['Eval 运行实绩', evalState],
     ['许可', listing.license?.spdx || statusLabel(listing.license?.status)],
     ['安全', statusLabel(listing.security?.status)],
     ['技能包', listing.install?.packageComplete ? '完整' : '不完整'],
+    ...(launch ? [
+      ['首发培育', `${LAUNCH_LANE_LABELS[launch.lane] || '发布准备中'} · ${launch.progress.passed}/${launch.progress.total}`],
+      ['下一动作', launch.nextActionZh],
+    ] : []),
   ]);
 
   const decision = installDecision(listing);
@@ -441,7 +462,9 @@ function normalizeDimensions(dimensions) {
 }
 
 function renderSms(listing) {
-  const total = Number(listing.sms?.total);
+  const launch = listing.catalog?.launchReadiness;
+  const sourceTotal = listing.sms?.total ?? (launch?.evidence?.smsStatus === 'complete' ? launch.evidence.smsTotal : null);
+  const total = Number(sourceTotal);
   const tier = smsTier(total);
   elements.smsSummary.replaceChildren(
     text('p', Number.isFinite(total) ? String(total) : '-', 'score-number mono'),
@@ -478,9 +501,13 @@ function renderSms(listing) {
 function renderEval(listing) {
   const evaluation = listing.eval || {};
   if (!evaluation.status || evaluation.status === 'pending' || evaluation.status === 'stale') {
+    const launch = listing.catalog?.launchReadiness;
+    const suiteReady = launch?.evidence?.evalStatus === 'suite_ready';
     elements.evalContent.replaceChildren(
-      text('p', evaluation.status === 'stale' ? 'Eval 证据已过期' : 'Eval 等待验证', 'pending-title'),
-      text('p', '当前没有固定测试集、运行环境或成功率证据。页面不会用 SMS 分数替代实绩。'),
+      text('p', evaluation.status === 'stale' ? 'Eval 证据已过期' : suiteReady ? 'Eval 测试集已准备' : 'Eval 等待验证', 'pending-title'),
+      text('p', suiteReady
+        ? `已有 ${launch.evidence.evalCaseCount} 个固定测试案例（${shortHash(launch.evidence.evalSuiteDigest)}），尚未在隔离环境运行，不计作实绩。`
+        : '当前没有固定测试集、运行环境或成功率证据。页面不会用 SMS 分数替代实绩。'),
     );
     elements.evalContent.className = 'pending-panel';
     return;
@@ -534,7 +561,15 @@ function renderEval(listing) {
 }
 
 function renderProvenance(listing) {
+  const marketplace = merchandisingForListing(listing);
   addFacts(elements.provenance, [
+    ['创作者', marketplace.publisher.displayNameZh],
+    ['创作者账号', `@${marketplace.publisher.handle}`],
+    ['创作者身份', marketplace.publisher.verificationLabelZh],
+    ['当前价格', marketplace.offer.pricing.labelZh],
+    ['授权方式', marketplace.offer.rightsLabelZh],
+    ['获取动作', marketplace.offer.acquisitionLabelZh],
+    ['报价说明', marketplace.offer.noteZh],
     ['来源平台', listing.catalog?.provider || listing.source?.kind || '未记录'],
     ['来源坐标', sourceLabel(listing)],
     ['技能路径', listing.source?.path || '未记录'],

@@ -1,3 +1,5 @@
+import { merchandisingForListing } from './market-merchandising.mjs';
+
 const DATA_URL = './data/listings.json';
 const EXPERIENCE_API_URL = './api/v1/preview/acquisitions';
 const FREE_ACQUISITION_API_URL = './api/v1/preview/acquisitions/free';
@@ -323,7 +325,7 @@ function humanDistribution(value) {
 function humanStatus(value) {
   const labels = {
     allowed: '允许分发', index_only: '仅索引', pass: '通过', review: '需关注',
-    pending: '待验证', complete: '已完成', approved: '已批准', verified: '已有实绩',
+    pending: '待验证', complete: '已完成', approved: '已批准', indexed: '已收录，待评估', verified: '已有实绩',
   };
   return labels[value] || String(value || '未记录');
 }
@@ -414,7 +416,31 @@ function evalSummary(listing) {
   return { label: 'Eval 已验证', detail };
 }
 
+const LAUNCH_LANE_LABELS = {
+  package_preparation_required: '待完整包',
+  security_review_required: '待安全复核',
+  sms_confirmation_required: '待确认 SMS',
+  sms_improvement_required: 'SMS 待提升',
+  eval_execution_required: '待运行 Eval',
+  human_review_required: '待双人终审',
+  rights_policy_required: '待授权政策',
+  release_ready: '可正式发布',
+};
+
+function launchReadiness(listing) {
+  const value = listing.catalog?.launchReadiness;
+  if (!value || value.schemaVersion !== 1) return null;
+  return value;
+}
+
+function smsSummary(listing) {
+  const launch = launchReadiness(listing);
+  const total = listing.sms?.total ?? (launch?.evidence?.smsStatus === 'complete' ? launch.evidence.smsTotal : null);
+  return total == null ? '待评分' : `${total} 分 · ${smsBand(Number(total))} 段`;
+}
+
 const TRUST_STATE_LABELS = {
+  indexed: '已收录，待评估',
   approved: '旧版批准，待双人终审',
   certified: '双人终审有效',
   pending_second_review: '待第二人复核',
@@ -431,6 +457,7 @@ const TRUST_STATE_LABELS = {
 };
 
 const INSTALL_REASON_LABELS = {
+  catalog_index_only: '当前仅完成目录收录，尚未进入完整包审核',
   license_allows_source_link_only: '许可仅允许来源索引',
   complete_package_missing: '缺少完整技能包',
   collector_snapshot_is_not_a_complete_package: '采集快照不是完整技能包',
@@ -530,23 +557,6 @@ function detailHref(listing) {
   return `./skills/${encodeURIComponent(String(listing.id))}/`;
 }
 
-function invocationText(listing) {
-  return `请调用「${listing.name}」技能完成任务。请先确认适用场景与使用边界，再根据我的具体需求执行。`;
-}
-
-async function copyInvocation(listing, button) {
-  const value = invocationText(listing);
-  const initialLabel = button.textContent;
-  try {
-    if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
-    await navigator.clipboard.writeText(value);
-    button.textContent = '调用词已复制';
-  } catch {
-    button.textContent = '复制失败，请查看详情';
-  }
-  window.setTimeout(() => { button.textContent = initialLabel; }, 1800);
-}
-
 function detailGroup(title, rows, className = '') {
   const section = document.createElement('section');
   section.className = `evidence-group ${className}`.trim();
@@ -615,8 +625,18 @@ function openEvidence(listing) {
     ['测试集', listing.eval?.testSet || listing.eval?.dataset || '未记录'],
     ['运行环境', listing.eval?.environment || '未记录'],
   ];
+  const marketplace = merchandisingForListing(listing);
 
   elements.dialogContent.replaceChildren(
+    detailGroup('创作者与交易信息', [
+      ['创作者', marketplace.publisher.displayNameZh],
+      ['创作者账号', `@${marketplace.publisher.handle}`, 'mono'],
+      ['身份说明', marketplace.publisher.verificationLabelZh],
+      ['当前价格', marketplace.offer.pricing.labelZh],
+      ['授权方式', marketplace.offer.rightsLabelZh],
+      ['获取动作', marketplace.offer.acquisitionLabelZh],
+      ['报价说明', marketplace.offer.noteZh],
+    ]),
     detailGroup('适用场景', [
       ['工作类型', category], ['典型任务', scenario || '未记录'],
       ['标签', listingTags(listing).join('，') || '未记录'],
@@ -683,6 +703,42 @@ function cardFor(listing, { compact = false } = {}) {
   main.append(originalNameElement);
   main.append(text('p', listing.description, 'description'));
 
+  const marketplace = merchandisingForListing(listing);
+  const marketplacePanel = document.createElement('section');
+  marketplacePanel.className = 'marketplace-panel';
+  marketplacePanel.setAttribute('aria-label', '创作者与价格');
+  const marketplaceStrip = document.createElement('div');
+  marketplaceStrip.className = 'marketplace-strip';
+  const creator = document.createElement('div');
+  creator.className = 'creator-profile';
+  const creatorAvatar = text('span', marketplace.publisher.displayNameZh.slice(0, 1), 'creator-avatar');
+  creatorAvatar.setAttribute('aria-hidden', 'true');
+  const creatorCopy = document.createElement('div');
+  creatorCopy.append(text('span', '创作者', 'marketplace-label'));
+  const creatorName = marketplace.publisher.creatorUrl
+    ? text('a', marketplace.publisher.displayNameZh, 'creator-name')
+    : text('strong', marketplace.publisher.displayNameZh, 'creator-name');
+  if (marketplace.publisher.creatorUrl) creatorName.href = marketplace.publisher.creatorUrl;
+  creatorCopy.append(creatorName, text('small', `@${marketplace.publisher.handle} · ${marketplace.publisher.verificationLabelZh}`));
+  creator.append(creatorAvatar, creatorCopy);
+  const offer = document.createElement('div');
+  offer.className = 'offer-panel';
+  offer.append(
+    text('span', marketplace.offer.status === 'demo' ? '演示报价' : '当前价格', 'marketplace-label'),
+    text('strong', marketplace.offer.pricing.labelZh, 'offer-price'),
+    text('small', marketplace.offer.noteZh),
+  );
+  marketplaceStrip.append(creator, offer);
+  const rights = document.createElement('div');
+  rights.className = 'rights-summary';
+  rights.append(
+    text('span', '授权方式', 'marketplace-label'),
+    text('strong', marketplace.offer.rightsLabelZh),
+    text('small', marketplace.offer.acquisitionLabelZh),
+  );
+  marketplacePanel.append(marketplaceStrip, rights);
+  main.append(marketplacePanel);
+
   const recommendation = recommendationFor(listing);
   const recommendationPanel = document.createElement('div');
   recommendationPanel.className = `recommendation-basis${recommendation.matched ? ' matched' : ''}`;
@@ -691,12 +747,25 @@ function cardFor(listing, { compact = false } = {}) {
   if (related.length) recommendationPanel.append(text('p', `可组合：${related.map(item => item.titleZh || item.skillId).join('、')}`, 'composition-inline'));
   if (recommendation.matched || related.length) main.append(recommendationPanel);
 
+  const launch = launchReadiness(listing);
+  if (launch) {
+    const launchPanel = document.createElement('section');
+    launchPanel.className = `launch-readiness ${launch.releaseReady ? 'ready' : ''}`;
+    launchPanel.setAttribute('aria-label', '首发培育进度');
+    launchPanel.append(
+      text('span', '首发培育队列', 'marketplace-label'),
+      text('strong', `${LAUNCH_LANE_LABELS[launch.lane] || '发布准备中'} · ${launch.progress.passed}/${launch.progress.total}`),
+      text('p', launch.nextActionZh),
+    );
+    main.append(launchPanel);
+  }
+
   const evalInfo = evalSummary(listing);
   const installation = installationDecision(listing);
   const metrics = document.createElement('dl');
   metrics.className = 'market-metrics';
   metrics.append(
-    evidenceRow('SMS 静态潜力', listing.sms?.total == null ? '待评分' : `${listing.sms.total} 分 · ${smsBand(Number(listing.sms.total))} 段`),
+    evidenceRow('SMS 静态潜力', smsSummary(listing)),
     evidenceRow('Eval 运行实绩', evalInfo.detail),
     evidenceRow('使用边界', installation.eligible ? '可受控部署' : humanDistribution(listing.distribution)),
   );
@@ -705,13 +774,11 @@ function cardFor(listing, { compact = false } = {}) {
   actions.className = 'card-actions';
   const primaryActions = document.createElement('div');
   primaryActions.className = 'card-primary-actions';
-  const copyButton = text('button', '复制调用词', 'btn primary invocation-copy');
-  copyButton.type = 'button';
-  copyButton.setAttribute('aria-live', 'polite');
-  copyButton.addEventListener('click', () => copyInvocation(listing, copyButton));
+  const experienceLink = text('a', '在线体验', 'btn primary experience-entry');
+  experienceLink.href = `./experience.html?skill=${encodeURIComponent(listing.id)}`;
   const detailLink = text('a', '查看完整详情', 'btn');
   detailLink.href = detailHref(listing);
-  primaryActions.append(copyButton, detailLink);
+  primaryActions.append(experienceLink, detailLink);
   const links = document.createElement('div');
   links.className = 'card-links';
   links.append(createSourceLink(listing));
@@ -731,8 +798,11 @@ function filteredListings() {
     const distributionMatches = state.distribution === 'all' || listing.distribution === state.distribution;
     const categoryMatches = state.category === 'all' || listingCategory(listing) === state.category;
     const projection = operationsProjection(listing);
+    const marketplace = merchandisingForListing(listing);
     const haystack = [listing.name, listing.description, listing.source?.repo, listing.source?.path,
       listing.catalog?.coordinate, listing.catalog?.category, ...listingTags(listing), ...intentTags(listing),
+      marketplace.publisher.displayNameZh, marketplace.publisher.handle, marketplace.offer.pricing.labelZh,
+      marketplace.offer.rightsLabelZh,
       ...(projection?.routing?.whenToUse || []), ...(projection?.routing?.whenNotToUse || [])]
       .filter(Boolean).join(' ').toLocaleLowerCase('zh-CN');
     const structuredMatch = recommendationFor(listing, state.query).matched;
@@ -742,6 +812,8 @@ function filteredListings() {
 
 function shelfDefinitions() {
   const approved = [...state.listings];
+  const launch = approved.filter(item => launchReadiness(item))
+    .sort((a, b) => Number(b.catalog.launchReadiness.progress.passed) - Number(a.catalog.launchReadiness.progress.passed));
   const editorial = approved.filter(item => item.catalog?.featured === true || Number(item.sms?.total) >= 76)
     .sort((a, b) => Number(b.sms?.total || 0) - Number(a.sms?.total || 0));
   const highSms = approved.filter(item => Number(item.sms?.total) >= 76)
@@ -750,12 +822,13 @@ function shelfDefinitions() {
   const signed = state.listings.filter(item => item.source?.integrity?.signed === true);
   const noKey = state.listings.filter(item => item.catalog?.requiresApiKey === false);
   return [
+    { id: 'launch', title: '首发技能培育', note: '6 个造物云自有技能，按完整包、SMS、Eval、终审与授权政策逐关推进。', items: launch, limit: 6 },
     { id: 'editorial', title: '编辑精选', note: 'SMS 达到 A 段，或由目录明确标记精选。', items: editorial },
     { id: 'high-sms', title: '高 SMS 潜力', note: '按静态质量分排序，不等同于运行实绩。', items: highSms },
     { id: 'recent', title: '最近上架', note: '按审核或目录观测时间排序。', items: recent },
     { id: 'signed', title: '来源已签名', note: '上游版本签名已验证，仍需通过本地许可、安全和质量门。', items: signed },
     { id: 'no-key', title: '无需密钥', note: '目录明确声明无需 API Key，安装前仍需检查。', items: noKey },
-  ].filter(shelf => shelf.items.length).slice(0, 4);
+  ].filter(shelf => shelf.items.length).slice(0, 5);
 }
 
 function renderShelves() {
@@ -770,7 +843,7 @@ function renderShelves() {
     header.append(copy, text('span', `${shelf.items.length} 项`, 'mono shelf-count'));
     const track = document.createElement('div');
     track.className = 'shelf-track';
-    track.append(...shelf.items.slice(0, 4).map(item => cardFor(item, { compact: true })));
+    track.append(...shelf.items.slice(0, shelf.limit || 4).map(item => cardFor(item, { compact: true })));
     section.append(header, track);
     return section;
   }));
@@ -815,11 +888,11 @@ function renderCatalog() {
   if (state.query.trim()) parts.push(`任务：“${state.query.trim()}”`);
   if (state.category !== 'all') parts.push(categoryLabel(state.category));
   if (state.distribution !== 'all') parts.push(humanDistribution(state.distribution));
-  elements.activeContext.textContent = parts.join('，') || '全部已批准技能';
+  elements.activeContext.textContent = parts.join('，') || '全部已收录技能';
   if (!visible.length) {
     const hasFilters = Boolean(state.query.trim()) || state.category !== 'all' || state.distribution !== 'all';
-    showState(hasFilters ? '没有匹配的技能' : '还没有已批准技能',
-      hasFilters ? '换一种任务描述，或清除分类与分发范围后再试。' : '完成可信审核并批准技能后，重新运行预览构建命令。');
+    showState(hasFilters ? '没有匹配的技能' : '还没有已收录技能',
+      hasFilters ? '换一种任务描述，或清除分类与分发范围后再试。' : '运行技能目录同步管线后重新加载市场。');
     return;
   }
   elements.statePanel.hidden = true;
@@ -845,10 +918,10 @@ async function loadListings() {
     const response = await fetch(DATA_URL, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    if (data.schemaVersion !== 1 || data.source !== 'CandidateStore.listListings' || !Array.isArray(data.listings)) {
+    if (data.schemaVersion !== 1 || !['CandidateStore.listListings', 'SkillOps.marketCatalog'].includes(data.source) || !Array.isArray(data.listings)) {
       throw new Error('数据格式不受支持');
     }
-    if (data.listings.some(item => item.verification?.status !== 'approved')) throw new Error('数据包含未批准项目');
+    if (data.listings.some(item => !['approved', 'indexed'].includes(item.verification?.status))) throw new Error('数据包含不支持的收录状态');
     state.listings = data.listings;
     elements.totalCount.textContent = String(state.listings.length);
     elements.generatedAt.textContent = `构建于 ${new Date(data.generatedAt).toLocaleString('zh-CN')}`;
@@ -858,7 +931,7 @@ async function loadListings() {
     elements.totalCount.textContent = '-';
     elements.shelfList.replaceChildren();
     showState('无法读取预览数据', '请先运行构建命令，并通过本地预览服务打开页面。', 'error');
-    console.error('Failed to load approved listings', error);
+    console.error('Failed to load market listings', error);
   }
 }
 

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const read = name => fs.readFileSync(path.resolve(HERE, '..', name), 'utf8');
-const pages = ['index.html', 'detail.html', 'demand.html', 'creator.html', 'enterprise.html', 'ops.html'];
+const pages = ['index.html', 'detail.html', 'experience.html', 'demand.html', 'creator.html', 'enterprise.html', 'ops.html'];
 const htmlByPage = Object.fromEntries(pages.map(name => [name, read(name)]));
 const shell = read('zaowuyun-shell.css');
 const tokens = read('zaowuyun-tokens.css');
@@ -22,9 +22,9 @@ test('all market surfaces share one Zaowuyun product shell and local brand asset
 });
 
 test('primary navigation describes one coherent market journey', () => {
-  for (const name of ['index.html', 'detail.html', 'demand.html', 'creator.html', 'enterprise.html']) {
+  for (const name of ['index.html', 'detail.html', 'experience.html', 'demand.html', 'creator.html', 'enterprise.html']) {
     const html = htmlByPage[name];
-    for (const label of ['能力市场', '技能管家', '创作者中心', '企业技能人事部']) {
+    for (const label of ['能力市场', '在线体验', '技能管家', '创作者中心', '企业技能人事部']) {
       assert.match(html, new RegExp(label), `${name} is missing ${label}`);
     }
   }

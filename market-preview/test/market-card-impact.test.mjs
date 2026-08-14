@@ -18,9 +18,10 @@ test('市场技能卡采用强商品层级而非纵向审核表', () => {
   assert.doesNotMatch(JS, /evidenceRow\('安全与许可'/);
 });
 
-test('主操作直接支持调用，完整证据仍通过详情与快速预览访问', () => {
-  assert.match(JS, /function invocationText\(listing\)/);
-  assert.match(JS, /copyButton = text\('button', '复制调用词', 'btn primary invocation-copy'\)/);
+test('主操作进入在线体验与工作台链路，完整证据仍通过详情与快速预览访问', () => {
+  assert.match(JS, /experienceLink = text\('a', '在线体验', 'btn primary experience-entry'\)/);
+  assert.match(JS, /experience\.html\?skill=/);
+  assert.doesNotMatch(JS, /copyButton = text\('button', '复制调用词'/);
   assert.match(JS, /text\('a', '查看完整详情', 'btn'\)/);
   assert.match(JS, /text\('button', '快速预览', 'text-button mono'\)/);
   assert.match(JS, /if \(recommendation\.matched \|\| related\.length\) main\.append\(recommendationPanel\)/);
@@ -29,5 +30,5 @@ test('主操作直接支持调用，完整证据仍通过详情与快速预览�
 test('视觉强化不冒充可信安装资格', () => {
   assert.match(JS, /topline\.append\(tags, trustBadge\(listing\)\)/);
   assert.match(JS, /evidenceRow\('使用边界', installation\.eligible \? '可受控部署' : humanDistribution\(listing\.distribution\)\)/);
-  assert.match(JS, /请先确认适用场景与使用边界/);
+  assert.match(JS, /experience\.html\?skill=/);
 });

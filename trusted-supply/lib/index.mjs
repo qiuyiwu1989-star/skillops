@@ -5,6 +5,7 @@ export * from './candidate.mjs';
 export * from './store.mjs';
 export * from './source-collector.mjs';
 export * from './skillhub-collector.mjs';
+export * from './skill-archive.mjs';
 export * from './skill-document.mjs';
 export * from './sms.mjs';
 export * from './assessment-pipeline.mjs';

@@ -4,6 +4,8 @@
   --zy-shell-gutter: 40px;
 }
 
+[hidden] { display: none !important; }
+
 :root[data-theme="light"],
 :root[data-theme="rams"] {
   color-scheme: light;
