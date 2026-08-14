@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-14T07:30:00.000Z",
+  "organizationScope": {
+    "visibility": "organization_private",
+    "organizationId": "org_zaowu_demo",
+    "organizationLabelZh": "造物云示范企业",
+    "authorizationPurpose": "enterprise.private_ability.read",
+    "trustedProjectionDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "summary": {
+    "products": 2,
+    "releases": 4,
+    "callable": 2,
+    "evidencePending": 1,
+    "blocked": 0,
+    "selfAuthored": 1,
+    "authorizedDerivatives": 1,
+    "recalled": 1,
+    "rollbackSelections": 1
+  },
+  "products": [
+    {
+      "privateProductId": "privprod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "skillId": "skill_enterprise_policy_writer",
+      "productKey": "enterprise-policy-writer",
+      "titleZh": "企业制度写作助手",
+      "summaryZh": "由企业知识团队自研，用于制度材料的结构检查、术语一致性核验与发布前复核。",
+      "sourceType": "self_authored",
+      "sourceStatus": {"status": "active", "publicationStatus": null, "reasonCode": null},
+      "currentPrivateReleaseId": "privrel_2222222222222222222222222222222222222222222222222222222222222222",
+      "status": "callable",
+      "createdAt": "2026-08-10T01:00:00.000Z",
+      "lineage": null,
+      "upstream": {
+        "status": "not_applicable",
+        "proposedUpstreamReleaseId": null,
+        "comparisonDigest": null,
+        "manifestChanges": {"added": 0, "modified": 0, "deleted": 0},
+        "governanceChanges": [],
+        "reasons": [],
+        "requiredReassessments": [],
+        "nextAction": "企业自研技能没有外部上游版本。"
+      },
+      "rollback": {
+        "status": "not_applicable",
+        "selectedTargetReleaseId": null,
+        "selectionRecordedAt": null,
+        "eventCount": 0,
+        "currentReleaseChanged": false,
+        "nextAction": "当前没有回滚选择记录。"
+      },
+      "releases": [
+        {
+          "privateReleaseId": "privrel_1111111111111111111111111111111111111111111111111111111111111111",
+          "version": "1.0.0",
+          "packageDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "packageManifestDigest": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+          "previousPrivateReleaseId": null,
+          "status": "evidence_pending",
+          "evidenceGaps": ["eval_expired"],
+          "evidence": {
+            "status": "evidence_pending",
+            "assessedAt": "2026-08-11T02:00:00.000Z",
+            "checks": {"packageAudit": "passed", "sms": "passed", "eval": "expired", "review": "certified"}
+          },
+          "createdAt": "2026-08-10T02:00:00.000Z",
+          "nextAction": "旧版本证据已过期，仅保留审计记录。"
+        },
+        {
+          "privateReleaseId": "privrel_2222222222222222222222222222222222222222222222222222222222222222",
+          "version": "1.1.0",
+          "packageDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "packageManifestDigest": "sha256:2323232323232323232323232323232323232323232323232323232323232323",
+          "previousPrivateReleaseId": "privrel_1111111111111111111111111111111111111111111111111111111111111111",
+          "status": "callable",
+          "evidenceGaps": [],
+          "evidence": {
+            "status": "callable",
+            "assessedAt": "2026-08-13T03:00:00.000Z",
+            "checks": {"packageAudit": "passed", "sms": "passed", "eval": "passed", "review": "certified"}
+          },
+          "createdAt": "2026-08-13T02:00:00.000Z",
+          "nextAction": "当前证据完整，可进入企业能力库。"
+        }
+      ]
+    },
+    {
+      "privateProductId": "privprod_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "skillId": "skill_customer_service_review",
+      "productKey": "licensed-service-review",
+      "titleZh": "客户服务质检（二创版）",
+      "summaryZh": "基于市场授权版本形成的企业内部二创，保留授权快照、根血缘与每次上游比较判断。",
+      "sourceType": "authorized_derivative",
+      "sourceStatus": {"status": "recalled", "publicationStatus": "recalled", "reasonCode": "SOURCE_RELEASE_RECALLED"},
+      "currentPrivateReleaseId": "privrel_4444444444444444444444444444444444444444444444444444444444444444",
+      "status": "recalled",
+      "createdAt": "2026-08-08T01:00:00.000Z",
+      "lineage": {
+        "lineageId": "lineage_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "baseProductId": "prod_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "baseReleaseId": "rel_dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "entitlementId": "ent_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "licenseSnapshotDigest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "upstream": {
+        "status": "blocked",
+        "proposedUpstreamReleaseId": "rel_9999999999999999999999999999999999999999999999999999999999999999",
+        "comparisonDigest": "sha256:abababababababababababababababababababababababababababababababab",
+        "manifestChanges": {"added": 2, "modified": 3, "deleted": 1},
+        "governanceChanges": ["许可策略", "依赖清单", "安全证据"],
+        "reasons": [{"code": "BASE_RELEASE_RECALLED", "messageZh": "根基础 Release 已召回，阻断后续升级与回滚。"}],
+        "requiredReassessments": ["包审计", "SMS", "Eval", "组织复核"],
+        "nextAction": "保留历史证据并进入人工处置，不自动获取或升级。"
+      },
+      "rollback": {
+        "status": "selection_recorded",
+        "selectedTargetReleaseId": "privrel_3333333333333333333333333333333333333333333333333333333333333333",
+        "selectionRecordedAt": "2026-08-12T06:00:00.000Z",
+        "eventCount": 1,
+        "currentReleaseChanged": false,
+        "nextAction": "回滚选择已记录；召回生效后不允许继续执行。"
+      },
+      "releases": [
+        {
+          "privateReleaseId": "privrel_3333333333333333333333333333333333333333333333333333333333333333",
+          "version": "2.0.0-enterprise.1",
+          "packageDigest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "packageManifestDigest": "sha256:3434343434343434343434343434343434343434343434343434343434343434",
+          "previousPrivateReleaseId": null,
+          "status": "callable",
+          "evidenceGaps": [],
+          "evidence": {
+            "status": "callable",
+            "assessedAt": "2026-08-09T02:00:00.000Z",
+            "checks": {"packageAudit": "passed", "sms": "passed", "eval": "passed", "review": "certified"}
+          },
+          "createdAt": "2026-08-08T02:00:00.000Z",
+          "nextAction": "历史证据只绑定本版本，不可继承到新版本。"
+        },
+        {
+          "privateReleaseId": "privrel_4444444444444444444444444444444444444444444444444444444444444444",
+          "version": "2.1.0-enterprise.1",
+          "packageDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "packageManifestDigest": "sha256:4545454545454545454545454545454545454545454545454545454545454545",
+          "previousPrivateReleaseId": "privrel_3333333333333333333333333333333333333333333333333333333333333333",
+          "status": "recalled",
+          "evidenceGaps": ["source_release_recalled"],
+          "evidence": null,
+          "createdAt": "2026-08-12T02:00:00.000Z",
+          "nextAction": "来源召回为粘性阻断；不沿用旧版本证据。"
+        }
+      ]
+    }
+  ],
+  "evolution": {
+    "eventCount": 2,
+    "appendOnly": true,
+    "automaticUpgrade": false,
+    "history": [
+      {
+        "eventId": "devevt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "type": "plan.accepted",
+        "privateProductId": "privprod_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "planDigest": "sha256:5656565656565656565656565656565656565656565656565656565656565656",
+        "selectedTarget": "rel_9999999999999999999999999999999999999999999999999999999999999999",
+        "occurredAt": "2026-08-11T06:00:00.000Z",
+        "outcome": "selection_recorded",
+        "currentReleaseChanged": false
+      },
+      {
+        "eventId": "devevt_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "type": "rollback.selected",
+        "privateProductId": "privprod_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "planDigest": "sha256:6767676767676767676767676767676767676767676767676767676767676767",
+        "selectedTarget": "privrel_3333333333333333333333333333333333333333333333333333333333333333",
+        "occurredAt": "2026-08-12T06:00:00.000Z",
+        "outcome": "selection_recorded",
+        "currentReleaseChanged": false
+      }
+    ]
+  },
+  "projectionDigest": "sha256:7878787878787878787878787878787878787878787878787878787878787878"
+}

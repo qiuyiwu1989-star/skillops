@@ -37,3 +37,7 @@ export * from './demand/demand-catalog.mjs';
 export * from './demand/free-acquisition.mjs';
 export * from './demand/enterprise-library.mjs';
 export * from './demand/skill-steward.mjs';
+export * from './enterprise/private-ability.mjs';
+export * from './enterprise/private-ability-store.mjs';
+export * from './enterprise/derivative-evolution.mjs';
+export * from './enterprise/derivative-evolution-store.mjs';
