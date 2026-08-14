@@ -8,7 +8,10 @@ const HERE=path.dirname(fileURLToPath(import.meta.url));
 const read=name=>fs.readFileSync(path.resolve(HERE,'..',name),'utf8');
 const HTML=read('enterprise.html');
 const CSS=read('enterprise.css');
+const TOKENS=read('zaowuyun-tokens.css');
+const MARK=read('zaowuyun-mark-color.svg');
 const JS=read('enterprise.js');
+const SERVE=read('serve.mjs');
 const FIXTURE=JSON.parse(read('enterprise.fixture.json'));
 const {normalizeEnterpriseWorkbench}=await import(pathToFileURL(path.resolve(HERE,'../enterprise.js')));
 
@@ -94,17 +97,26 @@ test('旧证据不继承且回滚记录不伪装为版本切换',()=>{
   assert.equal(data.evolution.history.at(-1).currentReleaseChanged,false);
 });
 
-test('造物云企业视觉、桌面工作台与移动单列边界明确',()=>{
-  assert.match(CSS,/--bg:#fbfaf6/);
-  assert.match(CSS,/--ink:#171714/);
-  assert.match(CSS,/--accent:#e2522a/);
-  assert.match(CSS,/"PingFang SC","Microsoft YaHei",system-ui/);
-  assert.match(CSS,/grid-template-columns:minmax\(280px,.62fr\) minmax\(0,2fr\)/);
-  assert.match(CSS,/@media\(max-width:640px\)/);
-  assert.match(CSS,/\.history li,\.history li>div\{min-width:0;overflow-wrap:anywhere;word-break:break-word\}/);
-  assert.match(CSS,/@media\(prefers-color-scheme:dark\)/);
-  assert.match(CSS,/:focus-visible/);
-  assert.match(CSS,/@media\(prefers-reduced-motion:reduce\)/);
-  assert.doesNotMatch(CSS,/box-shadow\s*:|(?:linear|radial|conic)-gradient\s*\(/);
-  assert.doesNotMatch(CSS,/font-size:\s*(?:[6-9]|\d{2,})(?:rem|vw)/);
+test('严格采用造物云 V1 设计令牌、品牌标、玻璃工作台与移动单列',()=>{
+  assert.match(HTML,/zaowuyun-tokens\.css\?v=v1/);
+  assert.match(HTML,/zaowuyun-mark-color\.svg/);
+  assert.match(HTML,/能力市场[\s\S]*技能管家[\s\S]*创作者中心[\s\S]*企业开发台/);
+  assert.match(MARK,/造物云/);
+  assert.match(SERVE,/\['\.svg', 'image\/svg\+xml; charset=utf-8'\]/);
+  assert.match(TOKENS,/权威来源：https:\/\/www\.zaowuyun\.com\/design-system\.html/);
+  assert.match(TOKENS,/--bg:\s*#07070F/);
+  assert.match(TOKENS,/--accent:\s*#7B80FF/);
+  assert.match(TOKENS,/--font-sans:\s*'Noto Sans SC'/);
+  assert.match(TOKENS,/--r-lg:\s*18px/);
+  assert.match(TOKENS,/--container-doc:\s*1280px/);
+  assert.match(TOKENS,/\[data-theme="light"\]/);
+  assert.match(JS,/prefers-color-scheme: light/);
+  assert.match(CSS,/background:\s*var\(--navBg\)/);
+  assert.match(CSS,/backdrop-filter:\s*saturate\(180%\) blur\(22px\)/);
+  assert.match(CSS,/grid-template-columns:\s*minmax\(270px,.58fr\) minmax\(0,2fr\)/);
+  assert.match(CSS,/@media \(max-width: 640px\)/);
+  assert.match(CSS,/\.history li > div \{ min-width: 0; overflow-wrap: anywhere; word-break: break-word; \}/);
+  assert.match(TOKENS,/:focus-visible/);
+  assert.match(TOKENS,/@media \(prefers-reduced-motion: reduce\)/);
+  assert.doesNotMatch(CSS,/(?:#[a-f0-9]{3,8}|rgba?\()/i);
 });

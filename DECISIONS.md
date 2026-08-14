@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-08-14：造物云能力市场、技能管家、创作者中心和企业工作台的唯一视觉标准改为 `https://www.zaowuyun.com/design-system.html`。业务页面必须消费官方设计 Token 与品牌资源，采用紫蓝主色、深空/冷灰双主题、Noto Sans SC + Space Grotesk、玻璃层级、1280px 栅格和 4px 间距阶梯；旧 SkillOps Rams/Braun 奶油橙只作为历史样式，不再扩展。Basis: 用户明确纠正企业开发台未按造物云设计风格执行。Confidence: high.
 - 2026-08-14：需求方市场把“是否可信发布”“企业是否有授权”“当前是否可调用”拆成三层判断。目录状态固定为 `entitled | free_available | purchase_required | unavailable`；免费也必须经当前 Offer 生成 Order 与 Entitlement，技能管家只能输出需人工确认的获取动作或绑定 Product/Release/Entitlement 的不可执行 WorkOrder 草案，不自动获取、采购或调用。Basis: V4.5 需求方市场与技能管家闭环，延续 SkillOps 将技能作为可治理员工而非普通下载商品的定位。Confidence: high.
 - 2026-08-14：MarketRegistry 登记只证明商品身份和发布权来源，不等于商品已经上架。新订单必须消费 Publication 投影的 `published` 状态；`withdrawn` 阻止新订单但保留已有合法 Entitlement，`recalled` 同时阻断既有调用；申诉只记录请求，不自动恢复发布。Basis: V4.4 创作者发布闭环与跨域 E2E。Confidence: high.
 - 2026-08-14：创作者 Draft 默认私有且只保存商品元数据、稳定 Release 引用和权利声明摘要，不保存或在线编辑技能包正文。发布必须由权利与市场两个不同可信 human 复核；Agent、提交者及同一 subject 的身份别名不能形成批准。Basis: 用户要求创作者中心，同时坚持 SkillOps 是技能管理与可信供给层而非运行时。Confidence: high.

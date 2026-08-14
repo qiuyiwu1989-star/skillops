@@ -1,0 +1,158 @@
+/*
+ * 造物云设计令牌 V1，本地预览固定快照。
+ * 权威来源：https://www.zaowuyun.com/design-system.html
+ * 原始令牌：https://www.zaowuyun.com/tokens.css
+ */
+:root {
+  --bg: #07070F;
+  --bg2: #100D24;
+  --surf: rgba(255,255,255,.05);
+  --card: rgba(255,255,255,.055);
+  --demo: rgba(255,255,255,.03);
+  --panel: rgba(255,255,255,.022);
+  --glass: rgba(255,255,255,.06);
+  --glassA: rgba(255,255,255,.035);
+  --glassB: rgba(255,255,255,.07);
+  --glassC: rgba(255,255,255,.11);
+  --glassTop: rgba(255,255,255,.16);
+  --fg: #ECEEFF;
+  --fgStrong: rgba(236,238,255,.72);
+  --fg2: rgba(236,238,255,.52);
+  --fg3: rgba(236,238,255,.28);
+  --accent: #7B80FF;
+  --accentDeep: #5B5FE0;
+  --acBg: rgba(123,128,255,.13);
+  --bdr: rgba(255,255,255,.08);
+  --bdrSoft: rgba(255,255,255,.05);
+  --bdrBrt: rgba(255,255,255,.16);
+  --navBg: rgba(9,10,20,.72);
+  --navBdr: rgba(255,255,255,.09);
+  --ok: #4ECDA0;
+  --okBg: rgba(78,205,160,.13);
+  --info: #6AA6F5;
+  --infoBg: rgba(106,166,245,.13);
+  --warn: #E8B45A;
+  --warnBg: rgba(232,180,90,.13);
+  --err: #EC6E77;
+  --errBg: rgba(236,110,119,.13);
+  --heroBase: #07070F;
+  --heroInk: #ECEEFF;
+  --heroSub: rgba(236,238,255,.6);
+  --glow1: rgba(123,128,255,.4);
+  --glow2: rgba(90,95,224,.24);
+  --glow3: rgba(56,120,248,.12);
+  --sh1: 0 1px 2px rgba(0,0,0,.45), 0 5px 14px -4px rgba(0,0,0,.5);
+  --sh2: 0 2px 6px rgba(0,0,0,.4), 0 14px 34px -8px rgba(0,0,0,.55), 0 34px 68px -24px rgba(0,0,0,.5);
+  --shGlass: inset 0 1px 0 var(--glassTop), 0 1px 2px rgba(0,0,0,.35), 0 12px 32px -10px rgba(0,0,0,.5);
+  --font-sans: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', sans-serif;
+  --font-latin: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --fs-display: 44px;
+  --fs-h1: 32px;
+  --fs-h2: 24px;
+  --fs-h3: 19px;
+  --fs-body: 16px;
+  --fs-note: 15px;
+  --fs-sm: 14px;
+  --fs-caption: 13px;
+  --fs-xs: 12px;
+  --fs-label: 11px;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --lh-display: 1.15;
+  --lh-tight: 1.25;
+  --lh-snug: 1.45;
+  --lh-base: 1.7;
+  --lh-caption: 1.55;
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 22px;
+  --r-full: 999px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+  --container: 1180px;
+  --container-doc: 1280px;
+  --measure: 680px;
+  --gutter: 40px;
+  --gutter-sm: 20px;
+  --t-fast: .15s;
+  --t-base: .25s;
+  --t-slow: .7s;
+  --ease: cubic-bezier(.4,1,.6,1);
+  accent-color: var(--accent);
+}
+
+[data-theme="light"] {
+  --bg: #F4F5F8;
+  --bg2: #EDEEF6;
+  --surf: rgba(255,255,255,.72);
+  --card: rgba(255,255,255,.8);
+  --demo: rgba(22,24,31,.025);
+  --panel: rgba(22,24,31,.016);
+  --glass: rgba(255,255,255,.7);
+  --glassA: rgba(255,255,255,.5);
+  --glassB: rgba(255,255,255,.72);
+  --glassC: rgba(255,255,255,.9);
+  --glassTop: rgba(255,255,255,.92);
+  --fg: #16181F;
+  --fgStrong: rgba(22,24,31,.8);
+  --fg2: rgba(22,24,31,.56);
+  --fg3: rgba(22,24,31,.4);
+  --accent: #5A4FE6;
+  --accentDeep: #4438C4;
+  --acBg: rgba(90,79,230,.08);
+  --bdr: rgba(22,24,31,.1);
+  --bdrSoft: rgba(22,24,31,.06);
+  --bdrBrt: rgba(22,24,31,.17);
+  --navBg: rgba(244,245,248,.82);
+  --navBdr: rgba(22,24,31,.07);
+  --ok: #0E9C6B;
+  --okBg: rgba(14,156,107,.1);
+  --info: #2C74D6;
+  --infoBg: rgba(44,116,214,.1);
+  --warn: #B77A22;
+  --warnBg: rgba(183,122,34,.1);
+  --err: #D8474F;
+  --errBg: rgba(216,71,79,.1);
+  --heroBase: #ECEDF5;
+  --heroInk: #171826;
+  --heroSub: rgba(23,24,38,.62);
+  --glow1: rgba(90,79,230,.15);
+  --glow2: rgba(120,95,235,.09);
+  --glow3: rgba(70,130,240,.07);
+  --sh1: 0 0 0 1px rgba(24,21,14,.05), 0 1px 2px rgba(24,21,14,.05), 0 4px 10px -3px rgba(24,21,14,.06);
+  --sh2: 0 0 0 1px rgba(24,21,14,.05), 0 2px 6px rgba(24,21,14,.05), 0 14px 28px -8px rgba(24,21,14,.09);
+  --shGlass: inset 0 1px 0 var(--glassTop), 0 0 0 1px rgba(24,21,14,.04), 0 12px 30px -10px rgba(24,21,14,.1);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  line-height: var(--lh-base);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: var(--font-latin); }
+a { color: var(--accent); text-decoration: none; }
+a:focus-visible,[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

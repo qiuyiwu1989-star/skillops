@@ -3,25 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark light">
   <meta name="skillops:enterprise-url" content="./enterprise.fixture.json">
   <title>企业技能开发台 · SkillOps</title>
-  <link rel="stylesheet" href="./enterprise.css?v=v46-3">
+  <link rel="stylesheet" href="./zaowuyun-tokens.css?v=v1">
+  <link rel="stylesheet" href="./enterprise.css?v=v46-4">
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
   <header class="topbar">
-    <a class="brand" href="./index.html" aria-label="返回能力市场"><span class="brand-mark">Z</span><span>造物云能力市场</span></a>
-    <div class="trust"><span class="pulse" aria-hidden="true"></span>组织范围 · 本地只读</div>
+    <div class="nav-shell">
+      <a class="brand" href="./index.html" aria-label="返回造物云能力市场"><img class="brand-mark" src="./zaowuyun-mark-color.svg" alt=""><span class="brand-name">造物云</span><span class="brand-product">SkillOps</span></a>
+      <nav class="product-nav" aria-label="能力市场导航"><a href="./index.html">能力市场</a><a href="./demand.html">技能管家</a><a href="./creator.html">创作者中心</a><a class="current" href="./enterprise.html" aria-current="page">企业开发台</a></nav>
+      <div class="trust"><span class="pulse" aria-hidden="true"></span>组织范围 · 本地只读</div>
+    </div>
   </header>
   <main id="main" class="shell">
     <section class="intro" aria-labelledby="page-title">
-      <div>
-        <p class="eyebrow">SkillOps · 企业技能人事部</p>
+      <div class="hero-copy">
+        <p class="eyebrow">SKILLOPS · ENTERPRISE</p>
         <h1 id="page-title">企业技能开发台</h1>
-        <p>管理企业自研与授权二创技能的版本证据、根血缘和上游差异。所有升级与回滚只展示可信判断和选择记录，本页不会上传、发布、执行或连接生产环境。</p>
+        <p>让企业自研与授权二创形成可追溯、可评估、可回滚的能力资产。每个版本都有证据，每次演进都有来路。</p>
       </div>
-      <aside class="boundary" aria-label="数据边界">
+      <aside class="boundary glass" aria-label="数据边界">
         <p class="section-label">组织范围能力</p>
         <strong id="organization-label">正在读取组织投影</strong>
         <p id="scope-copy">本地 fixture 仅模拟组织范围投影；浏览器过滤与摘要外形不构成授权或签名验证。</p>
@@ -34,31 +38,31 @@
     </section>
 
     <div id="workspace" hidden>
-      <section class="summary-band" aria-labelledby="summary-title">
+      <section class="summary-band glass" aria-labelledby="summary-title">
         <div class="summary-copy"><p class="section-label">资产概览</p><h2 id="summary-title">私有技能版本状态</h2><p id="generated-at"></p></div>
         <dl id="summary" class="summary-grid"></dl>
       </section>
 
       <div class="workbench">
-        <aside class="rail" aria-labelledby="rail-title">
+        <aside class="rail glass" aria-labelledby="rail-title">
           <header class="section-head"><div><p class="section-label">企业私有资产</p><h2 id="rail-title">技能清单</h2></div><span id="product-count" class="count"></span></header>
           <div id="product-index" class="product-index"></div>
           <div class="read-only-note"><strong>只读边界</strong><p>不提供编辑、上传、调用、采购、升级执行或回滚执行入口。</p></div>
         </aside>
 
-        <section class="canvas" aria-labelledby="canvas-title">
+        <section class="canvas glass" aria-labelledby="canvas-title">
           <header class="section-head"><div><p class="section-label">版本与治理证据</p><h2 id="canvas-title">组织内演示投影</h2></div><span class="read-only-chip">只读</span></header>
           <div id="products" class="products"></div>
         </section>
       </div>
 
-      <section class="audit" aria-labelledby="audit-title">
+      <section class="audit glass" aria-labelledby="audit-title">
         <div><p class="section-label">Append-only 选择账本</p><h2 id="audit-title">升级与回滚记录</h2><p>记录“选择了哪个计划”，不代表版本已经切换；当前 Release 只能由后续受信执行系统改变。</p></div>
         <div id="evolution-summary"></div>
         <ol id="history" class="history"></ol>
       </section>
     </div>
   </main>
-  <script type="module" src="./enterprise.js?v=v46-3"></script>
+  <script type="module" src="./enterprise.js?v=v46-4"></script>
 </body>
 </html>

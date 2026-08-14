@@ -37,7 +37,7 @@
 
 - **密钥/密码**：`.env`、service_role key、服务器密码——不进 git、不打印到对话、**不用聊天里贴的密码去 SSH**。
 - **生产**：两台机（Web/API 国外 + 自托管 Supabase 国内），rsync 部署；nginx `skillops.tech` 配置是 **chattr +i 不可变**（改前 `-i`、改完复 `+i`）。
-- **视觉/品牌**：Rams/Braun（cream `#fbfaf6` + 橙 `#e2522a`，Space Grotesk + JetBrains Mono）。**品牌色锁定，别乱动首页视觉。**
+- **视觉/品牌**：市场、技能管家、创作者中心与企业工作台统一遵循造物云设计系统 `https://www.zaowuyun.com/design-system.html`，使用官方 Token、品牌晶体标、紫蓝主色、深空/冷灰双主题、Noto Sans SC + Space Grotesk、玻璃表面与 1280px 栅格。旧 Rams/Braun 奶油橙只保留为历史样式，不再扩展。
 - **账号**：不替主人注册任何账号。
 
 ## 东西都在哪

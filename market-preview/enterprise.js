@@ -11,6 +11,8 @@ const ROLLBACK_STATES=new Set(['not_applicable','available','blocked','selection
 const CHECK_STATES=new Set(['passed','certified','pending','expired','missing']);
 const LABELS={callable:'可用',evidence_pending:'待复评',blocked:'已阻断',recalled:'已召回',ready:'可形成升级计划',no_change:'上游无变化',reassessment_required:'升级需复评',not_applicable:'不适用',available:'可形成回滚计划',selection_recorded:'已选择回滚（未执行）',self_authored:'企业自研',authorized_derivative:'授权二创'};
 
+if(typeof document!=='undefined'&&globalThis.matchMedia?.('(prefers-color-scheme: light)').matches)document.documentElement.dataset.theme='light';
+
 function fail(){throw new Error('ORGANIZATION_PRIVATE_PROJECTION_REQUIRED')}
 function obj(value){if(!value||typeof value!=='object'||Array.isArray(value))fail();return value}
 function exact(value,keys){obj(value);const actual=Object.keys(value);if(actual.some(key=>!keys.includes(key))||keys.some(key=>!(key in value)))fail();return value}
