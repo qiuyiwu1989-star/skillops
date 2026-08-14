@@ -373,7 +373,7 @@ function renderHero(listing) {
   elements.originalName.textContent = original && original !== listing.name ? `英文原名: ${visibleString(original)}` : '';
   elements.originalName.hidden = !elements.originalName.textContent;
   elements.description.textContent = visibleString(listing.localization?.descriptionZh || listing.description || '暂无中文说明');
-  document.title = `${elements.name.textContent} | SkillOps 能力市场`;
+  document.title = `${elements.name.textContent} | 造物云技能市场`;
 
   const source = sourceLink(listing, listing.distribution === 'source_link_only' ? '查看来源并继续判断' : '查看原始来源');
   const back = text('a', '返回能力市场', 'button ghost');

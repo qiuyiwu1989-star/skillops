@@ -1,0 +1,191 @@
+/* Shared product shell for the Zaowuyun ability market. */
+:root {
+  --zy-shell-width: 1280px;
+  --zy-shell-gutter: 40px;
+}
+
+:root[data-theme="light"],
+:root[data-theme="rams"] {
+  color-scheme: light;
+  --bg: #F4F5F8;
+  --bg2: #EDEEF6;
+  --surf: rgba(255,255,255,.72);
+  --card: rgba(255,255,255,.8);
+  --panel: rgba(22,24,31,.016);
+  --glass: rgba(255,255,255,.7);
+  --glassA: rgba(255,255,255,.5);
+  --glassB: rgba(255,255,255,.72);
+  --glassC: rgba(255,255,255,.9);
+  --fg: #16181F;
+  --fgStrong: rgba(22,24,31,.8);
+  --fg2: rgba(22,24,31,.56);
+  --fg3: rgba(22,24,31,.4);
+  --accent: #5A4FE6;
+  --accentDeep: #4438C4;
+  --acBg: rgba(90,79,230,.08);
+  --bdr: rgba(22,24,31,.1);
+  --bdrSoft: rgba(22,24,31,.06);
+  --bdrBrt: rgba(22,24,31,.17);
+  --navBg: rgba(244,245,248,.82);
+  --navBdr: rgba(22,24,31,.07);
+  --text: var(--fg);
+  --muted: var(--fgStrong);
+  --faint: var(--fg2);
+  --line: var(--bdr);
+  --field-border: var(--bdrBrt);
+  --link: var(--accent);
+  --bg-soft: var(--panel);
+  --bg-card: var(--card);
+}
+
+* { box-sizing: border-box; }
+
+.zy-skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: #f7f7ff;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+
+.zy-skip-link:focus { transform: translateY(0); }
+
+.zy-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 64px;
+  border-bottom: 1px solid var(--navBdr);
+  background: var(--navBg);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.zy-nav {
+  width: min(100%, var(--zy-shell-width));
+  min-height: 64px;
+  margin-inline: auto;
+  padding-inline: var(--zy-shell-gutter);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 32px;
+}
+
+.zy-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.zy-brand img { width: 26px; height: 26px; object-fit: contain; }
+.zy-brand-product { color: var(--fg2); font-weight: 500; }
+
+.zy-product-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.zy-product-nav a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: var(--r-full);
+  color: var(--fg2);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.zy-product-nav a:hover { color: var(--fg); background: var(--surf); }
+.zy-product-nav a[aria-current="page"] { color: var(--fg); background: var(--acBg); }
+
+.zy-context {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--bdr);
+  border-radius: var(--r-full);
+  color: var(--fg2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.zy-subnav {
+  width: min(100%, var(--zy-shell-width));
+  margin-inline: auto;
+  padding: 12px var(--zy-shell-gutter);
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.zy-subnav a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 13px;
+  border-radius: var(--r-full);
+  color: var(--fg2);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.zy-subnav a:hover,
+.zy-subnav a[aria-current="location"] { color: var(--fg); background: var(--surf); }
+
+.zy-footer {
+  border-top: 1px solid var(--bdr);
+  background: var(--panel);
+}
+
+.zy-footer-inner {
+  width: min(100%, var(--zy-shell-width));
+  margin-inline: auto;
+  padding: 32px var(--zy-shell-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: var(--fg2);
+  font-size: 13px;
+}
+
+.zy-footer-inner p { margin: 0; }
+
+@media (max-width: 900px) {
+  :root { --zy-shell-gutter: 20px; }
+  .zy-nav { grid-template-columns: auto 1fr; }
+  .zy-product-nav { display: none; }
+  .zy-context { justify-self: end; }
+}
+
+@media (max-width: 520px) {
+  .zy-brand-product { display: none; }
+  .zy-context { padding-inline: 10px; }
+  .zy-footer-inner { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zy-skip-link,
+  .zy-product-nav a { transition: none; }
+}

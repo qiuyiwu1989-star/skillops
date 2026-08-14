@@ -15,8 +15,8 @@ const SERVE=read('serve.mjs');
 const FIXTURE=JSON.parse(read('enterprise.fixture.json'));
 const {normalizeEnterpriseWorkbench}=await import(pathToFileURL(path.resolve(HERE,'../enterprise.js')));
 
-test('中文只读企业开发台覆盖自研、授权二创、证据、血缘、升级与回滚',()=>{
-  for(const phrase of ['企业技能开发台','企业自研','授权二创','版本与治理证据','来源与根血缘','上游差异','回滚状态','升级与回滚记录'])assert.match(HTML+JS,new RegExp(phrase));
+test('中文只读企业技能人事部覆盖自研、授权二创、证据、血缘、升级与回滚',()=>{
+  for(const phrase of ['企业技能人事部','企业自研','授权二创','版本与治理证据','来源与根血缘','上游差异','回滚状态','升级与回滚记录'])assert.match(HTML+JS,new RegExp(phrase));
   assert.match(HTML,/组织范围 · 本地只读/);
   assert.match(HTML+JS,/演示摘要/);
   assert.match(HTML+JS,/不构成授权或签名验证|不代表已验证服务端签名/);
@@ -100,7 +100,7 @@ test('旧证据不继承且回滚记录不伪装为版本切换',()=>{
 test('严格采用造物云 V1 设计令牌、品牌标、玻璃工作台与移动单列',()=>{
   assert.match(HTML,/zaowuyun-tokens\.css\?v=v1/);
   assert.match(HTML,/zaowuyun-mark-color\.svg/);
-  assert.match(HTML,/能力市场[\s\S]*技能管家[\s\S]*创作者中心[\s\S]*企业开发台/);
+  assert.match(HTML,/能力市场[\s\S]*技能管家[\s\S]*创作者中心[\s\S]*企业技能人事部/);
   assert.match(MARK,/造物云/);
   assert.match(SERVE,/\['\.svg', 'image\/svg\+xml; charset=utf-8'\]/);
   assert.match(TOKENS,/权威来源：https:\/\/www\.zaowuyun\.com\/design-system\.html/);

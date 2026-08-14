@@ -80,7 +80,7 @@ test('build exports only approved listings through the public store boundary', t
   assert.deepEqual(detail.relatedListings, []);
   assert.match(detailHtml, new RegExp(`/data/skills/${approved.id}\\.json`));
   assert.match(detailHtml, new RegExp(`<link rel="canonical" href="/skills/${approved.id}/">`));
-  assert.match(detailHtml, new RegExp(`<title>${saved.listings[0].name} \\| SkillOps 能力市场</title>`));
+  assert.match(detailHtml, new RegExp(`<title>${saved.listings[0].name} \\| 造物云技能市场</title>`));
   assert.equal(fs.existsSync(path.join(workspace.directory, 'data', 'skills', `${pending.id}.json`)), false);
   assert.equal(fs.existsSync(path.join(workspace.directory, 'skills', pending.id)), false);
 });
@@ -204,20 +204,21 @@ test('preview server resolves detail directories for direct links and refreshes'
   assert.equal(traversal.status, 404);
 });
 
-test('preview consumes the published SkillOps design-system contract', () => {
+test('preview consumes the official Zaowuyun design-system contract', () => {
   const html = fs.readFileSync(path.resolve(HERE, '../index.html'), 'utf8');
   const css = fs.readFileSync(path.resolve(HERE, '../styles.css'), 'utf8');
+  const tokens = fs.readFileSync(path.resolve(HERE, '../zaowuyun-tokens.css'), 'utf8');
+  const shell = fs.readFileSync(path.resolve(HERE, '../zaowuyun-shell.css'), 'utf8');
 
-  assert.match(html, /<html lang="zh-CN" data-theme="rams">/);
-  assert.match(html, /family=JetBrains\+Mono/);
-  assert.match(html, /family=Noto\+Sans\+SC/);
-  assert.match(html, /family=Space\+Grotesk/);
-  assert.match(css, /--bg:\s*#fbfaf6/);
-  assert.match(css, /--accent:\s*#e2522a/);
-  assert.match(css, /--max:\s*1120px/);
-  assert.match(css, /--r-sm:\s*3px/);
-  assert.match(css, /--r-md:\s*8px/);
-  assert.match(css, /--r-pill:\s*999px/);
-  assert.match(css, /font-weight:\s*500/);
-  assert.doesNotMatch(css, /box-shadow\s*:/);
+  assert.match(html, /<html lang="zh-CN" data-theme="light">/);
+  assert.match(html, /zaowuyun-tokens\.css/);
+  assert.match(html, /zaowuyun-shell\.css/);
+  assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic|preconnect/);
+  assert.match(tokens, /--bg:\s*#07070F/);
+  assert.match(tokens, /--accent:\s*#7B80FF/);
+  assert.match(tokens, /--container-doc:\s*1280px/);
+  assert.match(tokens, /\[data-theme="light"\]/);
+  assert.match(css, /--max:\s*1280px/);
+  assert.match(shell, /\.zy-header/);
+  assert.match(shell, /backdrop-filter:\s*blur\(18px\)/);
 });

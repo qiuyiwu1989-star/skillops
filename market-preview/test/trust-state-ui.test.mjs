@@ -45,13 +45,13 @@ test('detail presents package, SMS, Eval and review digest bindings without raw 
   assert.doesNotMatch(UI, /rawPrompt|rawOutput|promptContent|outputContent|accessToken|secretValue/);
 });
 
-test('trust feedback preserves the SkillOps card rhythm and accessible low-motion system', () => {
+test('trust feedback preserves card rhythm and the accessible Zaowuyun motion system', () => {
   assert.match(CSS, /\.card-topline\s*\{[^}]*min-height:\s*28px/s);
   assert.match(CSS, /\.trust-badge/);
   assert.match(DETAIL_CSS, /\.trust-badge/);
   assert.match(CSS + DETAIL_CSS, /\.trust-positive/);
   assert.match(CSS + DETAIL_CSS, /\.trust-critical/);
   assert.match(CSS + DETAIL_CSS, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.doesNotMatch(CSS + DETAIL_CSS, /box-shadow\s*:/);
+  assert.match(CSS, /box-shadow:\s*var\(--sh1\)/);
   assert.doesNotMatch(UI.replace(/replace\(\/\[[^\n]+/g, ''), /[—–]/);
 });

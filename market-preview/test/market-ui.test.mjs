@@ -10,7 +10,7 @@ const CSS = fs.readFileSync(path.resolve(HERE, '../styles.css'), 'utf8');
 const JS = fs.readFileSync(path.resolve(HERE, '../app.js'), 'utf8');
 
 test('market starts with task search and real category discovery controls', () => {
-  assert.match(HTML, /你想完成什么任务/);
+  assert.match(HTML, /今天想完成什么工作/);
   assert.match(HTML, /id="category-list"/);
   assert.match(JS, /listing\.catalog\?\.category/);
   assert.match(JS, /listingCategory\(listing\)/);
@@ -51,16 +51,15 @@ test('installation boundary requires package completeness and controlled deploym
   assert.doesNotMatch(HTML, />安装</);
 });
 
-test('Rams contract and responsive market layout remain intact', () => {
-  assert.match(CSS, /--bg:\s*#fbfaf6/);
-  assert.match(CSS, /--accent:\s*#e2522a/);
-  assert.match(CSS, /--max:\s*1120px/);
-  assert.match(CSS, /--r-sm:\s*3px/);
-  assert.match(CSS, /--r-md:\s*8px/);
-  assert.match(CSS, /--r-pill:\s*999px/);
+test('Zaowuyun contract and responsive market layout remain intact', () => {
+  assert.match(HTML, /zaowuyun-tokens\.css/);
+  assert.match(HTML, /zaowuyun-shell\.css/);
+  assert.match(HTML, /造物云技能市场/);
+  assert.match(CSS, /--max:\s*1280px/);
+  assert.match(CSS, /--r-pill:\s*var\(--r-full\)/);
   assert.match(CSS, /@media \(max-width: 640px\)/);
   assert.match(CSS, /scroll-snap-type:\s*x mandatory/);
-  assert.doesNotMatch(CSS, /box-shadow\s*:/);
+  assert.match(CSS, /box-shadow:\s*var\(--sh1\)/);
 });
 
 test('visible copy avoids em dash and en dash', () => {

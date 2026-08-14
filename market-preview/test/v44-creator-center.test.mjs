@@ -19,7 +19,7 @@ test('creator center is a Chinese read-only information architecture', () => {
   }
   assert.match(HTML, /本地只读/);
   assert.match(HTML, /aria-live="polite"/);
-  assert.match(HTML, /class="skip-link/);
+  assert.match(HTML, /class="zy-skip-link/);
   assert.doesNotMatch(HTML, /https?:\/\/|preconnect|fonts\.googleapis|fonts\.gstatic/);
   assert.doesNotMatch(HTML, /<form|<button|<input|<textarea|contenteditable/);
   assert.doesNotMatch(HTML + JS, /立即发布|确认召回|批准上架|上传技能|连接生产|真实支付/);

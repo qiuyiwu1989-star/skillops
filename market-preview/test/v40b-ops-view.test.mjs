@@ -58,7 +58,7 @@ test('page is a Chinese read-only operations information architecture', () => {
   }
   assert.match(HTML, /本地只读/);
   assert.match(HTML, /aria-live="polite"/);
-  assert.match(HTML, /class="skip-link/);
+  assert.match(HTML, /class="zy-skip-link/);
   assert.doesNotMatch(HTML, /https?:\/\/|preconnect|fonts\.googleapis|fonts\.gstatic/);
   assert.doesNotMatch(HTML, /<form|<button|保存|提交治理|连接生产|生产环境/);
 });

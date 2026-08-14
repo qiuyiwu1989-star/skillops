@@ -46,15 +46,14 @@ test('install action requires an eligible complete package and excludes source-o
   assert.match(JS, /manifest\.slice\(0, 20\)/);
 });
 
-test('Rams design contract is responsive, accessible and shadow-free', () => {
-  assert.match(CSS, /--bg:\s*#fbfaf6/);
-  assert.match(CSS, /--accent:\s*#e2522a/);
-  assert.match(CSS, /--max:\s*1120px/);
+test('detail uses the shared Zaowuyun shell and remains responsive and accessible', () => {
+  assert.match(HTML, /zaowuyun-tokens\.css/);
+  assert.match(HTML, /zaowuyun-shell\.css/);
+  assert.match(HTML, /class="zy-header"/);
   assert.match(CSS, /@media \(max-width: 640px\)/);
   assert.match(CSS, /:focus-visible/);
-  assert.match(HTML, /class="skip-link/);
+  assert.match(HTML, /class="zy-skip-link/);
   assert.match(HTML, /aria-live="polite"/);
-  assert.doesNotMatch(CSS, /box-shadow\s*:/);
 });
 
 test('visible detail copy avoids em dash and en dash', () => {

@@ -1,5 +1,6 @@
 # Decisions
 
+- 2026-08-14：市场产品体验以线上 `skill.zaowuyun.com` 为公开主版本，路由关系固定为能力市场、技能详情、技能管家、创作者中心和企业技能人事部；企业私有开发与组织运营是市场后的管理面，不再承担公开市场首页。各页面共享造物云 V1 Token、晶体品牌标、64px 产品导航与中文企业任务语言，业务数据和可信门禁保持原有边界。Basis: 用户指出本地 enterprise 页面与此前线上市场版本不一致，并明确启动“第一阶段：统一市场产品体验”。Confidence: high.
 - 2026-08-14：造物云能力市场、技能管家、创作者中心和企业工作台的唯一视觉标准改为 `https://www.zaowuyun.com/design-system.html`。业务页面必须消费官方设计 Token 与品牌资源，采用紫蓝主色、深空/冷灰双主题、Noto Sans SC + Space Grotesk、玻璃层级、1280px 栅格和 4px 间距阶梯；旧 SkillOps Rams/Braun 奶油橙只作为历史样式，不再扩展。Basis: 用户明确纠正企业开发台未按造物云设计风格执行。Confidence: high.
 - 2026-08-14：需求方市场把“是否可信发布”“企业是否有授权”“当前是否可调用”拆成三层判断。目录状态固定为 `entitled | free_available | purchase_required | unavailable`；免费也必须经当前 Offer 生成 Order 与 Entitlement，技能管家只能输出需人工确认的获取动作或绑定 Product/Release/Entitlement 的不可执行 WorkOrder 草案，不自动获取、采购或调用。Basis: V4.5 需求方市场与技能管家闭环，延续 SkillOps 将技能作为可治理员工而非普通下载商品的定位。Confidence: high.
 - 2026-08-14：MarketRegistry 登记只证明商品身份和发布权来源，不等于商品已经上架。新订单必须消费 Publication 投影的 `published` 状态；`withdrawn` 阻止新订单但保留已有合法 Entitlement，`recalled` 同时阻断既有调用；申诉只记录请求，不自动恢复发布。Basis: V4.4 创作者发布闭环与跨域 E2E。Confidence: high.

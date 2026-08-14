@@ -1,55 +1,54 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="rams">
+<html lang="zh-CN" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <meta name="description" content="SkillOps 已批准技能的本地能力市场预览">
-    <title>SkillOps 能力市场预览</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Noto+Sans+SC:wght@400;500&amp;family=Space+Grotesk:wght@400;500&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=market-v36">
-    <script src="./app.js?v=market-v36" type="module"></script>
+    <meta name="description" content="造物云技能市场，发现、评估并获取可信的 AI 技能">
+    <title>造物云技能市场｜发现可信的 AI 技能</title>
+    <link rel="stylesheet" href="./zaowuyun-tokens.css?v=v1">
+    <link rel="stylesheet" href="./styles.css?v=market-v47">
+    <link rel="stylesheet" href="./zaowuyun-shell.css?v=v1">
+    <script src="./app.js?v=market-v47" type="module"></script>
   </head>
   <body>
-    <a class="skip-link btn sm" href="#market">跳到市场内容</a>
+    <a class="zy-skip-link" href="#market">跳到市场内容</a>
 
-    <header class="site-header">
-      <div class="wrap nav-inner">
-        <a class="brand" href="./" aria-label="SkillOps 能力市场首页">Skill<span>Ops</span></a>
-        <nav class="primary-nav" aria-label="市场导航">
-          <a href="#discover">发现</a>
-          <a href="#shelves">可信货架</a>
-          <a href="#catalog">全部技能</a>
+    <header class="zy-header">
+      <div class="zy-nav">
+        <a class="zy-brand" href="./index.html" aria-label="造物云技能市场首页"><img src="./zaowuyun-mark-color.svg" alt=""><span>造物云</span><span class="zy-brand-product">技能市场</span></a>
+        <nav class="zy-product-nav" aria-label="市场产品导航">
+          <a href="./index.html" aria-current="page">能力市场</a>
           <a href="./demand.html">技能管家</a>
-          <a href="./enterprise.html">企业开发台</a>
+          <a href="./creator.html">创作者中心</a>
+          <a href="./enterprise.html">企业技能人事部</a>
         </nav>
-        <p class="eyebrow preview-label">本地只读预览</p>
+        <span class="zy-context">本地可信预览</span>
       </div>
+      <nav class="zy-subnav" aria-label="市场内容导航"><a href="#discover" aria-current="location">发现技能</a><a href="#shelves">可信推荐</a><a href="#catalog">全部技能</a><a href="./creator.html">发布能力</a></nav>
     </header>
 
     <main id="market">
       <section class="intro" id="discover" aria-labelledby="page-title">
         <div class="wrap intro-grid">
           <div class="intro-copy">
-            <p class="eyebrow">trusted skill market</p>
-            <h1 id="page-title" class="h-display">从任务出发，<br>找到可信技能</h1>
-            <p class="intro-lead">搜索你要完成的工作。结果只来自已批准技能，并保留来源、静态质量与实绩证据。</p>
+            <p class="eyebrow">造物云技能市场</p>
+            <h1 id="page-title" class="h-display">找到技能，<br>马上开始调用</h1>
+            <p class="intro-lead">描述你要完成的工作。技能管家会从可信目录中检索、解释并推荐合适的技能，企业也可以把技能纳入自己的能力资产。</p>
 
             <form id="task-search" class="task-search" role="search">
-              <label for="search">你想完成什么任务？</label>
+              <label for="search">今天想完成什么工作？</label>
               <div class="task-search-row">
-                <input class="field task-field" id="search" type="search" autocomplete="off" placeholder="例如：整理会议决策、发布前检查、市场研究">
-                <button class="btn primary" type="submit">查找技能</button>
+                <input class="field task-field" id="search" type="search" autocomplete="off" placeholder="例如：整理会议决策、撰写项目通知、分析市场机会">
+                <button class="btn primary" type="submit">让技能管家查找</button>
               </div>
             </form>
           </div>
 
           <aside class="trust-note" aria-label="市场可信规则">
             <p class="trust-number mono" id="total-count">-</p>
-            <p class="trust-title">项已批准能力</p>
-            <p>每项技能先通过来源、许可和安全硬门，再呈现 SMS 静态潜力与 Eval 实绩。</p>
+            <p class="trust-title">项可信能力</p>
+            <p>来源、许可、安全、SMS 静态潜力与 Eval 实绩分层展示，企业可以看懂为什么推荐、能否调用。</p>
           </aside>
         </div>
       </section>
@@ -57,7 +56,7 @@
       <section class="category-section" aria-labelledby="category-title">
         <div class="wrap">
           <div class="compact-heading">
-            <h2 id="category-title" class="h-3">按工作类型发现</h2>
+            <h2 id="category-title" class="h-3">按企业场景发现</h2>
             <button id="category-reset" class="text-button mono" type="button" hidden>清除分类</button>
           </div>
           <div id="category-list" class="category-list" aria-label="技能分类"></div>
@@ -68,10 +67,10 @@
         <div class="wrap">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">curated discovery</p>
-              <h2 id="shelves-title" class="h-2">可信货架</h2>
+              <p class="eyebrow">可信推荐</p>
+              <h2 id="shelves-title" class="h-2">值得先试的技能</h2>
             </div>
-            <p class="section-note">同一技能可以出现在多个货架，货架规则公开可解释。</p>
+            <p class="section-note">推荐基于任务匹配和可信证据，不以下载量或热度替代质量判断。</p>
           </div>
           <div id="shelf-list" class="shelf-list" aria-live="polite"></div>
         </div>
@@ -81,8 +80,8 @@
         <div class="wrap">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">approved catalog</p>
-              <h2 id="market-title" class="h-2">全部技能</h2>
+              <p class="eyebrow">能力目录</p>
+              <h2 id="market-title" class="h-2">浏览全部技能</h2>
             </div>
             <p id="result-count" class="result-count mono" aria-live="polite"></p>
           </div>
@@ -114,9 +113,9 @@
 
     <footer class="site-footer">
       <div class="wrap footer-inner">
-        <p>Skill<span>Ops</span> 可信能力市场</p>
+        <p>造物云技能市场</p>
         <div class="footer-meta mono">
-          <p>CandidateStore.listListings()</p>
+          <p>可信目录 · 技能管家 · 企业技能人事部</p>
           <p id="generated-at">尚未读取构建时间</p>
         </div>
       </div>
@@ -125,7 +124,7 @@
     <dialog id="evidence-dialog" aria-labelledby="dialog-title">
       <div class="dialog-header">
         <div>
-          <p class="eyebrow">skill detail</p>
+          <p class="eyebrow">技能快速预览</p>
           <h2 id="dialog-title" class="h-2"></h2>
         </div>
         <button id="dialog-close" class="btn ghost sm" type="button">关闭</button>

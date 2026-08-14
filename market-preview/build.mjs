@@ -109,7 +109,7 @@ function renderDetailEntry(template, listing) {
   ].join('\n');
   if (!/<head(?:\s[^>]*)?>/i.test(template)) throw new Error('detail template must include a <head> element');
   return template
-    .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)} | SkillOps 能力市场</title>`)
+    .replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)} | 造物云技能市场</title>`)
     .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?\s*>/i,
       `<meta name="description" content="${escapeHtml(description)}">`)
     .replace(/<head(?:\s[^>]*)?>/i, match => `${match}\n${injection}`);

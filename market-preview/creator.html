@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="rams">
+<html lang="zh-CN" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,17 +7,19 @@
     <meta name="description" content="SkillOps 创作者作品、版本与可信发布状态的本地只读视图">
     <meta name="skillops:creator-url" content="./data/creator.json">
     <title>SkillOps 创作者中心</title>
-    <link rel="stylesheet" href="./creator.css?v=v44">
+    <link rel="stylesheet" href="./zaowuyun-tokens.css?v=v1">
+    <link rel="stylesheet" href="./creator.css?v=v47">
+    <link rel="stylesheet" href="./zaowuyun-shell.css?v=v1">
     <script src="./creator.js?v=v44" type="module"></script>
   </head>
   <body data-creator-url="">
-    <a class="skip-link" href="#creator-main">跳到创作者内容</a>
+    <a class="zy-skip-link" href="#creator-main">跳到创作者内容</a>
 
-    <header class="site-header">
-      <div class="wrap nav-inner">
-        <a class="brand" href="./" aria-label="返回 SkillOps 能力市场">Skill<span>Ops</span></a>
-        <p class="view-label mono">创作者中心</p>
-        <p class="readonly-label mono">本地只读</p>
+    <header class="zy-header">
+      <div class="zy-nav">
+        <a class="zy-brand" href="./index.html" aria-label="返回造物云技能市场"><img src="./zaowuyun-mark-color.svg" alt=""><span>造物云</span><span class="zy-brand-product">技能市场</span></a>
+        <nav class="zy-product-nav" aria-label="市场产品导航"><a href="./index.html">能力市场</a><a href="./demand.html">技能管家</a><a href="./creator.html" aria-current="page">创作者中心</a><a href="./enterprise.html">企业技能人事部</a></nav>
+        <span class="zy-context">创作者本地只读</span>
       </div>
     </header>
 
@@ -89,7 +91,7 @@
 
     <footer class="site-footer">
       <div class="wrap footer-inner">
-        <p>Skill<span>Ops</span> 创作者中心</p>
+        <p>造物云技能市场 · 创作者中心</p>
         <p class="mono">公开投影 · 版本证据 · 只读</p>
       </div>
     </footer>
