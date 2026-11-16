@@ -1,7 +1,7 @@
 /* oauth.js — 最小 OAuth 2.1 授权服务器（给远程 MCP 用），零依赖。
  *
- * 目的：让 Claude.ai 网页版 Custom Connector 免填 header 直连 skillops.tech 的 MCP。
- * 标准流程：discovery → 动态注册(DCR) → /authorize(同意页, 需登录 skillops.tech) → /token(PKCE 校验) → 拿 access_token。
+ * 目的：让 Claude.ai 网页版 Custom Connector 免填 header 直连 skillops.qiuyiwu.com 的 MCP。
+ * 标准流程：discovery → 动态注册(DCR) → /authorize(同意页, 需登录 skillops.qiuyiwu.com) → /token(PKCE 校验) → 拿 access_token。
  * access_token = 给该用户签发的 SkillOps API Key（复用 db.createApiKey），所以 /mcp 鉴权沿用 userForApiKey。
  * 授权码：内存存、5 分钟、单次、绑 PKCE challenge + redirect_uri + userId。注册：无状态（PKCE 保安全）。
  *
@@ -9,7 +9,7 @@
  */
 import crypto from 'node:crypto';
 
-const ORIGIN = (process.env.APP_ORIGIN || 'https://skillops.tech').replace(/\/+$/, '');
+const ORIGIN = (process.env.APP_ORIGIN || 'https://skillops.qiuyiwu.com').replace(/\/+$/, '');
 const b64url = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const sha256 = s => crypto.createHash('sha256').update(s).digest();
 
@@ -21,7 +21,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 
 // ── discovery 文档 ──
 export function oauthMetadata(p) {
-  if (p === '/.well-known/oauth-protected-resource' || p === '/.well-known/oauth-protected-resource/mcp') {
+  if (p === '/.well-known/oauth-protected-resource' || p === '/.well-known/oauth-protected-resource/mcp' || p === '/.well-known/oauth-protected-resource/api/mcp') {
     return { resource: `${ORIGIN}/api/mcp`, authorization_servers: [ORIGIN], bearer_methods_supported: ['header'] };
   }
   if (p === '/.well-known/oauth-authorization-server') {

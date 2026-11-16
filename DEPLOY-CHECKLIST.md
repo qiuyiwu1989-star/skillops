@@ -1,4 +1,6 @@
-# Deploy Checklist · SkillOps（skillops.tech）
+# Deploy Checklist · SkillOps
+
+> 2026-11-16 确认：生产入口为 `https://skillops.qiuyiwu.com`。静态根和 API 代码分别为 `/opt/skillops-cn/web` 与 `/opt/skillops-cn/api`，systemd 单元为 `skillops-cn-api` 与 `skillops-cn-postgrest`。数据库为 `skillops_cn`，schema 为 `skillops`。旧 `skillops.tech` 保留网页跳转及 API 代理。下方含旧主机和旧目录的发布示例为历史记录。
 
 > 定制自实际部署流程（rsync → VPS + systemd）。**每次部署前过一遍。** 部署者：邱懿武
 > 没有 CI / 没有自动化测试 → 用 `node --check` / `python ast` + 本机 `curl --resolve` 烟测代替。

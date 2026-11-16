@@ -8,7 +8,7 @@
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://claude.ai/*",
-    "https://skillops.tech/*"
+    "https://skillops.qiuyiwu.com/*"
   ],
   "background": { "service_worker": "background.js" },
   "action": { "default_popup": "popup.html", "default_title": "SkillOps 技能库" },

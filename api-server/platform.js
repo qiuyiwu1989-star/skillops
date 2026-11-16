@@ -29,10 +29,16 @@
  *     GET /v1/skills/:login/:slug       → skill content (public, or mine via key)
  */
 
+import { readFileSync as readPersonalSkillLinks } from 'node:fs';
 import * as db from './db.js';
 import * as store from './store.js';
 import { handleMcp as mcpHandle } from './mcp-http.js';
 import { handleOAuth } from './oauth.js';
+import { readPersonalLibrary, readPersonalRelease, readPersonalPluginFile, readPersonalPluginArchive } from './personal-releases.js';
+import { personalWorkbench, STORY_ID, STORY_VERSION } from './personal-workbench.js';
+import { readClassification, updateClassification } from './library-classification.js';
+
+import { isLibraryReadKey, ownerForLibraryKey, libraryOwner, listLibraryKeys, createLibraryKey, copyLibraryKey, deleteLibraryKey } from './library-read-keys.js';
 
 const ORIGIN = (process.env.APP_ORIGIN || 'https://skillops.tech').replace(/\/+$/, '');
 
@@ -59,13 +65,103 @@ function setCookie(res, name, value, { maxAge, clear } = {}) {
   arr.push(bits.join('; '));
   res.setHeader('Set-Cookie', arr);
 }
+function linkedSkillView(skill, account) {
+  const view = db.skillView(skill);
+  if (account.login !== 'qiuyiwu') return view;
+  try {
+    const links = JSON.parse(readPersonalSkillLinks('/var/lib/skillops-cn/personal-skill-links.json', 'utf8'));
+    const link = links[skill.id];
+    if (link && /^[0-9a-f-]{36}$/.test(link.id) && /^\d+\.\d+\.\d+$/.test(link.version)) {
+      view.personalCenter = { id: link.id, version: link.version, hash: link.hash };
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') console.error('Personal skill links unavailable');
+  }
+  return view;
+}
+
 function sessionUser(req) { return db.getSessionUser(parseCookies(req).xn_sess); }
 function bearer(req) { const a = req.headers.authorization || ''; return a.startsWith('Bearer ') ? a.slice(7).trim() : null; }
 
 // NOTE: both return true so `return json(...)` / `return redirect(...)` always
 // signals "handled" to the caller — prevents fall-through double-writes.
-function json(res, code, obj) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); return true; }
+function json(res, code, obj, headers = {}) { res.writeHead(code, { 'Content-Type': 'application/json', ...headers }); res.end(JSON.stringify(obj)); return true; }
 function redirect(res, loc) { res.writeHead(302, { Location: loc }); res.end(); return true; }
+
+function personalCatalog(native) {
+  return readPersonalLibrary(native.map(skill => {
+    const version = db.getVersion(skill.latestVersionId);
+    return { id: skill.id, name: skill.name, revision: version?.n, versionId: version?.id, content: version?.content };
+  }));
+}
+
+async function unifiedLibrary(ownerId) {
+  const native = db.listSkillsByOwner(ownerId);
+  const catalog = await personalCatalog(native);
+  const personal = [...catalog.skills, ...catalog.plugins];
+  const linked = new Set(personal.flatMap(item => item.links.map(link => link.id)));
+  const candidates = new Set(personal.flatMap(item => item.candidates.map(candidate => candidate.id)));
+  let assignments = {};
+  try {
+    assignments = readClassification().assignments;
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  return [
+    ...native.filter(item => item.status !== 'archived' && !linked.has(item.id)).map(item => {
+      const { id, name, description, version, visibility, status, category } = db.skillView(item);
+      return { id, name, description, version, visibility, status, kind: 'skill', source: 'skillops',
+        category: assignments[id] || category, candidate: candidates.has(id) };
+    }),
+    ...personal.filter(item => item.state !== 'archived').map(item => {
+      const { id, kind, name, description, state, version, packageHash } = item;
+      return { id, kind, name, description, state, version, packageHash, source: 'personal_agi',
+        category: assignments[kind + '/' + id] || null, candidate: item.candidates.length > 0 };
+    }),
+  ].map(item => ({ ...item, detailPath: '/api/v1/me/skills/' + item.id }));
+}
+
+const privateHeaders = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+
+async function serveUnifiedLibrary(req, res, url, id, raw) {
+  res.removeHeader('Access-Control-Allow-Origin');
+  res.removeHeader('Access-Control-Allow-Credentials');
+  try {
+    const owner = ownerForLibraryKey(raw);
+    const user = owner && db.getUser(owner);
+    if (!user) return json(res, 401, { error: 'invalid_key' }, privateHeaders);
+    if (req.method !== 'GET') return json(res, 403, { error: 'read_only' }, privateHeaders);
+    if (!id) {
+      const skills = await unifiedLibrary(owner);
+      const plugins = skills.filter(item => item.kind === 'plugin').length;
+      return json(res, 200, { owner: user.login, total: skills.length, counts: { skills: skills.length - plugins, plugins }, skills }, privateHeaders);
+    }
+
+    const version = url.searchParams.get('version');
+    const native = db.getSkill(id);
+    if (native?.ownerId === owner && native.status !== 'archived') {
+      const versions = db.listVersions(id);
+      const selected = version ? versions.find(item => String(item.n) === version) : db.getVersion(native.latestVersionId);
+      if (!selected) return json(res, 404, { error: 'not_found' }, privateHeaders);
+      const { name, description, visibility } = native;
+      return json(res, 200, { id, kind: 'skill', name, description, visibility, version: selected.n,
+        versions: versions.map(item => ({ version: item.n })), content: selected.content }, privateHeaders);
+    }
+
+    const kind = /^[a-f0-9]{64}$/.test(id) ? 'plugin' : /^[a-f0-9-]{36}$/.test(id) ? 'skill' : null;
+    if (!kind) return json(res, 404, { error: 'not_found' }, privateHeaders);
+    if (version && !(kind === 'plugin' ? /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/ : /^\d+\.\d+\.\d+$/).test(version)) {
+      return json(res, 400, { error: 'invalid_version' }, privateHeaders);
+    }
+    const release = await readPersonalRelease(kind, id, version, undefined, { includeAssessments: false });
+    if (!release?.version || release.state === 'archived') return json(res, 404, { error: 'not_found' }, privateHeaders);
+    const { name, state, packageHash, releaseId, versions, files, attachments, content, members } = release;
+    return json(res, 200, { id, kind, name, state, packageHash, releaseId, version: release.version,
+      versions, files, attachments, content, members }, privateHeaders);
+  } catch {
+    return json(res, 502, { error: 'library_unavailable' }, privateHeaders);
+  }
+}
 
 // ── main handler · returns true if it handled the request ──
 export async function handlePlatform(req, res, url) {
@@ -177,6 +273,11 @@ export async function handlePlatform(req, res, url) {
   }
 
   // ════════════ AGENT API (Bearer key) ════════════
+  const scopedSkill = p.match(/^\/v1\/me\/skills(?:\/([a-f0-9-]+))?$/);
+  const rawKey = bearer(req);
+  if (scopedSkill && isLibraryReadKey(rawKey)) {
+    return serveUnifiedLibrary(req, res, url, scopedSkill[1], rawKey);
+  }
   if (p === '/v1/me/skills' && req.method === 'GET') {
     const u = db.userForApiKey(bearer(req) || '');
     if (!u) return json(res, 401, { error: 'invalid_key' }), true;
@@ -276,14 +377,39 @@ export async function handlePlatform(req, res, url) {
   }
 
   // ── keys ──
-  if (p === '/app/keys' && req.method === 'GET') return json(res, 200, { keys: db.listApiKeys(me.id) }), true;
+  if (p === '/app/keys' && req.method === 'GET') return json(res, 200, { keys: [...db.listApiKeys(me.id), ...(me.id === libraryOwner() ? listLibraryKeys(me.id) : [])], libraryReadAvailable: me.id === libraryOwner() }), true;
   if (p === '/app/keys' && req.method === 'POST') {
     const body = await H.readJson(req).catch(() => ({}));
+    if (body.scope === 'library_read') {
+      if (me.id !== libraryOwner() || req.headers.origin !== ORIGIN) {
+        return json(res, 403, { error: 'forbidden' }, privateHeaders);
+      }
+      res.removeHeader('Access-Control-Allow-Origin');
+      res.removeHeader('Access-Control-Allow-Credentials');
+      return json(res, 200, createLibraryKey(me.id, String(body.name || 'library-reader').slice(0, 60)), privateHeaders);
+    }
     const { record, raw } = db.createApiKey(me.id, String(body.name || 'default').slice(0, 60));
-    return json(res, 200, { id: record.id, name: record.name, prefix: record.prefix, key: raw, note: '请立即复制保存，key 只显示这一次。' }), true;
+    return json(res, 200, { id: record.id, name: record.name, prefix: record.prefix, key: raw, copyable: Boolean(record.encryptedKey) }, { 'Cache-Control': 'no-store' });
+  }
+  const keyCopy = p.match(/^\/app\/keys\/([a-f0-9]+)\/copy$/);
+  if (keyCopy && req.method === 'POST') {
+    const headers = { 'Cache-Control': 'no-store' };
+    res.removeHeader('Access-Control-Allow-Origin');
+    res.removeHeader('Access-Control-Allow-Credentials');
+    const fetchSite = req.headers['sec-fetch-site'];
+    if (fetchSite && fetchSite !== 'same-origin') return json(res, 403, { error: 'same_origin_required' }, headers);
+    try {
+      const key = db.getApiKeyForCopy(me.id, keyCopy[1]) ||
+        (me.id === libraryOwner() && req.headers.origin === ORIGIN ? copyLibraryKey(me.id, keyCopy[1]) : null);
+      return key ? json(res, 200, { key }, headers)
+        : json(res, 404, { error: 'key_not_copyable' }, headers);
+    } catch {
+      return json(res, 503, { error: 'key_copy_unavailable' }, headers);
+    }
   }
   const keym = p.match(/^\/app\/keys\/([a-f0-9]+)$/);
-  if (keym && req.method === 'DELETE') return json(res, 200, { ok: db.deleteApiKey(me.id, keym[1]) }), true;
+  if (keym && req.method === 'DELETE') return json(res, 200, { ok: db.deleteApiKey(me.id, keym[1]) ||
+    (me.id === libraryOwner() && req.headers.origin === ORIGIN && deleteLibraryKey(me.id, keym[1])) }), true;
 
   // ── chains（命名 / 保存技能链）──
   if (p === '/app/chains' && req.method === 'GET') {
@@ -313,9 +439,98 @@ export async function handlePlatform(req, res, url) {
     if (!cm[2] && req.method === 'DELETE') return json(res, 200, { ok: db.deleteChain(c.id) }), true;
   }
 
+  if (p === '/app/library-classification' && ['GET','PUT'].includes(req.method)) {
+    const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+    res.removeHeader('Access-Control-Allow-Origin');
+    res.removeHeader('Access-Control-Allow-Credentials');
+    if (!process.env.PERSONAL_RELEASES_OWNER_ID || me.id !== process.env.PERSONAL_RELEASES_OWNER_ID) {
+      return json(res, 404, { message: '分类库不可用。' }, headers);
+    }
+    try {
+      if (req.method === 'GET') return json(res, 200, readClassification(), headers);
+      if (req.headers.origin !== ORIGIN) return json(res, 403, { message: '请从 SkillOps 控制台提交。' }, headers);
+      const {key,category,expected} = await H.readJson(req).catch(() => ({})) || {};
+      if (typeof key !== 'string' || typeof category !== 'string') {
+        return json(res, 400, { message: '请选择技能和分类。' }, headers);
+      }
+      if (/^[a-f0-9]{16}$/.test(key)) {
+        if (db.getSkill(key)?.ownerId !== me.id) return json(res, 404, { message: '技能不存在。' }, headers);
+      } else {
+        const asset = key.match(/^(skill)\/([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$|^(plugin)\/([a-f0-9]{64})$/);
+        if (!asset) return json(res, 400, { message: '技能标识无效。' }, headers);
+        if (!Object.hasOwn(readClassification().assignments,key) &&
+            !await readPersonalRelease(asset[1] || asset[3], asset[2] || asset[4])) {
+          return json(res, 404, { message: '技能不存在。' }, headers);
+        }
+      }
+      const result = updateClassification(key,category,expected);
+      if (result.status === 409) return json(res, 409, { message: '该条目的分类已变化，请刷新后再改。' }, headers);
+      if (result.status === 400) return json(res, 400, { message: '分类无效。' }, headers);
+      return json(res, 200, { category: result.category, reviewedAt: result.reviewedAt }, headers);
+    } catch {
+      return json(res, 502, { message: '暂时无法更新分类。' }, headers);
+    }
+  }
+
+  const workbench = p.match(/^\/app\/personal-workbench\/(storytelling|[a-f0-9-]{36})(?:\/(score|train|edit|trial|publish))?$/);
+  if (workbench) {
+    const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+    res.removeHeader('Access-Control-Allow-Origin');
+    res.removeHeader('Access-Control-Allow-Credentials');
+    if (!process.env.PERSONAL_RELEASES_OWNER_ID || me.id !== process.env.PERSONAL_RELEASES_OWNER_ID) {
+      return json(res, 404, { message: '工作台不可用。' }, headers);
+    }
+    const [,target,action] = workbench;
+    if (req.method !== (action ? 'POST' : 'GET')) return json(res, 405, { message: '请求方法无效。' }, headers);
+    if (action && req.headers.origin !== ORIGIN) return json(res, 403, { message: '请从 SkillOps 控制台提交。' }, headers);
+    const body = action ? await H.readJson(req).catch(() => null) : {};
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return json(res, 400, { message: '请求内容无效。' }, headers);
+    const story = target === 'storytelling';
+    const result = await personalWorkbench(story ? STORY_ID : target,
+      story ? STORY_VERSION : url.searchParams.get('version') || '', action, body, H);
+    return json(res, result.status, result.data, headers);
+  }
+
+  const personalRelease = p.match(/^\/app\/personal-releases\/(storytelling|product-management|(?<skill>skill)\/(?<skillId>[a-f0-9-]{36})|(?<plugin>plugin)\/(?<pluginId>[a-f0-9]{64})(?:\/(?<action>file|download))?)$/);
+  if ((p === '/app/personal-library' || personalRelease) && req.method === 'GET') {
+    const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+    res.removeHeader('Access-Control-Allow-Origin');
+    res.removeHeader('Access-Control-Allow-Credentials');
+    if (!process.env.PERSONAL_RELEASES_OWNER_ID || me.id !== process.env.PERSONAL_RELEASES_OWNER_ID) {
+      return json(res, 404, { error: 'not_found' }, headers);
+    }
+    try {
+      if (!personalRelease) return json(res, 200, await personalCatalog(db.listSkillsByOwner(me.id)), headers);
+      const { skill, skillId, plugin, pluginId, action } = personalRelease.groups;
+      const version = url.searchParams.get('version');
+      if (version && !(plugin ? /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/ : /^\d+\.\d+\.\d+$/).test(version)) {
+        return json(res, 400, { error: 'invalid_version' }, headers);
+      }
+      if (action === 'download') {
+        const hash = url.searchParams.get('hash') || '';
+        if (!version || !/^[a-f0-9]{64}$/.test(hash)) return json(res, 400, { error: 'invalid_package' }, headers);
+        const archive = await readPersonalPluginArchive(pluginId, version, hash);
+        if (!archive) return json(res, 404, { error: 'not_found' }, headers);
+        const bytes = Buffer.from(await archive.arrayBuffer());
+        res.writeHead(200, { ...headers, 'Content-Type': 'application/zip',
+          'Content-Disposition': archive.headers.get('content-disposition') || 'attachment; filename="skillops-plugin.zip"',
+          'X-Package-Hash': hash, 'X-Archive-SHA256': archive.headers.get('x-archive-sha256') || '',
+          'Content-Length': bytes.length });
+        res.end(bytes);
+        return true;
+      }
+      const data = action === 'file'
+        ? await readPersonalPluginFile(pluginId, version || '', url.searchParams.get('path') || '')
+        : await readPersonalRelease(skill || plugin || personalRelease[1], skillId || pluginId, version);
+      return data ? json(res, 200, data, headers) : json(res, 404, { error: 'not_found' }, headers);
+    } catch {
+      return json(res, 502, { error: 'personal_release_unavailable' }, headers);
+    }
+  }
+
   // ── skills ──
   if (p === '/app/skills' && req.method === 'GET') {
-    return json(res, 200, { skills: db.listSkillsByOwner(me.id).map(s => db.skillView(s)) }), true;
+    return json(res, 200, { skills: db.listSkillsByOwner(me.id).map(s => linkedSkillView(s, me)) }), true;
   }
   if (p === '/app/skills' && req.method === 'POST') {
     const b = await H.readJson(req).catch(() => ({}));
@@ -440,7 +655,7 @@ export async function handlePlatform(req, res, url) {
 
     if (!sub && req.method === 'GET') {
       const v = db.getVersion(skill.latestVersionId);
-      return json(res, 200, { skill: db.skillView(skill), content: v ? v.content : '', latestSms: v ? v.sms || null : null, versions: db.listVersions(skill.id).map(x => ({ id: x.id, n: x.n, note: x.note, sms: x.sms ? { total: x.sms.total, tier: x.sms.tier } : null, createdAt: x.createdAt })) }), true;
+      return json(res, 200, { skill: linkedSkillView(skill, me), content: v ? v.content : '', latestSms: v ? v.sms || null : null, versions: db.listVersions(skill.id).map(x => ({ id: x.id, n: x.n, note: x.note, sms: x.sms ? { total: x.sms.total, tier: x.sms.tier } : null, createdAt: x.createdAt })) }), true;
     }
     if (!sub && req.method === 'PUT') {
       const b = await H.readJson(req).catch(() => ({}));

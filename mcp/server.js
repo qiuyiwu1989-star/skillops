@@ -8,7 +8,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
-const API = process.env.SKILLOPS_API || 'https://skillops.tech/api';
+const API = process.env.SKILLOPS_API || 'https://skillops.qiuyiwu.com/api';
 const KEY = process.env.SKILLOPS_API_KEY || '';
 
 async function api(path, opts = {}) {
@@ -46,7 +46,7 @@ server.tool(
   '列出我在 SkillOps 上管理的全部技能（名称 / 段位 / 分数 / 简介 / id）。用户提到"我的技能/提示词库"时先调它。',
   {},
   async () => {
-    if (!KEY) return fail('未配置 SKILLOPS_API_KEY。到 https://skillops.tech/dashboard/ → API Key 生成一个，填进 MCP 配置的 env 里。');
+    if (!KEY) return fail('未配置 SKILLOPS_API_KEY。到 https://skillops.qiuyiwu.com/dashboard/ → API Key 生成一个，填进 MCP 配置的 env 里。');
     const r = await api('/v1/me/skills');
     if (!r.ok) return fail('拉取失败：' + errText(r));
     const skills = (r.j && r.j.skills) || [];
@@ -87,7 +87,7 @@ server.tool(
     const items = (r.j && r.j.items) || [];
     if (!items.length) return text(`市场里没搜到「${q}」相关的技能。`);
     const lines = items.slice(0, 15).map(x => `- [${x.badge}] ${x.name}${x.total != null ? ` (${x.total}/100 ${x.tier || ''})` : ''}${x.repo ? ` · ${x.repo}` : ''}${x.summary ? ` — ${String(x.summary).slice(0, 60)}` : ''}`).join('\n');
-    return text(`技能市场搜「${q}」：\n${lines}\n\n（在 skillops.tech 上可「复制到我的」fork 成你的私有副本再二改。）`);
+    return text(`技能市场搜「${q}」：\n${lines}\n\n（在 skillops.qiuyiwu.com 上可「复制到我的」fork 成你的私有副本再二改。）`);
   }
 );
 

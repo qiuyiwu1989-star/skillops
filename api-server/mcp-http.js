@@ -1,7 +1,7 @@
 /* mcp-http.js — 手写最小 MCP over Streamable HTTP（JSON-RPC 2.0），零依赖。
  *
- * 把 SkillOps 技能库做成 skillops.tech 上的「远程 MCP 接口」：
- * 用户在 Claude / Cursor 里填  URL = https://skillops.tech/api/mcp  +  Authorization: Bearer xn_…  即可接入，
+ * 把 SkillOps 技能库做成 skillops.qiuyiwu.com 上的「远程 MCP 接口」：
+ * 用户在 Claude / Cursor 里填  URL = https://skillops.qiuyiwu.com/api/mcp  +  Authorization: Bearer xn_…  即可接入，
  * 不用 clone、不用装 node。检索型：取技能给"你自己的 AI"执行，不替你跑、不锁定。
  *
  * 支持：initialize / notifications/* / ping / tools/list / tools/call。
@@ -32,11 +32,11 @@ function resolveSkillId(db, user, query) {
 }
 
 async function callTool(name, args, user, { db, store }) {
-  if (!user) return text('未授权：请在 MCP 配置里带上 Authorization: Bearer xn_你的key（skillops.tech/dashboard → API Key 生成）。', true);
+  if (!user) return text('未授权：请在 MCP 配置里带上 Authorization: Bearer xn_你的key（skillops.qiuyiwu.com/dashboard → API Key 生成）。', true);
 
   if (name === 'list_my_skills') {
     const skills = db.listSkillsByOwner(user.id).map(s => db.skillView(s));
-    if (!skills.length) return text('你的 SkillOps 库还是空的。去 skillops.tech/dashboard 建一个，或在对话里捕获。');
+    if (!skills.length) return text('你的 SkillOps 库还是空的。去 skillops.qiuyiwu.com/dashboard 建一个，或在对话里捕获。');
     const lines = skills.map(s => `- ${s.name}${s.score != null ? ` [${s.score}/100 ${s.tier || ''}]` : ' [未评分]'} (id: ${s.id})${s.description ? ` — ${s.description}` : ''}`).join('\n');
     return text(`你的技能库（@${user.login} · ${skills.length} 个）：\n${lines}\n\n要用某个？调 get_skill(query="名称或id")。`);
   }
@@ -63,7 +63,7 @@ async function callTool(name, args, user, { db, store }) {
     if (q) items = items.filter(x => (x.name || '').toLowerCase().includes(q) || (x.summary || '').toLowerCase().includes(q) || (x.repo || '').toLowerCase().includes(q));
     if (!items.length) return text(`技能市场里没搜到「${args.q}」相关的。`);
     const lines = items.slice(0, 15).map(x => `- [${x.badge}] ${x.name}${x.total != null ? ` (${x.total}/100 ${x.tier || ''})` : ''}${x.repo ? ` · ${x.repo}` : ''}${x.summary ? ` — ${String(x.summary).slice(0, 60)}` : ''}`).join('\n');
-    return text(`技能市场搜「${args.q}」：\n${lines}\n\n（在 skillops.tech 可「复制到我的」fork 成你的私有副本再二改。）`);
+    return text(`技能市场搜「${args.q}」：\n${lines}\n\n（在 skillops.qiuyiwu.com 可「复制到我的」fork 成你的私有副本再二改。）`);
   }
 
   if (name === 'run_chain') {

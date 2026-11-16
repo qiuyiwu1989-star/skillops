@@ -227,8 +227,13 @@
   .modal .src-tabs .t:last-child{ border-right:0; } .modal .src-tabs .t.on{ color:var(--accent); box-shadow:inset 0 -2px 0 var(--accent); }
   .modal .modal-actions { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
   .modal .keybox { background:#161616; border:1px solid var(--accent); border-radius:6px; padding:16px; font-family:var(--f-mono); font-size:13px; color:var(--accent); word-break:break-all; margin:14px 0; }
-  .reveal { background:rgba(226,82,42,.08); border:1px solid var(--accent); border-radius:6px; padding:14px 18px; margin:14px 0; font-family:var(--f-mono); font-size:12.5px; }
-  .reveal code{ color:var(--accent); word-break:break-all; }
+  #key-reveal { background:rgba(226,82,42,.08); border:1px solid var(--accent); border-radius:6px; padding:14px 18px; margin:14px 0; font-family:var(--f-mono); font-size:12.5px; }
+  #key-reveal p{ margin:0 0 8px; }
+  #key-reveal code{ color:var(--text); user-select:all; overflow-wrap:anywhere; }
+  .key-actions{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+  #key-reveal .modal-actions{ margin-top:10px; }
+  #k-copy{ min-height:44px; color:var(--text); }
+  #key-status:not(:empty){ margin:8px 0; }
   .key-list { border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:10px; }
   .key-row { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid var(--hairline); }
   .key-row:last-child{ border-bottom:0; } .key-row .ki{ font-family:var(--f-mono); font-size:12.5px; } .key-row .ki .pfx{ color:var(--accent); } .key-row .ki .nm{ color:var(--muted); font-size:11px; margin-top:3px; }
@@ -307,6 +312,37 @@
 (function(){var s={};try{s=JSON.parse(localStorage.getItem('atlas_ui')||'{}');}catch(e){}
   var d=document.documentElement;d.setAttribute('data-theme',s.theme||'rams');d.setAttribute('data-accent',s.accent||'orange');d.setAttribute('data-lang',s.lang||'zh');})();
 </script>
+<style>.personal-center-link{display:block;width:fit-content;margin:7px 0;color:var(--link,#bf4520);font-size:12px;text-decoration:underline;text-underline-offset:3px}.personal-center-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}</style>
+<style>
+  .library-category-controls,.asset-classification{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .library-category-controls{padding:0 18px 9px}
+  .library-category-controls[hidden],.asset-classification[hidden]{display:none}
+  .library-category-controls select,.asset-classification select{max-width:100%;min-height:32px;padding:4px 8px}
+  .library-category-controls select{flex:1;min-width:0}
+  .asset-classification{margin:0 0 12px;color:var(--muted);font-size:12px}
+  #ws-classification{padding:0 clamp(20px,3vw,32px);margin-top:8px}
+  .library-category-label{color:var(--text);font-weight:600}
+  #published-workspace{padding:18px clamp(16px,3vw,32px);color:var(--text)}
+  #published-workspace[hidden]{display:none}
+  @media(max-width:720px){.rail-left .lr-list{max-height:min(50vh,440px);overflow-y:auto}}
+  .published-toolbar,.published-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .published-toolbar{justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+  #library-sync:not(:empty){padding:0 18px 8px;color:var(--muted);font-size:11px}
+  #published-file{max-width:min(100%,360px)}
+  .published-data h3{margin:0 0 10px;font-size:clamp(22px,3vw,32px)}
+  .published-data{margin:10px 0;overflow-wrap:anywhere}
+  .published-data dt{font-weight:600;margin-top:8px}
+  .published-data dd{margin:0}
+  .published-data pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;margin:8px 0 16px}
+  .published-data details{border-top:1px solid var(--line);padding:10px 0}
+  .published-data summary{cursor:pointer;font-weight:600}
+  #personal-workbench{border-top:1px solid var(--line);margin:16px 0;padding-top:12px}
+  #personal-workbench textarea{box-sizing:border-box;width:100%;min-height:180px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;font:inherit}
+  #personal-workbench .btn:disabled{opacity:.55;cursor:default}
+  .workbench-trial-output{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px}
+  .workbench-trial-output section{border:1px solid var(--line);border-radius:6px;padding:10px}
+  .workbench-trial-output h5{margin:0 0 6px}
+</style>
 </head>
 <body>
 
@@ -321,20 +357,25 @@
   <!-- LEFT: skill rail -->
   <aside class="rail-left">
     <div class="lr-head">
-      <span class="h">技能</span>
+      <span class="h">技能库</span>
       <span class="acts"><button id="btn-new">＋ 招聘</button><button class="ghost" id="btn-import">⤓ GitHub</button></span>
     </div>
     <div class="lr-search-row">
-      <input class="lr-search" id="lr-q" type="text" placeholder="搜索技能 / 标签…" aria-label="搜索技能">
+      <input class="lr-search" id="lr-q" type="text" placeholder="搜索技能 / 插件 / 标签…" aria-label="搜索技能和插件">
       <select class="lr-sort" id="lr-sort" aria-label="排序方式">
         <option value="recent">最近</option>
         <option value="score">分数</option>
         <option value="invoked">调用</option>
         <option value="name">名称</option>
       </select>
-      <button class="lr-sel-btn" id="lr-sel" title="多选 / 批量操作" aria-label="多选">☑</button>
+      <button class="lr-sel-btn" id="lr-sel" title="批量管理 SkillOps 原有条目" aria-label="批量管理 SkillOps 原有条目">☑</button>
+    </div>
+    <div class="library-category-controls" id="library-category-controls" hidden>
+      <select class="lr-sort" id="library-category-filter" aria-label="按用途分类筛选"></select>
+      <button type="button" class="mini" id="export-classification">导出分类</button>
     </div>
     <div class="lr-filters" id="lr-filters"></div>
+    <div id="library-sync" role="status"></div>
     <div class="lr-list" id="lr-list"></div>
   </aside>
 
@@ -342,7 +383,7 @@
   <main class="center">
     <div class="ws-empty" id="ws-empty">
       <div class="big">🎛</div>
-      从左侧选一个技能开始管理 —— 编辑 · 评分 · 版本 · 培训 · 发布。<br>
+      从左侧选择技能或插件，查看版本和可用操作。<br>
       或点左上「＋ 招聘」添加一个新 skill（上传 / 粘贴 / GitHub / 市场 fork）。
     </div>
     <div class="ws" id="ws">
@@ -353,6 +394,7 @@
         <button class="ws-copy" id="ws-copy" style="margin-left:auto">⧉ 复制到任何 AI</button>
         <button class="x" id="ws-close" title="关闭">✕</button>
       </div>
+      <div class="asset-classification" id="ws-classification" hidden></div>
       <div class="ws-tabs" id="ws-tabs">
         <button class="ws-tab on" data-tab="overview">概览</button>
         <button class="ws-tab" data-tab="invoke">调用</button>
@@ -414,6 +456,12 @@
         <span class="save-hint" id="m-save-hint"></span>
       </div>
     </div>
+    <section id="published-workspace" aria-label="资产详情" hidden>
+      <div class="published-toolbar"><span id="published-source"></span><button class="mini" id="published-close" type="button">关闭详情</button></div>
+      <div id="published-status" role="status"></div>
+      <div class="asset-classification" id="published-classification" hidden></div>
+      <div id="published-data" class="published-data"></div>
+    </section>
   </main>
 
   <!-- RIGHT: lifecycle + distribution -->
@@ -487,15 +535,24 @@
   </div>
 </div>
 
+
+
 <!-- keys modal -->
 <div class="modal-bg" id="keys-bg">
   <div class="modal">
     <h3>API Keys · 给 agent 用</h3>
-    <div class="hint">生成 key，你的 agent 一行 curl 就能拉取你管理的私有 skill。</div>
-    <div id="key-reveal"></div>
+    <div class="hint">为 WorkBuddy 等 Agent 生成整库只读 Key，可读取技能和插件。</div>
+    <div id="key-reveal" hidden>
+      <p id="key-reveal-note">请妥善保存完整 API Key。</p>
+      <code id="key-value"></code>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="k-copy" aria-describedby="key-reveal-note">复制 API Key</button>
+      </div>
+    </div>
+    <div class="ver-hint" id="key-status" role="status"></div>
     <div class="key-list" id="key-list"></div>
-    <div class="agent-snippet" style="margin-top:14px"><span class="c"># 列出我的全部 skill</span><br>curl https://skillops.tech/api/<span class="a">v1/me/skills</span> -H <span class="a">"Authorization: Bearer xn_你的key"</span></div>
-    <div class="modal-actions"><button class="btn primary" id="k-new">＋ 生成 key</button><button class="btn" id="k-close">关闭</button></div>
+    <div class="agent-snippet" style="margin-top:14px"><span class="c"># 用整库只读 Key 列出统一技能库</span><br>curl https://skillops.qiuyiwu.com/api/<span class="a">v1/me/skills</span> -H <span class="a">"Authorization: Bearer xn_ro_你的key"</span></div>
+    <div class="modal-actions"><button class="btn primary" id="k-new">＋ 生成 key</button><button class="btn" id="k-library-new" hidden>生成整库只读 Key</button><button class="btn" id="k-close">关闭</button></div>
   </div>
 </div>
 
@@ -578,13 +635,379 @@ function stageIndex(life){ // map lifeOf → LIFE_STAGES index
   return {draft:0, ready:1, dev:2, warn:2, pub:3, retire:4}[life.k] ?? 1;
 }
 
+// ── owner-scoped personal library ──
+const publishedSamples={
+  storytelling:['skill','b20a02ec-34b0-4258-ac6e-d2899e77b78a','1.0.1'],
+  'product-management':['plugin','aef5e4b6f4841c498eaa761b253a6f44daf19de42416f633c995ce07c9dea5d1','1.2.0'],
+};
+let publishedRequest=0, catalogRequest=0, publishedCatalog=[], activePublished;
+const releaseState={published:'已发布',registered:'已入册 · 尚未发布',draft:'草稿',archived:'已归档'};
+const catalogKey=item=>item.kind+'/'+item.id;
+const catalogName=item=>item.id===publishedSamples.storytelling[1]?'用户价值叙事':item.name;
+const releasePath=(kind,id,version)=>'/app/personal-releases/'+kind+'/'+id+(version?'?version='+encodeURIComponent(version):'');
+let libraryClassification=null, categoryFilter='';
+const assetCategory=key=>libraryClassification?.assignments[key]||'';
+const labelForCategory=key=>libraryClassification?.categories.find(item=>item.id===key)?.name||'';
+function classificationKey(id){
+  const linked=publishedCatalog.find(item=>item.links?.some(link=>link.id===id));
+  return linked?catalogKey(linked):id;
+}
+function renderLibraryCategories(){
+  const controls=$('library-category-controls');
+  controls.hidden=!libraryClassification||SELMODE;
+  if(controls.hidden) return;
+  const counts=new Map();
+  for(const item of unifiedAssets()){
+    if(assetStage(item)==='retire') continue;
+    const key=assetCategory(item.personal?item.id:classificationKey(item.id));
+    counts.set(key,(counts.get(key)||0)+1);
+  }
+  const select=$('library-category-filter');
+  select.replaceChildren(new Option('全部用途分类',''),...libraryClassification.categories
+    .filter(item=>counts.has(item.id)).map(item=>new Option(item.name+' · '+counts.get(item.id),item.id)));
+  if(counts.has('')) select.add(new Option('尚未分类 · '+counts.get(''),'unclassified'));
+  if(!Array.from(select.options).some(option=>option.value===categoryFilter)) categoryFilter='';
+  select.value=categoryFilter;
+}
+function renderClassificationEditor(mount,key){
+  mount.replaceChildren();
+  mount.hidden=!libraryClassification||!key;
+  if(mount.hidden) return;
+  const current=assetCategory(key);
+  const select=document.createElement('select');
+  select.className='lr-sort';select.id=mount.id+'-select';
+  select.add(new Option('尚未分类',''));
+  for(const item of libraryClassification.categories) select.add(new Option(item.name,item.id));
+  select.value=current;
+  const label=document.createElement('label');
+  label.htmlFor=select.id;label.textContent='用途分类';
+  const save=document.createElement('button');
+  save.type='button';save.className='mini';save.textContent='保存分类';save.disabled=true;
+  const status=document.createElement('span');
+  status.setAttribute('role','status');
+  status.textContent=current?(libraryClassification.reviewed[key]?'已确认':'初步归类'):'';
+  select.onchange=()=>{save.disabled=!select.value||select.value===current;};
+  save.onclick=async()=>{
+    save.disabled=true;select.disabled=true;
+    try{
+      const {ok,j}=await api('/app/library-classification',{method:'PUT',body:JSON.stringify({
+        key,category:select.value,expected:current||null,
+      })});
+      if(!ok){status.textContent=j?.message||'保存失败，请重试。';return;}
+      libraryClassification.assignments[key]=j.category;
+      libraryClassification.reviewed[key]=j.reviewedAt;
+      renderLibraryCategories();renderList();
+      if(mount.contains(status)) renderClassificationEditor(mount,key);
+    }catch{
+      status.textContent='保存失败，请重试。';
+    }finally{
+      if(mount.contains(status)){select.disabled=false;select.onchange();}
+    }
+  };
+  mount.append(label,select,save,status);
+}
+$('library-category-filter').onchange=e=>{categoryFilter=e.target.value;renderList();};
+$('export-classification').onclick=()=>{
+  if(!libraryClassification) return;
+  const entries=unifiedAssets().map(item=>{
+    const key=item.personal?item.id:classificationKey(item.id);
+    return {id:key,name:item.name,source:item.personal?'个人中心':'SkillOps',
+      category:labelForCategory(assetCategory(key))||null,reviewedAt:libraryClassification.reviewed[key]||null};
+  });
+  const url=URL.createObjectURL(new Blob([JSON.stringify(entries,null,2)],{type:'application/json'}));
+  const link=document.createElement('a');
+  link.href=url;link.download='skillops-library-classification.json';link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+function unifiedAssets(){
+  if(SELMODE) return SKILLS;
+  const linked=new Set(), candidates=new Set();
+  for(const item of publishedCatalog){
+    for(const row of item.links||[]) linked.add(row.id);
+    for(const row of item.candidates||[]) candidates.add(row.id);
+  }
+  const native=SKILLS.filter(item=>!linked.has(item.id)).map(item=>
+    candidates.has(item.id)?{...item,unifiedCandidate:true}:item);
+  const personal=publishedCatalog.map(item=>{
+    const name=catalogName(item);
+    return {...item,name,searchName:item.name,id:catalogKey(item),assetId:item.id,personal:true};
+  });
+  return [...native,...personal];
+}
+function assetStage(item){
+  if(!item.personal) return lifeOf(item).k;
+  return {published:'pub',registered:'registered',draft:'draft',archived:'retire'}[item.state]||'draft';
+}
+function matchesFilter(item,key){
+  const stage=assetStage(item);
+  if(key==='retire') return stage==='retire';
+  if(stage==='retire') return false;
+  if(key==='all') return true;
+  if(key==='personal') return Boolean(item.personal);
+  if(key==='plugin') return item.personal&&item.kind==='plugin';
+  if(key==='candidate') return Boolean(item.unifiedCandidate||item.candidates?.length);
+  return stage===key;
+}
+function showRelation(){
+  const panel=$('published-relation');
+  if(!panel||!activePublished) return;
+  const item=publishedCatalog.find(row=>catalogKey(row)===catalogKey(activePublished));
+  panel.replaceChildren();
+  if(!item) return;
+  for(const [records,label] of [[item.links,'已关联'],[item.candidates,'待核对候选']]){
+    for(const row of records||[]){
+      const p=document.createElement('p');
+      p.textContent=label+' · SkillOps '+row.name+' v'+row.version+(row.reason?' · '+row.reason:'');
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='mini';
+      button.textContent='查看 SkillOps 条目';
+      button.onclick=()=>openSkill(row.id);
+      p.append(' ',button);
+      panel.append(p);
+    }
+  }
+}
+async function loadPublishedCatalog(){
+  const id=++catalogRequest;
+  const status=$('library-sync');
+  status.textContent='正在同步个人中心资产…';
+  try{
+    const {ok,status:code,j}=await api('/app/personal-library');
+    if(id!==catalogRequest) return;
+    if(ok){
+      publishedCatalog=[...j.skills,...j.plugins];
+      status.textContent='';
+    }else if(code===404){
+      publishedCatalog=[];
+      status.textContent='';
+    }else throw new Error('catalog unavailable');
+  }catch{
+    if(id!==catalogRequest) return;
+    status.textContent='暂时无法同步个人中心。';
+    const retry=document.createElement('button');
+    retry.type='button';retry.className='mini';retry.textContent='重试';
+    retry.onclick=()=>loadPublishedCatalog();
+    status.append(' ',retry);
+  }
+  renderLibraryCategories();renderFilters();renderList();showRelation();
+}
+function showPersonalWorkbench(request,base){
+  const workspacePath='/app/personal-workbench/'+encodeURIComponent(base.id);
+  const versionQuery='?version='+encodeURIComponent(base.version);
+  const panel=$('personal-workbench');
+  const isCurrent=()=>request===publishedRequest&&!$('published-workspace').hidden&&panel.isConnected;
+  const outcome={pass:'通过',fail:'未通过',unclear:'待核对'};
+  const labels={score:'正在评分…',train:'正在生成培训候选…',trial:'正在进行同题试岗…',publish:'正在提交已确认的版本…'};
+  function paint(state){
+    if(!isCurrent()) return;
+    const {score,candidate,trial,published,job}=state;
+    const passed=trial&&trial.candidateHash===candidate?.hash&&trial.results.every(item=>item.candidate==='pass');
+    const changed=candidate&&candidate.content!==base.content;
+    const ready=state.canPublish&&changed&&(!state.trialRequired||passed);
+    const publishHint=!state.canPublish?'当前选的是历史版本。候选会保留，发布请从最新正式版开始。':
+      !changed?'候选与正式版内容相同。':
+      state.trialRequired&&!passed?'确认发布前，当前候选须通过一次同题试岗。保存改稿后需要重新试岗。':
+      '候选已保存，等待你确认发布。';
+    panel.innerHTML=`<h4>改进工作台</h4>
+      <p>正式基线 ${esc(state.baseVersion)} · ${published?'已发布 '+esc(published.version):candidate?'候选待确认':'待生成候选'}</p>
+      <div role="status" id="workbench-status">${esc(labels[job]||state.error||'')}</div>
+      <div class="published-actions">
+        <button type="button" class="btn" data-workbench="score"${job||published?' disabled':''}>${score?'重新评分':'评分'}</button>
+        <button type="button" class="btn" data-workbench="train"${job||!score||candidate?' disabled':''}>培训并保存候选</button>
+        ${candidate&&state.trialRequired?`<button type="button" class="btn" id="workbench-trial"${job||published?' disabled':''}>${trial?'重新试岗':'运行同题试岗'}</button>`:''}
+      </div>
+      ${score?`<details open><summary>SMS 评分 · ${esc(score.total)}/100 · ${esc(score.tier)} 段</summary>
+      <p>${esc(score.model)} · ${esc(score.summary)}</p>
+      <ul>${score.dimensions.map(item=>`<li>${esc(item.zh)} ${esc(item.score)}/10 · ${esc(item.reason)}</li>`).join('')}</ul></details>`:''}
+      ${candidate?`<details><summary>新旧差异 · 候选修订 ${esc(state.revision)}</summary><pre>${lineDiff(base.content,candidate.content)}</pre></details>
+      <details><summary>编辑候选稿</summary><label for="workbench-editor">SKILL.md 正文</label>
+      <textarea id="workbench-editor" maxlength="24000"${job||published?' readonly':''}>${esc(candidate.content)}</textarea>
+      <button type="button" class="btn" id="workbench-save" disabled>保存改稿</button></details>`:''}
+      ${trial?`<details open><summary>候选试岗 · ${esc(trial.model)}</summary><p>${esc(trial.task)}</p>
+      <div class="workbench-trial-output"><section><h5>${esc(state.baseVersion)} 正式版</h5><pre>${esc(trial.baseline)}</pre></section>
+      <section><h5>当前候选</h5><pre>${esc(trial.candidate)}</pre></section></div>
+      <h5>逐项复核依据</h5><ul>${trial.results.map(item=>`<li><strong>${esc(item.label)}</strong> · 基线 ${esc(outcome[item.baseline])} · 候选 ${esc(outcome[item.candidate])}<br>${esc(item.reason)}</li>`).join('')}</ul></details>`:''}
+      ${candidate&&!published?`<p>${esc(publishHint)}</p>
+      <button type="button" class="btn primary" id="workbench-publish"${!ready||job?' disabled':''}>确认发布 ${esc(state.nextVersion)}</button>`:''}`;
+    async function action(name,payload={}){
+      panel.querySelectorAll('button').forEach(button=>button.disabled=true);
+      $('workbench-status').textContent=labels[name]||'正在保存…';
+      try{
+        const {ok,j}=await api(workspacePath+'/'+name+versionQuery,{method:'POST',body:JSON.stringify({revision:state.revision,...payload})});
+        if(!isCurrent()) return;
+        if(ok){ paint(j); return; }
+        repaintError(j?.message||'操作失败，请重试。');
+      }catch{
+        if(isCurrent()){ repaintError('请求失败，请重试。'); }
+      }
+      function repaintError(message){
+        paint(state);
+        if(name==='edit'){
+          const input=$('workbench-editor');
+          input.closest('details').open=true;
+          input.value=payload.content;
+          input.oninput();
+        }
+        $('workbench-status').textContent=message;
+      }
+    }
+    panel.querySelectorAll('[data-workbench]').forEach(button=>button.onclick=()=>action(button.dataset.workbench));
+    const editor=$('workbench-editor'), save=$('workbench-save'), trialButton=$('workbench-trial'), publish=$('workbench-publish');
+    if(trialButton) trialButton.onclick=()=>action('trial');
+    if(editor&&!job&&!published){
+      editor.oninput=()=>{
+        const changed=editor.value.trim()!==candidate.content;
+        save.disabled=!changed;
+        if(trialButton) trialButton.disabled=changed;
+        if(publish) publish.disabled=changed||!ready;
+      };
+      save.onclick=()=>action('edit',{content:editor.value});
+    }
+    if(publish) publish.onclick=()=>{
+      if(confirm('确认将当前候选发布为 '+state.nextVersion+'？')){
+        action('publish',{confirmVersion:state.nextVersion,candidateHash:candidate.hash});
+      }
+    };
+    if(job) setTimeout(refresh,3000);
+  }
+  async function refresh(){
+    if(!isCurrent()) return;
+    try{
+      const {ok,j}=await api(workspacePath+versionQuery);
+      if(!isCurrent()) return;
+      if(ok) paint(j);
+      else panel.textContent=j?.message||'暂时无法读取改进工作台。';
+    }catch{
+      if(isCurrent()) panel.textContent='暂时无法读取改进工作台。';
+    }
+  }
+  refresh();
+}
+async function showPublished(target){
+  if(!ME){
+    PENDING=()=>showPublished(target);
+    openAccount(true);
+    return;
+  }
+  const [kind,id,version]=target;
+  const previous=activePublished;
+  activePublished={kind,id};
+  EDIT_ID=null;CUR_SKILL=null;
+  $('ws').classList.remove('show');
+  $('ws-empty').style.display='none';
+  $('published-workspace').hidden=false;
+  $('published-source').textContent=kind==='plugin'?'个人中心 · 插件':'个人中心 · 技能';
+  renderClassificationEditor($('published-classification'),catalogKey(activePublished));
+  renderList();
+  renderRightRail(null);
+  if(!previous||catalogKey(previous)!==catalogKey(activePublished)){
+    document.querySelector('.center').scrollTop=0;
+    if(matchMedia('(max-width: 720px)').matches) $('published-workspace').scrollIntoView({block:'start'});
+  }
+  const request=++publishedRequest;
+  $('published-data').replaceChildren();
+  $('published-status').textContent='正在读取个人中心版本…';
+  try{
+    const {ok,status,j}=await api(releasePath(kind,id,version));
+    if(request!==publishedRequest||$('published-workspace').hidden) return;
+    if(!ok){
+      $('published-status').textContent=status===404?'当前账户无权读取此版本，或版本不存在。':'暂时无法读取个人中心版本，请重试。';
+      return;
+    }
+    const detail=(title,value,expanded=false)=>value?`<details${expanded?' open':''}><summary>${esc(title)}</summary><pre>${esc(value)}</pre></details>`:'';
+    const evidence=(title,records)=>records?.length?detail(title,JSON.stringify(records,null,2)):'';
+    const trial=j.trial;
+    const packageQuery=new URLSearchParams({version:j.version,hash:j.packageHash});
+    $('published-data').innerHTML=`<h3>${esc(catalogName(j))} · ${esc(j.version||'草稿')}</h3>
+      <div id="published-relation"></div>
+      ${j.versions.length?`<label for="published-version">版本</label> <select class="lr-sort" id="published-version">${j.versions.map(item=>`<option value="${esc(item.version)}"${item.version===j.version?' selected':''}>${esc(item.version)}</option>`).join('')}</select>`:''}
+      <p>${esc(releaseState[j.state])}</p>
+      <details><summary>版本标识与校验值</summary><dl><dt>资产 ID</dt><dd>${esc(j.id)}</dd>
+      ${j.releaseId?`<dt>发布 ID</dt><dd>${esc(j.releaseId)}</dd>`:''}
+      <dt>完整包 SHA-256</dt><dd>${esc(j.packageHash)}</dd>
+      ${j.archiveHash?`<dt>ZIP SHA-256</dt><dd>${esc(j.archiveHash)}</dd>`:''}</dl></details>
+      <div class="published-actions">${j.url?`<a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">在个人中心查看</a>`:''}
+      ${j.kind==='skill'&&j.version?'<button type="button" class="btn" id="published-copy">复制给 Agent</button>':''}
+      ${j.kind==='plugin'&&j.published?`<a class="btn" href="/api/app/personal-releases/plugin/${esc(id)}/download?${esc(packageQuery)}">下载该版本 ZIP</a>`:''}</div>
+      ${j.kind==='skill'&&j.version&&j.state!=='archived'?'<section id="personal-workbench" aria-label="改进工作台">正在读取改进工作台…</section>':''}
+      ${trial?`<h4>原试岗记录</h4><p>${esc(trial.task)}${trial.model?' · '+esc(trial.model):''}</p>
+      ${detail('逐项考核依据',trial.assessment,true)}
+      ${detail('基线产物'+(trial.base_version?' '+trial.base_version:''),trial.baseline)}
+      ${detail('候选产物',trial.candidate)}`:''}
+      ${evidence('人工考核',j.evaluations)}${evidence('静态审核',j.reviews)}${evidence('SMS 诊断与培训',j.sms)}
+      ${detail('插件成员',j.members?.join('\n'),true)}
+      ${j.files.length?`<details><summary>文件与附件 · ${j.files.length}</summary>
+      <label for="published-file">查看文件</label> <select id="published-file" class="lr-sort"><option value="">选择文件</option>${j.files.map(path=>`<option value="${esc(path)}">${esc(path)}</option>`).join('')}</select>
+      <pre id="published-file-text"></pre></details>`:''}`;
+    $('published-status').textContent='';
+    showRelation();
+    if($('personal-workbench')) showPersonalWorkbench(request,j);
+    const select=$('published-version');
+    if(select) select.onchange=()=>showPublished([kind,id,select.value]);
+    const file=$('published-file');
+    if(file) file.onchange=async()=>{
+      const path=file.value, target=$('published-file-text');
+      target.textContent='';
+      if(!path) return;
+      if(kind==='skill'){ target.textContent=j.attachments[path]??''; return; }
+      target.textContent='正在读取文件…';
+      try{
+        const params=new URLSearchParams({version:j.version,path});
+        const r=await api('/app/personal-releases/plugin/'+id+'/file?'+params);
+        if(request===publishedRequest&&file.value===path) target.textContent=r.ok&&r.j
+          ? r.j.previewable?r.j.content:r.j.reason : '暂时无法读取文件。';
+      }catch{ if(request===publishedRequest&&file.value===path) target.textContent='暂时无法读取文件。'; }
+    };
+    const copy=$('published-copy');
+    if(copy) copy.onclick=async()=>{
+      const prompt=`通过个人 MCP https://mcp.qiuyiwu.com/mcp 调用 get_skill_file，读取技能 ${j.id} 的版本 ${j.version}、文件 SKILL.md，核对完整包 SHA-256 ${j.packageHash}。`;
+      try{ await navigator.clipboard.writeText(prompt); if(request===publishedRequest) $('published-status').textContent='已复制给 Agent。'; }
+      catch{ if(request===publishedRequest){ $('published-status').textContent='无法写入剪贴板，已在下方显示指令。'; copy.after(Object.assign(document.createElement('code'),{textContent:prompt})); } }
+    };
+  }catch{
+    if(request===publishedRequest&&!$('published-workspace').hidden) $('published-status').textContent='暂时无法读取个人中心版本，请重试。';
+  }
+}
+function clearPublished(){
+  publishedRequest++;
+  activePublished=null;
+  $('published-workspace').hidden=true;
+  $('published-data').replaceChildren();
+  $('published-status').textContent='';
+}
+$('published-close').onclick=closeWs;
+
+// Continue an OAuth authorization after signing in on this site.
+function continueOAuth(){
+  const value=new URLSearchParams(location.search).get('return');
+  if(!value) return false;
+  let target;
+  try{target=new URL(value,location.origin);}catch{return false;}
+  if(target.origin!==location.origin||target.username||target.password||target.pathname!=='/api/oauth/authorize') return false;
+  const resume=()=>location.replace(target.pathname+target.search);
+  if(ME) resume();
+  else{
+    PENDING=resume;
+    openAccount(true);
+  }
+  return true;
+}
+
 // ── boot ──
 async function boot(){
   const { j } = await api('/auth/me'); ME = j && j.user;
   renderAcctBar();
   await loadSkills();
+  if(continueOAuth()) return;
   await handleIncomingFork();
   await handleIncomingExemplar();
+  const query=new URLSearchParams(location.search);
+  const release=query.get('released')||'';
+  if(Object.hasOwn(publishedSamples,release)) showPublished(publishedSamples[release]);
+  else if(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(release)) {
+    showPublished(['skill',release,query.get('version')||undefined]);
+  }
 }
 // ── incoming "收进我的库" from the 精选案例 showcase (/exemplars/) ──
 async function handleIncomingExemplar(){
@@ -633,56 +1056,108 @@ function renderAcctBar(){
 }
 
 async function loadSkills(keepSel){
-  if (ME){ const { j } = await api('/app/skills'); SKILLS = (j&&j.skills)||[]; }
-  else SKILLS = Local.all();
-  renderFilters(); renderList(); renderRightRail(null);
-  if (keepSel && SKILLS.find(s=>s.id===keepSel)) openSkill(keepSel);
-  else if (!SKILLS.find(s=>s.id===EDIT_ID)) { EDIT_ID=null; $('ws').classList.remove('show'); $('ws-empty').style.display='block'; }
+  if(ME){
+    const [own,,classification]=await Promise.all([
+      api('/app/skills').catch(()=>null),
+      loadPublishedCatalog(),
+      api('/app/library-classification').catch(()=>null),
+    ]);
+    if(own?.ok) SKILLS=own.j?.skills||[];
+    libraryClassification=classification?.ok?classification.j:null;
+  }else{
+    catalogRequest++;
+    publishedCatalog=[];
+    libraryClassification=null;categoryFilter='';
+    $('library-sync').textContent='';
+    SKILLS=Local.all();
+  }
+  renderLibraryCategories();renderFilters();renderList();renderRightRail(null);
+  if(activePublished) renderClassificationEditor($('published-classification'),catalogKey(activePublished));
+  else if(EDIT_ID) renderClassificationEditor($('ws-classification'),classificationKey(EDIT_ID));
+  if(keepSel&&SKILLS.some(s=>s.id===keepSel)) openSkill(keepSel);
+  else if(!activePublished&&!SKILLS.some(s=>s.id===EDIT_ID)){
+    EDIT_ID=null;$('ws').classList.remove('show');$('ws-empty').style.display='block';
+  }
 }
 
-function counts(){
-  const c={all:0, draft:0, dev:0, ready:0, pub:0, warn:0, retire:0};
-  SKILLS.forEach(s=>{ const l=lifeOf(s); c[l.k]=(c[l.k]||0)+1; if(l.k!=='retire') c.all++; });
+function counts(assets=unifiedAssets()){
+  const c={all:0,draft:0,dev:0,ready:0,pub:0,warn:0,retire:0,personal:0,plugin:0,candidate:0,registered:0};
+  for(const asset of assets){
+    const stage=assetStage(asset);
+    c[stage]++;
+    for(const key of ['all','personal','plugin','candidate']) if(matchesFilter(asset,key)) c[key]++;
+  }
   return c;
 }
 function allTags(){ const m=new Map(); SKILLS.forEach(s=>(s.tags||[]).forEach(t=>m.set(t,(m.get(t)||0)+1))); return [...m.entries()].sort((a,b)=>b[1]-a[1]); }
 function renderFilters(){
   const c=counts();
-  const chips=[['all','全部'],['ready','可发布'],['pub','已发布'],['dev','待提分'],['warn','待重写'],['draft','草稿'],['retire','已归档']];
+  const chips=[['all','全部'],['personal','个人中心'],['plugin','插件'],['candidate','待核对'],['ready','可发布'],['pub','已发布'],['registered','已入册'],['dev','待提分'],['warn','待重写'],['draft','草稿'],['retire','已归档']];
   let html = chips.filter(([k])=>k==='all'||c[k]).map(([k,n])=>`<button class="lr-chip ${FILTER===k?'on':''}" data-f="${k}">${n}<span class="c">${c[k]||0}</span></button>`).join('');
   const tags=allTags();
   if(tags.length){ html += tags.map(([t,n])=>`<button class="lr-chip tagf ${TAGF===t?'on':''}" data-tag="${esc(t)}">#${esc(t)}<span class="c">${n}</span></button>`).join(''); }
-  $('lr-filters').innerHTML = html;
+  $('lr-filters').innerHTML = (SELMODE?'<span class="hint">批量管理 SkillOps 原有条目</span>':'')+html;
   document.querySelectorAll('.lr-chip[data-f]').forEach(b=>b.onclick=()=>{ FILTER=b.dataset.f; renderFilters(); renderList(); });
   document.querySelectorAll('.lr-chip[data-tag]').forEach(b=>b.onclick=()=>{ TAGF = (TAGF===b.dataset.tag?'':b.dataset.tag); renderFilters(); renderList(); });
 }
 function filteredSkills(){
-  let list = SKILLS.slice();
-  if(FILTER==='retire') list = list.filter(s=>lifeOf(s).k==='retire');
-  else { list = list.filter(s=>lifeOf(s).k!=='retire'); if(FILTER!=='all') list = list.filter(s=>lifeOf(s).k===FILTER); }
-  if(TAGF) list = list.filter(s=>(s.tags||[]).includes(TAGF));
-  if(SKILL_Q){ const q=SKILL_Q; list = list.filter(s=> (s.name||'').toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q) || (s.tags||[]).some(t=>t.toLowerCase().includes(q)) ); }
+  let list=unifiedAssets().filter(item=>matchesFilter(item,FILTER));
+  if(TAGF) list=list.filter(item=>(item.tags||[]).includes(TAGF));
+  const category=item=>assetCategory(item.personal?item.id:classificationKey(item.id));
+  if(!SELMODE&&categoryFilter) list=list.filter(item=>(category(item)||'unclassified')===categoryFilter);
+  if(SKILL_Q){
+    const q=SKILL_Q.normalize('NFKC').toLowerCase();
+    list=list.filter(item=>[item.name,item.searchName,item.description,labelForCategory(category(item)),...(item.tags||[])]
+      .some(value=>String(value||'').normalize('NFKC').toLowerCase().includes(q)));
+  }
   if(SORT==='score') list.sort((a,b)=>(scoreOf(b)??-1)-(scoreOf(a)??-1));
   else if(SORT==='invoked') list.sort((a,b)=>(b.invocations||0)-(a.invocations||0));
   else if(SORT==='name') list.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
-  else list.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+  else list.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))||a.name.localeCompare(b.name,'zh-CN'));
   return list;
 }
+function personalCenterLink(skill) {
+  const link = skill.personalCenter;
+  if (!ME || !link || !/^[0-9a-f-]{36}$/.test(link.id) || !/^\d+\.\d+\.\d+$/.test(link.version)) return '';
+  const url = new URL('/admin/skills.html', 'https://qiuyiwu.com');
+  url.searchParams.set('skill', link.id);
+  url.searchParams.set('version', link.version);
+  return `<a class="personal-center-link" href="${esc(url.href)}" target="_blank" rel="noopener">已纳入个人中心 · ${esc(link.version)} ↗</a>`;
+}
+
 function renderList(){
   const SRC={manual:'手动',github:'GitHub',fork:'fork',upload:'上传',capture:'捕获'};
   let list = filteredSkills();
-  if(!list.length){ $('lr-list').innerHTML='<div class="lr-empty">'+(SKILLS.length?'没有匹配的 skill。换个筛选 / 搜索词。':'还没有 skill。点右上「＋ 招聘」开始 —— 不用登录。')+'</div>'; return; }
-  $('lr-list').innerHTML = list.map(s=>{ const l=lifeOf(s), sc=scoreOf(s), tier=s.tier||'none', src=ME?(SRC[s.source]||'手动'):'本地';
+  if(!list.length){ $('lr-list').innerHTML='<div class="lr-empty">'+(unifiedAssets().length?'没有匹配的技能或插件。':'暂无技能或插件。')+'</div>'; return; }
+  $('lr-list').innerHTML = list.map(s=>{
+    const category=labelForCategory(assetCategory(s.personal?s.id:classificationKey(s.id)));
+    const badge=category?`<span class="library-category-label">${esc(category)}</span>`:'';
+    if(s.personal){
+      const active=activePublished&&catalogKey(activePublished)===s.id;
+      const source=s.kind==='plugin'?'个人中心 · 插件':'个人中心';
+      const tag=s.candidates?.length?' · 待核对':s.links?.length?' · 已关联':'';
+      return `<div class="sk-item ${active?'sel':''}" data-id="${esc(s.id)}" role="button" tabindex="0" aria-label="${esc(s.name)}">
+        <span class="nm">${esc(s.name)}</span><span class="tr none">${esc(s.version||'草稿')}</span>
+        <span class="meta">${esc(source)} · ${esc(releaseState[s.state])}${tag} ${badge}</span></div>`;
+    }
+    const l=lifeOf(s), sc=scoreOf(s), tier=s.tier||'none', src=ME?(SRC[s.source]||'手动'):'本地';
     const chk = SELMODE?`<input type="checkbox" class="sk-chk" data-sel="${s.id}" ${SELECTED.has(s.id)?'checked':''} aria-label="选择 ${esc(s.name)}" style="margin-right:7px;vertical-align:middle">`:'';
     const tags=(s.tags||[]).length?`<span class="tags">${s.tags.map(t=>`<span class="tg">#${esc(t)}</span>`).join('')}</span>`:'';
     return `<div class="sk-item ${s.id===EDIT_ID?'sel':''}" data-id="${s.id}" role="button" tabindex="0" aria-label="${esc(s.name)}">
       <span class="nm">${chk}${esc(s.name)}</span><span class="tr ${tier}">${sc!=null?(sc+' '+(s.tier||'')):'—'}</span>
-      <span class="meta"><span>${esc(src)}</span>·<span>v${s.version||1}</span>·<span class="stt"><span class="d d-${l.k}"></span>${l.t}</span>${s.invocations?`·<span title="被调用次数">⧉${s.invocations}</span>`:''}<span style="flex:1"></span>${SELMODE?'':`<button class="sk-copy" data-copy="${s.id}" title="复制到任何 AI">⧉ 复制</button>`}</span>
-      ${tags}
+      <span class="meta"><span>${esc(src)}</span>·<span>v${s.version||1}</span>·<span class="stt"><span class="d d-${l.k}"></span>${l.t}</span>${s.unifiedCandidate?'<span>待核对</span>':''}${badge}${s.invocations?`·<span title="被调用次数">⧉${s.invocations}</span>`:''}<span style="flex:1"></span>${SELMODE?'':`<button class="sk-copy" data-copy="${s.id}" title="复制到任何 AI">⧉ 复制</button>`}</span>
+      ${tags}${personalCenterLink(s)}
     </div>`; }).join('');
+  const personalRows=new Map(list.filter(item=>item.personal).map(item=>[item.id,item]));
+  function activate(id){
+    const item=personalRows.get(id);
+    if(item) showPublished([item.kind,item.assetId,item.version]);
+    else if(SELMODE) toggleSel(id);
+    else openSkill(id);
+  }
   document.querySelectorAll('.sk-item').forEach(it=>{
-    it.onclick=(e)=>{ if(e.target.closest('.sk-copy')||e.target.closest('.sk-chk'))return; SELMODE?toggleSel(it.dataset.id):openSkill(it.dataset.id); };
-    it.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); SELMODE?toggleSel(it.dataset.id):openSkill(it.dataset.id); } };
+    it.onclick=(e)=>{ if(e.target.closest('a,.sk-copy,.sk-chk'))return; activate(it.dataset.id); };
+    it.onkeydown=e=>{ if(e.target!==it)return; if(e.key==='Enter'||e.key===' '){ e.preventDefault(); activate(it.dataset.id); } };
   });
   document.querySelectorAll('.sk-chk').forEach(b=>b.onchange=(e)=>{ e.stopPropagation(); toggleSel(b.dataset.sel); });
   document.querySelectorAll('.sk-copy').forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); copyToAI(b.dataset.copy); });
@@ -690,7 +1165,7 @@ function renderList(){
 
 // ── right rail ──
 function renderRightRail(sel){
-  const c=counts(), n=SKILLS.length;
+  const c=counts(SKILLS), n=SKILLS.length;
   // 0 skills → welcome panel, not empty charts
   if(n===0){
     $('rail-right').innerHTML = `<div class="rr-sec"><div class="rh">从这里开始</div>`+
@@ -715,11 +1190,11 @@ function renderRightRail(sel){
   const tiers={S:0,A:0,B:0,C:0,D:0}; SKILLS.forEach(s=>{ if(s.tier&&tiers[s.tier]!=null) tiers[s.tier]++; });
   const tcol={S:'var(--accent)',A:'var(--green,#4a9b8a)',B:'var(--amber,#a8b56c)',C:'var(--muted)',D:'var(--red,#d4674a)'};
   const scored=SKILLS.filter(s=>scoreOf(s)!=null); const avg=scored.length?Math.round(scored.reduce((a,s)=>a+scoreOf(s),0)/scored.length):'—';
-  html += `<div class="rr-sec"><div class="rh">技能分布 · 均分 ${avg}/100</div><div class="dist">`+
+  html += `<div class="rr-sec"><div class="rh">SkillOps 评分 · 均分 ${avg}/100</div><div class="dist">`+
     Object.keys(tiers).map(t=>`<div class="row"><span class="d" style="background:${tcol[t]}"></span><span class="n">${t} 段</span><span class="v">${tiers[t]}</span></div>`).join('')+
     `</div></div>`;
   // state distribution
-  html += `<div class="rr-sec"><div class="rh">状态</div><div class="dist">`+
+  html += `<div class="rr-sec"><div class="rh">SkillOps 条目状态</div><div class="dist">`+
     [['pub','已发布','d-pub'],['ready','可发布','d-ready'],['dev','待提分','d-dev'],['warn','待重写','d-warn'],['draft','草稿','d-draft']].filter(([k])=>c[k]).map(([k,n,d])=>`<div class="row"><span class="d ${d}"></span><span class="n">${n}</span><span class="v">${c[k]}</span></div>`).join('')+
     `</div></div>`;
   // most invoked (retention surface)
@@ -761,15 +1236,18 @@ function setWsHeader(s, sc){ $('ws-name').textContent=s?s.name:'新建 skill'; c
 let CUR_SKILL=null;
 async function openSkill(id){
   const sMeta=SKILLS.find(x=>x.id===id); if(!sMeta) return;
+  clearPublished();
   EDIT_ID=id; CUR_SKILL=sMeta; $('modal-err').textContent=''; $('m-public-row').style.display=ME?'flex':'none';
   $('ws-empty').style.display='none'; $('ws').classList.add('show'); switchTab('overview');
   renderList(); // refresh selection highlight
   let s=sMeta, content='', versions=[], latestSms=null;
   if(ME){ const {j}=await api(`/app/skills/${id}`); if(j&&j.skill){ s=j.skill; content=j.content||''; versions=j.versions||[]; latestSms=j.latestSms||null; } }
   else { const loc=Local.get(id); content=loc?loc.content:''; latestSms=loc?loc.sms:null; }
+  if(EDIT_ID!==id) return;
   CUR_VERS=versions; CUR_SKILL=s;
   const sc=(s.score!=null?s.score:(latestSms&&latestSms.total));
   setWsHeader(s, sc);
+  renderClassificationEditor($('ws-classification'),classificationKey(id));
   $('m-save-hint').textContent = ME ? ('保存 = 新版本 v'+((s.version||1)+1)) : '保存覆盖当前内容';
   $('m-desc').value=s.description||''; $('m-cat').value=s.category||'strategy'; $('m-content').value=content||''; $('m-public').checked=s.visibility==='public';
   $('m-examples').value=(s.sections&&s.sections.examples)||''; $('m-references').value=(s.sections&&s.sections.references)||'';
@@ -782,13 +1260,14 @@ async function openSkill(id){
   renderOverview(s, latestSms, content); renderScore(latestSms); renderVersions(versions); renderTrend(versions); renderPublish(s);
   renderRightRail(s);
 }
-function closeWs(){ EDIT_ID=null; CUR_SKILL=null; $('ws').classList.remove('show'); $('ws-empty').style.display='block'; renderList(); renderRightRail(null); }
+function closeWs(){ clearPublished(); EDIT_ID=null; CUR_SKILL=null; $('ws').classList.remove('show'); $('ws-empty').style.display='block'; renderList(); renderRightRail(null); }
 
 function renderOverview(s, sms, content){
   const life=lifeOf(s), sc=(s.score!=null?s.score:(sms&&sms.total));
   const SRC={manual:'手动',github:'GitHub',fork:'fork',upload:'上传'};
   const im=invMeta(s);
   $('m-overview').innerHTML = `
+    ${personalCenterLink(s)}
     <div class="inv-banner">
       <div><div class="iv" id="ov-inv">${im.real}<span class="u"> 次真调用</span></div><div class="il" id="ov-il">${invIlText(im)}</div></div>
       <span class="sp"></span>
@@ -1010,13 +1489,122 @@ async function afterAccount(){ $('acct-bg').classList.remove('show'); const loca
 async function loginWithKey(){ const key=$('acct-key-input').value.trim(); const {ok,j}=await api('/auth/login-key',{method:'POST',body:JSON.stringify({key})});
   if(!ok){ $('acct-login-err').textContent=(j&&j.message)||'key 无效'; return; } ME=j.user; localStorage.setItem('xn_logged','1'); $('acct-bg').classList.remove('show'); renderAcctBar(); await loadSkills(); const run=PENDING; PENDING=null; if(run) run(); }
 // keys
-function openKeys(){ $('keys-bg').classList.add('show'); $('key-reveal').innerHTML=''; loadKeys(); }
-async function loadKeys(){ if(!ME)return; const {j}=await api('/app/keys'); const keys=(j&&j.keys)||[];
-  $('key-list').innerHTML = keys.length? keys.map(k=>`<div class="key-row"><div class="ki"><span class="pfx">${esc(k.prefix)}…</span><div class="nm">${esc(k.name)} · ${k.createdAt.slice(0,10)}</div></div><button class="mini" data-k="${k.id}">撤销</button></div>`).join('') : '<div class="ver-hint" style="padding:14px">还没有 key。生成一个给你的 agent 用。</div>';
-  document.querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{ if(confirm('撤销这个 key？')){ await api('/app/keys/'+b.dataset.k,{method:'DELETE'}); loadKeys(); } });
+function openKeys(){ $('keys-bg').classList.add('show'); loadKeys(); }
+let keyCopyRequest;
+function clearKeyReveal(){
+  keyCopyRequest=null;
+  delete $('key-reveal').dataset.keyId;
+  $('key-reveal').hidden=true;
+  $('key-value').textContent='';
+  $('key-status').textContent='';
 }
-async function newKey(){ const name=prompt('给 key 起个名字：','my-agent'); if(name===null)return; const {ok,j}=await api('/app/keys',{method:'POST',body:JSON.stringify({name})}); if(!ok)return;
-  $('key-reveal').innerHTML=`<div class="reveal">✓ key 已生成 · 只显示这一次：<br><code>${esc(j.key)}</code></div>`; loadKeys(); }
+function closeKeys(){
+  if($('k-new').disabled) return;
+  clearKeyReveal();
+  $('keys-bg').classList.remove('show');
+}
+async function loadKeys(){
+  if(!ME) return;
+  const {j}=await api('/app/keys');
+  const keys=(j&&j.keys)||[];
+  $('k-library-new').hidden=!j?.libraryReadAvailable;
+  $('key-list').innerHTML=keys.length ? keys.map(k=>`
+    <div class="key-row">
+      <div class="ki"><span class="pfx">${esc(k.prefix)}…</span>
+        <div class="nm">${esc(k.name)} · ${esc(k.createdAt.slice(0,10))}${k.scope==='library_read' ? ' · 整库只读' : ''}${k.copyable ? '' : ' · 仅显示前缀'}</div>
+      </div>
+      <div class="key-actions">
+        ${k.copyable ? `<button type="button" class="mini" data-copy-key="${esc(k.id)}" aria-label="复制 ${esc(k.name)}">复制</button>` : ''}
+        <button type="button" class="mini" data-k="${esc(k.id)}">撤销</button>
+      </div>
+    </div>`).join('') : '<div class="ver-hint" style="padding:14px">还没有 key。生成一个给你的 agent 用。</div>';
+  $('key-list').querySelectorAll('[data-copy-key]').forEach(button=>{
+    button.onclick=()=>copySavedKey(button.dataset.copyKey);
+  });
+  $('key-list').querySelectorAll('[data-k]').forEach(button=>{
+    button.onclick=async()=>{
+      const id=button.dataset.k;
+      if(!confirm('撤销这个 key？')) return;
+      const {ok,j}=await api('/app/keys/'+id,{method:'DELETE'});
+      if(ok&&j?.ok){
+        if($('key-reveal').dataset.keyId===id || keyCopyRequest?.id===id) clearKeyReveal();
+        await loadKeys();
+      }
+    };
+  });
+}
+function showKey(value,id,note){
+  $('key-value').textContent=value;
+  $('key-reveal').dataset.keyId=id;
+  $('key-reveal-note').textContent=note;
+  $('key-reveal').hidden=false;
+}
+async function copySavedKey(id){
+  if(keyCopyRequest) return;
+  const request={id};
+  keyCopyRequest=request;
+  const status=$('key-status');
+  status.textContent='正在获取 API Key…';
+  // Start the clipboard write during the click, including in Safari.
+  const key=api('/app/keys/'+id+'/copy',{method:'POST'}).then(({ok,j})=>{
+    if(!ok||!j?.key||keyCopyRequest!==request) throw new Error('key unavailable');
+    return j.key;
+  });
+  try{
+    try{
+      if(!navigator.clipboard?.write || typeof ClipboardItem!=='function') throw new Error('clipboard unavailable');
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/plain':key.then(value=>new Blob([value],{type:'text/plain'})),
+      })]);
+      if(keyCopyRequest===request) status.textContent='API Key 已复制。';
+    }catch{
+      const value=await key;
+      if(keyCopyRequest!==request) return;
+      showKey(value,id,'请点击「复制 API Key」，或选中完整值手动复制。');
+      status.textContent='浏览器无法直接复制已保存的密钥。';
+      $('k-copy').focus();
+    }
+  }catch{
+    if(keyCopyRequest===request) status.textContent='无法获取完整 API Key，请刷新列表后重试。';
+  }finally{
+    if(keyCopyRequest===request) keyCopyRequest=null;
+  }
+}
+async function newKey(scope){
+  const button=$('k-new');
+  if(button.disabled) return;
+  const name=prompt('给 key 起个名字：',scope==='library_read'?'library-reader':'my-agent');
+  if(name===null) return;
+  clearKeyReveal();
+  const status=$('key-status');
+  status.textContent='正在生成 API Key…';
+  button.disabled=$('k-library-new').disabled=$('k-close').disabled=true;
+  try{
+    const {ok,j}=await api('/app/keys',{method:'POST',body:JSON.stringify({name,scope})});
+    if(!ok||!j?.key){
+      status.textContent='未能获取新 API Key，请检查下方列表。';
+      return;
+    }
+    showKey(j.key,j.id,j.copyable ? '之后还可以在列表里再次复制。' : '完整 API Key 只显示这一次，请在关闭前复制。');
+    status.textContent='API Key 已生成。';
+    $('k-copy').focus();
+  }catch{
+    status.textContent='连接中断，请检查下方列表，再决定是否重新生成。';
+  }finally{
+    button.disabled=$('k-library-new').disabled=$('k-close').disabled=false;
+    loadKeys().catch(()=>{});
+  }
+}
+async function copyNewKey(){
+  const value=$('key-value').textContent;
+  if(!value) return;
+  try{
+    await navigator.clipboard.writeText(value);
+    if($('key-value').textContent===value) $('key-status').textContent='API Key 已复制。';
+  }catch{
+    if($('key-value').textContent===value) $('key-status').textContent='复制失败，请选中上方完整 API Key 手动复制。';
+  }
+}
 
 // ── P0.2 调用方式面板（复制 / API / 插件 & MCP）──
 function renderInvoke(s){
@@ -1033,7 +1621,7 @@ function renderInvoke(s){
   <div class="inv-ch">
     <div class="ct">② Agent 拉取 · API <span class="tag live">现在可用</span></div>
     <div class="cd">让你的 agent / 脚本一行 curl 取到这个技能的最新内容（用你的 API Key）。</div>
-    <div class="snip"><span class="c"># 取这个技能的最新版</span>\ncurl ${esc(origin)}/api/<span class="a">${apiPath}</span> \\\n  -H <span class="a">"Authorization: Bearer xn_你的key"</span></div>
+    <div class="snip"><span class="c"># 取这个技能的最新版</span>\ncurl ${esc(origin)}/api/<span class="a">${apiPath}</span> \\\n  -H <span class="a">"Authorization: Bearer xn_ro_你的key"</span></div>
     <div class="chacts"><button class="mini" id="iv-key">${ME?'管理 API Key':'登录后生成 Key'}</button></div>
   </div>`;
   if(isPub) html += `<div class="inv-ch"><div class="ct">公开拉取 · 免 Key <span class="tag live">已公开</span></div><div class="cd">已发布，任何人 / agent 可直接拉取。</div><div class="snip">curl ${esc(origin)}/api/<span class="a">v1/skills/${handle}/${slug}</span></div></div>`;
@@ -1152,7 +1740,7 @@ async function archiveSkill(id, archived){
 // ── P2 批量操作 ──
 function toggleSel(id){ if(SELECTED.has(id))SELECTED.delete(id); else SELECTED.add(id); updateBulk(); renderList(); }
 function updateBulk(){ $('bulk-ct').textContent='已选 '+SELECTED.size; $('bulk-bar').classList.toggle('show', SELMODE&&SELECTED.size>0); }
-function setSelMode(on){ SELMODE=on; SELECTED.clear(); $('lr-sel').classList.toggle('on',on); $('bulk-bar').classList.remove('show'); renderList(); }
+function setSelMode(on){ SELMODE=on; if(on) FILTER='all'; SELECTED.clear(); $('lr-sel').classList.toggle('on',on); $('bulk-bar').classList.remove('show'); renderLibraryCategories(); renderFilters(); renderList(); }
 async function bulkApply(fn, confirmMsg){ const ids=[...SELECTED]; if(!ids.length)return; if(confirmMsg&&!confirm(confirmMsg.replace('N',ids.length)))return; for(const id of ids){ try{ await fn(id); }catch(e){} } setSelMode(false); await loadSkills(); }
 
 // ── P0.3 导出技能库（便携）──
@@ -1229,7 +1817,8 @@ $('new-bg').onclick=e=>{ if(e.target===$('new-bg')) $('new-bg').classList.remove
 $('acct-create').onclick=createAccount; $('acct-done').onclick=afterAccount; $('acct-cancel').onclick=()=>$('acct-bg').classList.remove('show');
 $('acct-haskey').onclick=()=>openAccount(true); $('acct-login-go').onclick=loginWithKey; $('acct-login-back').onclick=()=>openAccount(false);
 $('acct-bg').onclick=e=>{ if(e.target===$('acct-bg')) $('acct-bg').classList.remove('show'); };
-$('k-new').onclick=newKey; $('k-close').onclick=()=>$('keys-bg').classList.remove('show'); $('keys-bg').onclick=e=>{ if(e.target===$('keys-bg')) $('keys-bg').classList.remove('show'); };
+$('k-new').onclick=()=>newKey(); $('k-library-new').onclick=()=>newKey('library_read'); $('k-copy').onclick=copyNewKey; $('k-close').onclick=closeKeys;
+$('keys-bg').onclick=e=>{ if(e.target===$('keys-bg')) closeKeys(); };
 // P0.1 search + sort + select-mode
 $('lr-q').oninput=e=>{ SKILL_Q=e.target.value.trim().toLowerCase(); renderList(); };
 $('lr-sort').onchange=e=>{ SORT=e.target.value; renderList(); };

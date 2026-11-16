@@ -6,7 +6,7 @@
 1. Chrome / Edge 打开 `chrome://extensions`
 2. 右上角打开 **开发者模式**
 3. 点 **加载已解压的扩展程序** → 选这个 `extension/` 目录
-4. 点扩展图标 → 粘贴你的 **API Key**（在 https://skillops.tech/dashboard/ → 右上「API Key」生成）→ 连接
+4. 点扩展图标 → 粘贴你的 **API Key**（在 https://skillops.qiuyiwu.com/dashboard/ → 右上「API Key」生成）→ 连接
 
 ## 用法
 - 打开 **chatgpt.com** 或 **claude.ai**

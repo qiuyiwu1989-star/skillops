@@ -8,10 +8,11 @@
  * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (后端用，绕 RLS)
  */
 const URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const REST_URL = (process.env.SUPABASE_REST_URL || (URL ? URL + '/rest/v1' : '')).replace(/\/+$/, '');
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY || '';
 const SCHEMA = process.env.SUPABASE_SCHEMA || 'skillops';
 
-export const supabaseConfigured = !!(URL && KEY);
+export const supabaseConfigured = !!(REST_URL && KEY);
 
 const H = (write) => ({
   apikey: KEY,
@@ -24,7 +25,7 @@ export async function sbSelectAll(table) {
   const out = [];
   const PAGE = 1000;
   for (let from = 0; ; from += PAGE) {
-    const r = await fetch(`${URL}/rest/v1/${table}?select=*`, {
+    const r = await fetch(`${REST_URL}/${table}?select=*`, {
       headers: { ...H(false), Range: `${from}-${from + PAGE - 1}` },
     });
     if (!r.ok) throw new Error(`select ${table} ${r.status}: ${(await r.text()).slice(0, 200)}`);
@@ -39,7 +40,7 @@ export async function sbUpsert(table, rows) {
   if (!rows.length) return;
   const BATCH = 500;
   for (let i = 0; i < rows.length; i += BATCH) {
-    const r = await fetch(`${URL}/rest/v1/${table}`, {
+    const r = await fetch(`${REST_URL}/${table}`, {
       method: 'POST',
       headers: { ...H(true), Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(rows.slice(i, i + BATCH)),
@@ -53,7 +54,7 @@ export async function sbDelete(table, idField, ids) {
   const BATCH = 200;
   for (let i = 0; i < ids.length; i += BATCH) {
     const list = ids.slice(i, i + BATCH).map(encodeURIComponent).join(',');
-    const r = await fetch(`${URL}/rest/v1/${table}?${idField}=in.(${list})`, {
+    const r = await fetch(`${REST_URL}/${table}?${idField}=in.(${list})`, {
       method: 'DELETE',
       headers: { ...H(true), Prefer: 'return=minimal' },
     });
@@ -86,8 +87,8 @@ export const COLLECTIONS = {
   },
   apiKeys: {
     table: 'api_keys', key: 'id',
-    to: k => ({ id:k.id, owner_id:k.ownerId, name:k.name||'default', key_hash:k.keyHash, prefix:k.prefix??null, created_at:k.createdAt??null, last_used_at:k.lastUsedAt??null }),
-    from: r => ({ id:r.id, ownerId:r.owner_id, name:r.name||'default', keyHash:r.key_hash, prefix:r.prefix||'', createdAt:r.created_at, lastUsedAt:r.last_used_at||null }),
+    to: k => ({ id:k.id, owner_id:k.ownerId, name:k.name||'default', key_hash:k.keyHash, prefix:k.prefix??null, created_at:k.createdAt??null, last_used_at:k.lastUsedAt??null, ...(k.encryptedKey ? { encrypted_key:k.encryptedKey } : {}) }),
+    from: r => ({ id:r.id, ownerId:r.owner_id, name:r.name||'default', keyHash:r.key_hash, prefix:r.prefix||'', createdAt:r.created_at, lastUsedAt:r.last_used_at||null, encryptedKey:r.encrypted_key||undefined }),
   },
   chains: {
     table: 'chains', key: 'id',
@@ -115,7 +116,13 @@ export async function syncCollection(name, mem, snapshot) {
     if (snapshot[k] !== js) changed.push(c.to(mem[k]));
   }
   const removed = Object.keys(snapshot).filter(k => !(k in next));
-  if (changed.length) await sbUpsert(c.table, changed);
+  if (name === 'apiKeys') {
+    // PostgREST requires the same columns on every row in a bulk upsert.
+    await sbUpsert(c.table, changed.filter(row => 'encrypted_key' in row));
+    await sbUpsert(c.table, changed.filter(row => !('encrypted_key' in row)));
+  } else if (changed.length) {
+    await sbUpsert(c.table, changed);
+  }
   if (removed.length) await sbDelete(c.table, c.key, removed);
   return next;
 }

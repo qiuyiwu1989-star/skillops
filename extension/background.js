@@ -1,6 +1,6 @@
 /* SkillOps extension · background service worker
  * All API calls go through here (host_permissions → no CORS restriction). */
-const API = 'https://skillops.tech/api';
+const API = 'https://skillops.qiuyiwu.com/api';
 
 async function getKey() { const r = await chrome.storage.sync.get('xn_key'); return r.xn_key || ''; }
 

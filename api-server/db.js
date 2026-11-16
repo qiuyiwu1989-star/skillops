@@ -8,7 +8,7 @@
  * Collections: users, sessions, skills, versions, apiKeys
  *
  * Privacy/security:
- *   - API keys stored only as sha256 hash (+ short display prefix).
+ *   - API keys use a SHA-256 hash for authentication and optional encrypted storage for copying.
  *   - Sessions are opaque random tokens.
  */
 
@@ -288,11 +288,35 @@ export function attachScore(versionId, sms) {
 }
 
 // ── api keys ──
+const copySecret = process.env.API_KEY_COPY_SECRET;
+if (copySecret && !/^[a-f0-9]{64}$/i.test(copySecret)) {
+  throw new Error('API_KEY_COPY_SECRET must be a 32-byte hex value');
+}
+const copyKey = copySecret ? Buffer.from(copySecret, 'hex') : null;
+
+function encryptApiKey(record, raw) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', copyKey, iv);
+  cipher.setAAD(Buffer.from(`${record.ownerId}:${record.id}`));
+  const ciphertext = Buffer.concat([cipher.update(raw, 'utf8'), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), ciphertext]).toString('base64');
+}
+
+export function getApiKeyForCopy(ownerId, keyId) {
+  const k = load().apiKeys[keyId];
+  if (!k || k.ownerId !== ownerId || !k.encryptedKey || !copyKey) return null;
+  const data = Buffer.from(k.encryptedKey, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', copyKey, data.subarray(0, 12));
+  decipher.setAAD(Buffer.from(`${k.ownerId}:${k.id}`));
+  decipher.setAuthTag(data.subarray(12, 28));
+  return Buffer.concat([decipher.update(data.subarray(28)), decipher.final()]).toString('utf8');
+}
 export function createApiKey(ownerId, name) {
   load();
-  const raw = 'xn_' + id(20);                 // shown once
+  const raw = 'xn_' + id(20);
   const prefix = raw.slice(0, 10);
   const k = { id: id(), ownerId, name: name || 'default', keyHash: sha256(raw), prefix, createdAt: now(), lastUsedAt: null };
+  if (copyKey) k.encryptedKey = encryptApiKey(k, raw);
   db.apiKeys[k.id] = k;
   persist();
   return { record: k, raw };
@@ -300,7 +324,7 @@ export function createApiKey(ownerId, name) {
 export function listApiKeys(ownerId) {
   load();
   return Object.values(db.apiKeys).filter(k => k.ownerId === ownerId)
-    .map(k => ({ id: k.id, name: k.name, prefix: k.prefix, createdAt: k.createdAt, lastUsedAt: k.lastUsedAt }));
+    .map(k => ({ id: k.id, name: k.name, prefix: k.prefix, createdAt: k.createdAt, lastUsedAt: k.lastUsedAt, copyable: Boolean(copyKey && k.encryptedKey) }));
 }
 export function deleteApiKey(ownerId, keyId) {
   load();

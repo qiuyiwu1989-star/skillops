@@ -128,7 +128,7 @@
   async function load() {
     footEl.textContent = '载入中…';
     const r = await send({ type: 'listSkills' });
-    if (!r || !r.ok) { SKILLS = []; filtered = []; renderList(); footEl.innerHTML = '未连接 · <a href="https://skillops.tech/dashboard/" target="_blank">控制台生成 API key</a>'; return; }
+    if (!r || !r.ok) { SKILLS = []; filtered = []; renderList(); footEl.innerHTML = '未连接 · <a href="https://skillops.qiuyiwu.com/dashboard/" target="_blank">控制台生成 API key</a>'; return; }
     SKILLS = (r.j && r.j.skills) || []; filtered = SKILLS.slice(); activeIdx = 0; renderList();
     footEl.innerHTML = `@${esc((r.j && r.j.owner) || '')} · ${SKILLS.length} 个技能`;
   }

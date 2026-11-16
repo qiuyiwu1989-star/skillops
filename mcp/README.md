@@ -15,7 +15,7 @@
 cd mcp
 npm install
 ```
-拿一个 **API Key**：https://skillops.tech/dashboard/ → 顶栏「API Key」→ 生成（`xn_…`）。
+拿一个 **API Key**：https://skillops.qiuyiwu.com/dashboard/ → 顶栏「API Key」→ 生成（`xn_…`）。
 
 ## 配置（任选你的客户端）
 
@@ -51,4 +51,4 @@ claude mcp add skillops -e SKILLOPS_API_KEY=xn_你的key -- node /Users/qiu/Docu
 ## 边界 / 后续
 - v0.1 = 工具（agent 主动拉）。**MCP prompts**（在 `/` 菜单里直接选技能注入）是后续增强。
 - 鉴权用 API Key（env）。技能内容只在你的客户端里使用，本服务器不存任何东西。
-- 环境变量 `SKILLOPS_API` 可覆盖 API 基址（默认 `https://skillops.tech/api`）。
+- 环境变量 `SKILLOPS_API` 可覆盖 API 基址（默认 `https://skillops.qiuyiwu.com/api`）。

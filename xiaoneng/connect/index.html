@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>接入 SkillOps · MCP & 浏览器插件 · SkillOps</title>
 <meta name="description" content="把你的 SkillOps 技能库接进任何 AI —— 远程 MCP 接口（填 URL + API Key）和浏览器插件（ChatGPT / Claude 网页一键调起）的安装指南。">
-<link rel="canonical" href="https://skillops.tech/connect/">
+<link rel="canonical" href="https://skillops.qiuyiwu.com/connect/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,32 +70,34 @@
   </div>
 
   <div class="step0">
-    <div class="t">第 0 步 · 两者都要</div>
-    <p>到 <a href="/dashboard/">控制台</a> 顶栏 <b>「API Key」→「＋ 生成 key」</b>，复制那串 <code>xn_…</code>（只显示一次）。下面 MCP 和插件都用它。</p>
+    <div class="t">API Key · 用于手动连接和浏览器插件</div>
+    <p>到 <a href="/dashboard/">控制台</a> 顶栏 <b>「API Key」→「＋ 生成 key」</b>，复制那串 <code>xn_…</code>。新生成的 API Key 可以从列表再次复制。使用下方 OAuth 连接器时无需填 Key。</p>
   </div>
 
   <!-- MCP -->
   <section class="sec">
-    <h2>① 远程 MCP <span class="tag">填 URL + Key</span></h2>
+    <h2>① 远程 MCP <span class="tag">OAuth 或 API Key</span></h2>
     <p class="sub">给 Claude / Cursor 等 MCP 客户端用。接上后 agent 能直接调你的技能库、甚至顺着关系跑整条「技能链」。</p>
-    <div class="url-box"><span class="lbl">MCP URL</span><code id="mcp-url">https://skillops.tech/api/mcp</code><button id="copy-url">⧉ 复制</button></div>
+    <div class="url-box"><span class="lbl">MCP URL</span><code id="mcp-url">https://skillops.qiuyiwu.com/api/mcp</code><button id="copy-url">⧉ 复制</button></div>
 
+    <p class="note">已有配置使用 <code>https://skillops.tech/api/mcp</code> 时，带 API Key 的请求仍会转发到同一套 SkillOps。新建连接或重新授权时请使用上方新地址。</p>
+    <p class="note">个人 AGI 如需按版本读取个人技能中心的正式发布包，继续使用 <code>https://mcp.qiuyiwu.com/mcp</code>。</p>
     <h3>Claude.ai 网页版 / Claude 桌面版（连接器 · OAuth · 免填 key）✨</h3>
-    <p>设置 → Connectors / 连接器 → 「Add custom connector」→ 名称随意、URL 填上面那个 → 保存后点 <b>连接 / Connect</b> → 跳到 SkillOps 授权页（需先登录 skillops.tech）→ 点「授权」即可。<b>不用手动填 API Key</b>，走标准 OAuth。</p>
+    <p>设置 → Connectors / 连接器 → 「Add custom connector」→ 名称随意、URL 填上面那个 → 保存后点 <b>连接 / Connect</b> → 跳到 SkillOps 授权页（需先登录 skillops.qiuyiwu.com）→ 点「授权」即可。<b>不用手动填 API Key</b>，走标准 OAuth。</p>
 
     <h3>Cursor</h3>
     <p>编辑 <code>~/.cursor/mcp.json</code>：</p>
     <div class="code-block">{
   "mcpServers": {
     "skillops": {
-      "url": "https://skillops.tech/api/mcp",
+      "url": "https://skillops.qiuyiwu.com/api/mcp",
       "headers": { "Authorization": "Bearer <span class="a">xn_你的key</span>" }
     }
   }
 }</div>
 
     <h3>Claude Code（一条命令）</h3>
-    <div class="code-block">claude mcp add --transport http skillops <span class="a">https://skillops.tech/api/mcp</span> \
+    <div class="code-block">claude mcp add --transport http skillops <span class="a">https://skillops.qiuyiwu.com/api/mcp</span> \
   --header <span class="a">"Authorization: Bearer xn_你的key"</span></div>
 
     <h3>Claude Desktop（经 mcp-remote 桥接）</h3>
@@ -104,7 +106,7 @@
   "mcpServers": {
     "skillops": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "<span class="a">https://skillops.tech/api/mcp</span>",
+      "args": ["-y", "mcp-remote", "<span class="a">https://skillops.qiuyiwu.com/api/mcp</span>",
                "--header", "Authorization: Bearer <span class="a">xn_你的key</span>"]
     }
   }
@@ -131,7 +133,7 @@
 <script>
 const $=id=>document.getElementById(id);
 let TT=null; function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(TT);TT=setTimeout(()=>t.classList.remove('show'),1600);}
-$('copy-url').onclick=()=>{ navigator.clipboard.writeText('https://skillops.tech/api/mcp').then(()=>toast('已复制 MCP URL ✓')).catch(()=>toast('复制失败')); };
+$('copy-url').onclick=()=>{ navigator.clipboard.writeText($('mcp-url').textContent.trim()).then(()=>toast('已复制 MCP URL ✓')).catch(()=>toast('复制失败')); };
 </script>
 <script defer src="/nav.js"></script>
 </body>
